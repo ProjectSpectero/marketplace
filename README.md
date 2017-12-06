@@ -4,8 +4,11 @@ Yet another unoriginal name for the cloud portal.
 Stack
 --
 Target PHP version - 7.2
+
 Target database - MySQL (mostly due to ease of clustering, since Laravel suffers from bad performance)
+
 Target Framework - Lumen (Laravel)
+
 ORM - Eloquent (Laravel default)
 
 Vision
@@ -20,3 +23,13 @@ Buyers will be able to filter the listed instances by criterions -> (Geographic 
 Implementation Type
 --
 Lumen API on the backend, VueJS app on the frontend.
+
+Unified Response Style
+--
+
+{
+	"errors": <array ERROR_KEYS>,
+	"result": <stdObject data>,
+	"message": <string MESSAGE_KEY>,
+	"version": "1.0"
+}

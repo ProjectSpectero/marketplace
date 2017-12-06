@@ -26,10 +26,11 @@ Lumen API on the backend, VueJS app on the frontend.
 
 Unified Response Style
 --
-
+```
 {
 	"errors": <array ERROR_KEYS>,
 	"result": <stdObject data>,
 	"message": <string MESSAGE_KEY>,
 	"version": "1.0"
 }
+```

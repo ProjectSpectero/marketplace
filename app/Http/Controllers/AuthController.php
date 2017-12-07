@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
-class AuthController extends Controller
+class AuthController extends ApiController
 {
     private $userRepository;
 
@@ -23,7 +24,17 @@ class AuthController extends Controller
         $email = $request->get('username');
         $password = $request->get('password');
 
-        return response($this->userRepository->attemptLogin($email, $password));
+        $validator = Validator::make($request->all(), [
+            'username' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        return $this->unifiedResponse(
+            $validator->errors(),
+            $this->userRepository->attemptLogin($email, $password),
+            'Authenticated'
+        );
+
     }
 
 

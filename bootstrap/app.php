@@ -49,6 +49,7 @@ $app->singleton(
 );
 
 $app->configure('auth');
+$app->configure('cors');
 
 /*
 |--------------------------------------------------------------------------
@@ -67,6 +68,7 @@ $app->configure('auth');
 
  $app->routeMiddleware([
      'auth' => App\Http\Middleware\Authenticate::class,
+     'cors' => \Barryvdh\Cors\HandleCors::class,
  ]);
 
 /*
@@ -87,6 +89,7 @@ $app->configure('auth');
     $app->register(Laravel\Passport\PassportServiceProvider::class);
     $app->register(Dusterio\LumenPassport\PassportServiceProvider::class);
     Dusterio\LumenPassport\LumenPassport::routes($app);
+    $app->register(Barryvdh\Cors\ServiceProvider::class);
 
 /*
 |--------------------------------------------------------------------------

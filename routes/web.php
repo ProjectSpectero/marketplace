@@ -21,4 +21,12 @@ $api->version('v1', function ($api) {
     $api->group(['prefix' => 'oauth'], function ($api) {
         $api->post('token', '\Laravel\Passport\Http\Controllers\AccessTokenController@issueToken');
     });
+
+    $api->group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function ($api) {
+        $api->post('auth', 'AuthController@auth');
+    });
+
+    $api->group(['namespace' => 'App\Http\Controllers', 'middleware' => ['auth:api', 'cors']], function ($api) {
+
+    });
 });

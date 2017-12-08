@@ -33,6 +33,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public function userMeta()
     {
-        $this->hasMany(UserMeta::class);
+        return $this->hasMany(UserMeta::class);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Constants\Messages;
 
 class AuthController extends ApiController
 {
@@ -32,7 +33,7 @@ class AuthController extends ApiController
         return $this->unifiedResponse(
             $validator->errors(),
             $this->userRepository->attemptLogin($email, $password),
-            'Authenticated'
+            Messages::OAUTH_TOKKEN_ISSUED
         );
 
     }

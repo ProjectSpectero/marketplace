@@ -33,6 +33,28 @@ class UserRepository
 
 
     /**
+     * Creates a user with hashed password
+     *
+     * @param array $input
+     */
+
+    public function userCreate(array $input, $validator)
+    {
+        if (isset($input['password'])) {
+            $input['password'] = \Illuminate\Support\Facades\Hash::make($input['password']);
+        }
+
+        if ($validator->fails()) {
+            $result = 'Error creating user';
+        } else {
+            $result = User::create($input);
+        }
+
+        return $result;
+    }
+
+
+    /**
      * Proxy a request to the OAuth server
      *
      * @param string $grantType - what type of grant should be proxied

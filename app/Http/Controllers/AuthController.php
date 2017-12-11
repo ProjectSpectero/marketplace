@@ -20,6 +20,21 @@ class AuthController extends ApiController
         $this->userRepository = $userRepository;
     }
 
+    public function register(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required',
+            'c_password' => 'required|same:password'
+        ]);
+
+        return $this->unifiedResponse(
+            $validator->errors(),
+            $this->userRepository->userCreate($request->all(), $validator),
+            Messages::USER_CREATED
+        );    
+    }
+
     public function auth(Request $request)
     {
         $email = $request->get('username');

@@ -17,10 +17,10 @@ class UserMeta extends Model
      * @return string meta_value
      */
 
-    public function scopeLoadMeta($query, $user, $key)
+    public function scopeLoadMeta($query, $user, $key = '')
     {
-        if (is_null($user) && empty($key)) {
-            return \App\User::find($user->id)->userMeta;
+        if (empty($key)) {
+            return $user->userMeta;
         }
 
         return $query->where(['user_id' => $user->id, 'meta_key' => $key])->get();

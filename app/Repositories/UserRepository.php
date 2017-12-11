@@ -44,11 +44,7 @@ class UserRepository
             $input['password'] = \Illuminate\Support\Facades\Hash::make($input['password']);
         }
 
-        if ($validator->fails()) {
-            $result = 'Error creating user';
-        } else {
-            $result = User::create($input);
-        }
+        $result = $validator->fails() ? 'Error creating user' : User::create($input);
 
         return $result;
     }

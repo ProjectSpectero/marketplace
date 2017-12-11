@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class UserMeta extends Model
 {
 
+    protected $fillable = ['user_id', 'meta_key', 'meta_value'];
+
     /**
      * Custom scope that returns User meta_value by key
      *

@@ -23,9 +23,12 @@ class AuthController extends ApiController
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'name' => 'required',
             'email' => 'required|email',
             'password' => 'required',
-            'c_password' => 'required|same:password'
+            'c_password' => 'required|same:password',
+            'post_code' => 'sometimes|required|integer',
+            'phone_no' => 'sometimes|required'
         ]);
 
         return $this->unifiedResponse(

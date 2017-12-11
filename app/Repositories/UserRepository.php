@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\User;
 use GuzzleHttp\Client;
+use App\Repositories\UserMetaRepository;
 
 class UserRepository
 {
@@ -44,7 +45,19 @@ class UserRepository
             $input['password'] = \Illuminate\Support\Facades\Hash::make($input['password']);
         }
 
-        $result = $validator->fails() ? 'Error creating user' : User::create($input);
+        $user = User::create([
+            'name' => $input['name'],
+            'email' => $input['email'],
+            'password' => $input['password']
+        ]);
+
+        unset($input['name'], $input['email'], $input['password'], $input['c_password']);
+
+        foreach ($input as $key => $value) {
+            UserMetaRepository::addMeta($user, $key, $value);
+        }
+
+        $result = $validator->fails() ? 'Error creating user' : $user;
 
         return $result;
     }

@@ -32,11 +32,21 @@ class UserRepository
         return response()->json(['error' => 'Unauthorized'], 401);
     }
 
+    public function refreshToken($refreshToken)
+    {
+        $grantType = 'refresh_token';
+
+        return $this->proxy($grantType, [
+            'refresh_token' => $refreshToken
+        ]);
+    }
+
 
     /**
      * Creates a user with hashed password
      *
      * @param array $input
+     * @param Validator $validator
      */
 
     public function userCreate(array $input, $validator)
@@ -74,20 +84,23 @@ class UserRepository
     {
         $http = new Client();
 
+        $oauthType = array(
+            'grant_type' => $grantType,
+            'client_id' => env('PASSWORD_CLIENT_ID'),
+            'client_secret' => env('PASSWORD_CLIENT_SECRET')
+        );
+
+        $params = array_merge($oauthType, $data);
+
         $response = $http->post('http://homestead.marketplace/oauth/token', [
-            'form_params' => [
-                'grant_type' => $grantType,
-                'client_id' => env('PASSWORD_CLIENT_ID'),
-                'client_secret' => env('PASSWORD_CLIENT_SECRET'),
-                'username' => $data['username'],
-                'password' => $data['password'],
-            ],
+            'form_params' => $params
         ]);
 
         $data = json_decode($response->getBody());
 
         return [
             'access_token' => $data->access_token,
+            'refresh_token' => $data->refresh_token,
             'expires_in' => $data->expires_in
         ];
     }

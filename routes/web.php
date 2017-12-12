@@ -27,7 +27,7 @@ $api->version('v1', function ($api) {
         $api->post('register', 'AuthController@register');
     });
 
-    $api->group(['namespace' => 'App\Http\Controllers', 'middleware' => ['auth:api', 'cors']], function ($api) {
-
+    $api->group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => ['auth:api', 'cors']], function ($api) {
+        $api->post('refresh', 'AuthController@refreshToken');
     });
 });

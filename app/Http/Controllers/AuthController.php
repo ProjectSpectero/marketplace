@@ -56,5 +56,16 @@ class AuthController extends ApiController
 
     }
 
+    public function refreshToken(Request $request)
+    {
+        $refreshToken = $request->get('refresh_token');
+
+        return $this->unifiedResponse(
+            'testError',
+            $this->userRepository->refreshToken($refreshToken),
+            'test Message'
+        );
+    }
+
 
 }

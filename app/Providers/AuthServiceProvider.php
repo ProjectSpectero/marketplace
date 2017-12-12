@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Passport\Passport;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -35,5 +37,8 @@ class AuthServiceProvider extends ServiceProvider
                 return User::where('api_token', $request->input('api_token'))->first();
             }
         });
+
+        Passport::tokensExpireIn(Carbon::now()->addMinutes(env('TOKEN_EXPIRY')));
+        Passport::refreshTokensExpireIn(Carbon::now()->addMinutes(env('REFRESH_TOKEN_EXPIRY')));
     }
 }

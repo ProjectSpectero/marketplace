@@ -6,6 +6,7 @@ use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Constants\Messages;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends ApiController
 {
@@ -48,12 +49,33 @@ class AuthController extends ApiController
             'password' => 'required'
         ]);
 
+        $login = $this->userRepository->attemptLogin($email, $password);
+
+        if ($login['success']) {
+            $this->userRepository->generateSecretKey(\App\User::where('email', '=', $email)->first());
+        } 
+
         return $this->unifiedResponse(
             $validator->errors(),
-            $this->userRepository->attemptLogin($email, $password),
+            $login,
             Messages::OAUTH_TOKKEN_ISSUED
         );
 
+    }
+
+    public function verify(Request $request)
+    {
+        $secret = $request->get('secret');
+
+        $user = Auth::guard('api')->user();
+
+        $verifyUser = $this->userRepository->verifyUser($user, $secret);
+
+        return $this->unifiedResponse(
+            'testError',
+            $verifyUser,
+            'testMessage'
+        );
     }
 
     public function refreshToken(Request $request)

@@ -5,8 +5,9 @@ namespace App\Repositories;
 
 
 use App\User;
-use GuzzleHttp\Client;
 use App\Repositories\UserMetaRepository;
+use GuzzleHttp\Client;
+use PragmaRX\Google2FA\Google2FA;
 
 class UserRepository
 {
@@ -30,6 +31,40 @@ class UserRepository
         }
 
         return response()->json(['error' => 'Unauthorized'], 401);
+    }
+
+    /**
+     * Generate a Google2FA secret key and return a url 
+     *
+     */
+
+    public function generateSecretKey($user)
+    {
+        $google2fa = new Google2FA();
+    
+        UserMetaRepository::addMeta($user, 'secret', $google2fa->generateSecretKey());
+
+        $google2fa_url = $google2fa->getQRCodeGoogleUrl(
+            'Test',
+            $user->email,
+            \App\UserMeta::loadMeta($user, 'secret')
+        );        
+
+        return $google2fa_url;
+    }
+
+    /**
+     * Veirify the user with Google2FA
+     *
+     */
+
+    public function verifyUser($user, $secret)
+    {
+        $google2fa = new Google2FA();
+        
+        $valid = $google2fa->verifyKey(\App\UserMeta::loadMeta($user, 'secret')->first()->meta_value, $secret);
+        
+        return $valid;      
     }
 
     public function refreshToken($refreshToken)
@@ -101,7 +136,8 @@ class UserRepository
         return [
             'access_token' => $data->access_token,
             'refresh_token' => $data->refresh_token,
-            'expires_in' => $data->expires_in
+            'expires_in' => $data->expires_in,
+            'success' => true
         ];
     }
 }

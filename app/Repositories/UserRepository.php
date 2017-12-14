@@ -84,7 +84,7 @@ class UserRepository
      * @param Validator $validator
      */
 
-    public function userCreate(array $input, $validator)
+    public function userCreate(array $input)
     {
         if (isset($input['password'])) {
             $input['password'] = \Illuminate\Support\Facades\Hash::make($input['password']);
@@ -100,11 +100,9 @@ class UserRepository
 
         foreach ($input as $key => $value) {
             UserMetaRepository::addMeta($user, $key, $value);
-        }
+        } 
 
-        $result = $validator->fails() ? 'Error creating user' : $user;
-
-        return $result;
+        return $user;
     }
 
 

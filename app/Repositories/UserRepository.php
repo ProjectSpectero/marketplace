@@ -41,8 +41,9 @@ class UserRepository
     public function generateSecretKey($user)
     {
         $google2fa = new Google2FA();
+        $secretKey = $google2fa->generateSecretKey();
     
-        UserMetaRepository::addMeta($user, 'secret', $google2fa->generateSecretKey());
+        UserMetaRepository::addMeta($user, 'secret', $secretKey);
 
         $google2fa_url = $google2fa->getQRCodeGoogleUrl(
             env('COMPANY_NAME'),
@@ -50,7 +51,10 @@ class UserRepository
             \App\UserMeta::loadMeta($user, 'secret')
         );        
 
-        return $google2fa_url;
+        return [
+            'secret_key' => $secretKey,
+            'qr_code' => $google2fa_url
+        ];
     }
 
     /**

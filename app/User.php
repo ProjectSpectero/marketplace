@@ -35,4 +35,9 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {
         return $this->hasMany(UserMeta::class);
     }
+
+    public function backupCodes()
+    {
+        return $this->hasMany(BackupCode::class);
+    }
 }

@@ -69,9 +69,9 @@ class AuthController extends ApiController
     public function keygen(Request $request)
     {
         $user = Auth::guard('api')->user();        
-
+        
         $secretKey = $this->userRepository->generateSecretKey($user);
-
+        
         return $this->unifiedResponse(
             'testError',
             $secretKey,

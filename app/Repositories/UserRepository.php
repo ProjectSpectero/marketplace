@@ -5,6 +5,7 @@ namespace App\Repositories;
 
 
 use App\User;
+use App\BackupCode;
 use App\Repositories\UserMetaRepository;
 use App\Constants\UserMetaKeys;
 use GuzzleHttp\Client;
@@ -43,9 +44,17 @@ class UserRepository
     {
         $google2fa = new Google2FA();
         $secretKey = $google2fa->generateSecretKey();
+         
+        // Generate 5 backup codes
+        for ($i = 0; $i < 5; $i++) {
+            BackupCode::create([
+                'user_id' => $user->id,
+                'code' => md5(uniqid(rand(), true))
+            ]);
+        }
     
         UserMetaRepository::addMeta($user, UserMetaKeys::SecretKey, $secretKey);
-
+        
         $google2fa_url = $google2fa->getQRCodeGoogleUrl(
             env('COMPANY_NAME'),
             $user->email,
@@ -54,7 +63,8 @@ class UserRepository
 
         return [
             'secret_key' => $secretKey,
-            'qr_code' => $google2fa_url
+            'qr_code' => $google2fa_url,
+            'backup_codes' => $user->backupCodes->pluck('code')
         ];
     }
 

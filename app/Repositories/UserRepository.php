@@ -76,6 +76,15 @@ class UserRepository
     public function verifyUser($user, $secret)
     {
         $google2fa = new Google2FA();
+
+        $backupCodes = $user->backupCodes->pluck('code');
+
+        foreach ($backupCodes as $code) {
+            if ($secret == $code) {
+                $code->delete();
+                return true;
+            }
+        }
         
         $valid = $google2fa->verifyKey(\App\UserMeta::loadMeta($user, UserMetaKeys::SecretKey)->first()->meta_value, $secret);
         

@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\User;
 use App\Repositories\UserMetaRepository;
+use App\Constants\UserMetaKeys;
 use GuzzleHttp\Client;
 use PragmaRX\Google2FA\Google2FA;
 
@@ -43,12 +44,12 @@ class UserRepository
         $google2fa = new Google2FA();
         $secretKey = $google2fa->generateSecretKey();
     
-        UserMetaRepository::addMeta($user, 'secret', $secretKey);
+        UserMetaRepository::addMeta($user, UserMetaKeys::SecretKey, $secretKey);
 
         $google2fa_url = $google2fa->getQRCodeGoogleUrl(
             env('COMPANY_NAME'),
             $user->email,
-            \App\UserMeta::loadMeta($user, 'secret')
+            \App\UserMeta::loadMeta($user, UserMetaKeys::SecretKey)
         );        
 
         return [
@@ -66,7 +67,7 @@ class UserRepository
     {
         $google2fa = new Google2FA();
         
-        $valid = $google2fa->verifyKey(\App\UserMeta::loadMeta($user, 'secret')->first()->meta_value, $secret);
+        $valid = $google2fa->verifyKey(\App\UserMeta::loadMeta($user, UserMetaKeys::SecretKey)->first()->meta_value, $secret);
         
         return $valid;      
     }

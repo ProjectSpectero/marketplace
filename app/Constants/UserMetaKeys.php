@@ -7,6 +7,7 @@ class UserMetaKeys {
     const City = 'city';
     const PostCode = 'post_code';
     const PhoneNumber = 'phone_no';
+    const SecretKey = 'secret';
 
     static function getConstants()
     {

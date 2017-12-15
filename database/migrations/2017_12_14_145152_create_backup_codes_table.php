@@ -17,6 +17,7 @@ class CreateBackupCodesTable extends Migration
             $table->increments('id');
             $table->string('user_id');
             $table->string('code');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

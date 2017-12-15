@@ -34,7 +34,7 @@ class UserRepository
     }
 
     /**
-     * Generate a Google2FA secret key and return a url 
+     * Generate a Google2FA secret key and backup codes
      *
      */
 

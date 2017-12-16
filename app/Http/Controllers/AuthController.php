@@ -32,7 +32,7 @@ class AuthController extends ApiController
             'phone_no' => 'sometimes|required'
         ]);
 
-        $register = $validator->fails() ? 'Erro creating user' : $this->userRepository->userCreate($request->all());
+        $register = $validator->fails() ? 'Error creating user' : $this->userRepository->userCreate($request->all());
 
         return $this->unifiedResponse(
             $validator->errors(),

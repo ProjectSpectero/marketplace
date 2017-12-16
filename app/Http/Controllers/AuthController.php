@@ -112,11 +112,17 @@ class AuthController extends ApiController
     public function refreshToken(Request $request)
     {
         $refreshToken = $request->get('refresh_token');
+        $errors = array();
+        if (!$refreshToken['success']) {
+            $errors = [
+                'ERROR_ISSUING_REFRESH_TOKEN' => 'Error issuing refresh token'
+            ];
+        }
 
         return $this->unifiedResponse(
-            'testError',
+            $errors,
             $this->userRepository->refreshToken($refreshToken),
-            'test Message'
+            Messages::REFRESH_TOKEN_ISSUED
         );
     }
 

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\UserRepository;
+use App\Constants\UserMetaKeys;
+use App\UserMeta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Constants\Messages;
@@ -56,7 +58,7 @@ class AuthController extends ApiController
         return $this->unifiedResponse(
             $validator->errors(),
             $login,
-            Messages::OAUTH_TOKKEN_ISSUED
+            Messages::OAUTH_TOKEN_ISSUED
         );
 
     }
@@ -68,14 +70,21 @@ class AuthController extends ApiController
 
     public function keygen(Request $request)
     {
-        $user = Auth::guard('api')->user();        
+        $user = Auth::guard('api')->user();       
         
         $secretKey = $this->userRepository->generateSecretKey($user);
-        
+
+        if (!is_null($secretKey['errors'])) {
+            $errors = $secretKey['errors'];
+            unset($secretKey['errors']);
+        } else {
+            $errors = array();
+        }
+         
         return $this->unifiedResponse(
-            'testError',
+            $errors,
             $secretKey,
-            'test message'
+            Messages::SECRET_KEY_GENERATED
         );
     }
 

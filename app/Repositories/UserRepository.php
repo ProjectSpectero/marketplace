@@ -44,13 +44,20 @@ class UserRepository
     {
         $google2fa = new Google2FA();
         $secretKey = $google2fa->generateSecretKey();
-         
-        // Generate 5 backup codes
-        for ($i = 0; $i < 5; $i++) {
-            BackupCode::create([
-                'user_id' => $user->id,
-                'code' => md5(uniqid(rand(), true))
-            ]);
+        $errors = array();
+
+        if (empty($user->backupCodes->all())) { 
+            // Generate 5 backup codes
+            for ($i = 0; $i < 5; $i++) {
+                BackupCode::create([
+                    'user_id' => $user->id,
+                    'code' => md5(uniqid(rand(), true))
+                ]);
+            }
+        } else {
+            $errors = array(
+                'BACKUP_ALREADY_PRESENT' => 'You already have backup codes'
+            );
         }
     
         UserMetaRepository::addMeta($user, UserMetaKeys::SecretKey, $secretKey);
@@ -62,6 +69,7 @@ class UserRepository
         );        
 
         return [
+            'errors' => $errors,
             'secret_key' => $secretKey,
             'qr_code' => $google2fa_url,
             'backup_codes' => $user->backupCodes->pluck('code')

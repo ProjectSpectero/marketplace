@@ -93,13 +93,19 @@ class AuthController extends ApiController
         $secret = $request->get('secret');
 
         $user = Auth::guard('api')->user();
+        $errors = array();
+        if (empty($secret)) {
+            $errors = [
+                'SECRET_IS_REQUIRED' => 'You must enter a secret key'
+            ];
+        }
 
         $verifyUser = $this->userRepository->verifyUser($user, $secret);
 
         return $this->unifiedResponse(
-            'testError',
+            $errors,
             $verifyUser,
-            'testMessage'
+            Messages::VERIY_SECRET_KEY
         );
     }
 

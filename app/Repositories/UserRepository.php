@@ -127,9 +127,11 @@ class UserRepository
 
         $user = User::create([
             'name' => $input['name'],
-            'email' => $input['email'],
-            'password' => $input['password']
+            'email' => $input['email']
         ]);
+
+        $user->password = $input['password'];
+        $user->save();
 
         unset($input['name'], $input['email'], $input['password'], $input['c_password']);
         

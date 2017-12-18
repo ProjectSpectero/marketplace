@@ -72,7 +72,7 @@ class UserRepository
             'errors' => $errors,
             'secret_key' => $secretKey,
             'qr_code' => $google2fa_url,
-            'backup_codes' => $user->backupCodes->pluck('code')
+            'backup_codes' => BackupCode::where('user_id', $user->id)->pluck('code')
         ];
     }
 

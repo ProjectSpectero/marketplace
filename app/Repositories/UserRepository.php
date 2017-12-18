@@ -90,6 +90,7 @@ class UserRepository
         foreach ($backupCodes as $code) {
             if ($secret == $code->code) {
                 $code->delete();
+                UserMetaRepository::addMeta($user, UserMetaKeys::Verified, 'true');
                 return true;
             }
         }
@@ -131,10 +132,12 @@ class UserRepository
         ]);
 
         unset($input['name'], $input['email'], $input['password'], $input['c_password']);
-
+        
         foreach ($input as $key => $value) {
             UserMetaRepository::addMeta($user, $key, $value);
-        } 
+        }
+
+        UserMetaRepository::addMeta($user, UserMetaKeys::Verified, "false"); 
 
         return $user;
     }

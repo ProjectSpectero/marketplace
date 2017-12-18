@@ -8,6 +8,7 @@ class UserMetaKeys {
     const PostCode = 'post_code';
     const PhoneNumber = 'phone_no';
     const SecretKey = 'secret';
+    const Verified = 'verified';
 
     static function getConstants()
     {

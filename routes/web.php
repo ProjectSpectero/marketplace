@@ -32,4 +32,10 @@ $api->version('v1', function ($api) {
         $api->post('verify', 'AuthController@verify');
         $api->post('keygen', 'AuthController@keygen');
     });
+
+    $api->group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => ['verify']], function($api) {
+      $api->get('test', function () {
+        return 'Success';
+      });
+    });
 });

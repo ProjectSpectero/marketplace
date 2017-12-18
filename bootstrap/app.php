@@ -69,6 +69,7 @@ $app->configure('cors');
  $app->routeMiddleware([
      'auth' => App\Http\Middleware\Authenticate::class,
      'cors' => \Barryvdh\Cors\HandleCors::class,
+     'verify' => App\Http\Middleware\Verify::class,
  ]);
 
 /*

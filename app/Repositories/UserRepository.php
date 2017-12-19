@@ -164,7 +164,7 @@ class UserRepository
 
         $params = array_merge($oauthType, $data);
 
-        $response = $http->post(env('APP_URL') . 'oauth/token', [
+        $response = $http->post(env('APP_URL') . '/oauth/token', [
             'form_params' => $params
         ]);
 

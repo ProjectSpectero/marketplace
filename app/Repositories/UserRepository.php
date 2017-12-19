@@ -51,7 +51,7 @@ class UserRepository
             for ($i = 0; $i < 5; $i++) {
                 BackupCode::create([
                     'user_id' => $user->id,
-                    'code' => md5(uniqid(rand(), true))
+                    'code' => md5(uniqid(mt_rand(), true))
                 ]);
             }
         } else {

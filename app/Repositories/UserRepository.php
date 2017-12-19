@@ -164,7 +164,7 @@ class UserRepository
 
         $params = array_merge($oauthType, $data);
 
-        $response = $http->post(env('HOSTED_IP'), [
+        $response = $http->post(env('APP_URL'), [
             'form_params' => $params
         ]);
 

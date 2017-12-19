@@ -164,7 +164,7 @@ class UserRepository
 
         $params = array_merge($oauthType, $data);
 
-        $response = $http->post('http://homestead.marketplace/oauth/token', [
+        $response = $http->post(env('HOSTED_IP'), [
             'form_params' => $params
         ]);
 

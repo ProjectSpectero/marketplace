@@ -16,7 +16,7 @@ class UsersTableSeeder extends Seeder
       \App\User::create([
         "name" => "Spectero Dev",
         "email" => "spectero@dev.com",
-        "password" => "$2y$10slEBapxniAtsDj85a5f1i.QMecJI.2eJbzREuLoxes1yQ5Q7RL1Da" 
+        "password" => \Illuminate\Support\Facades\Hash::make('temppass') 
       ]);
     }
 }

@@ -33,7 +33,7 @@ $api->version('v1', function ($api) {
         $api->post('keygen', 'AuthController@keygen');
     });
 
-    $api->group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => ['verify']], function($api) {
+    $api->group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => ['enforce.tfa']], function($api) {
       $api->get('test', function () {
         return 'Success';
       });

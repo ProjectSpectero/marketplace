@@ -91,6 +91,7 @@ class UserRepository
             if ($secret == $code->code) {
                 $code->delete();
                 UserMetaRepository::addMeta($user, UserMetaKeys::Verified, 'true');
+                UserMetaRepository::addMeta($user, UserMetaKeys::hasTfaOn, 'true');
                 return true;
             }
         }
@@ -98,6 +99,10 @@ class UserRepository
         $valid = $google2fa->verifyKey(
           \App\UserMeta::loadMeta($user, UserMetaKeys::SecretKey)->first()->meta_value, $secret
         );
+
+        if ($valid) {
+          UserMetaRepository::addMeta($user, UserMetaKeys::hasTfaOn, 'true');
+        }
         
         return $valid;      
     }
@@ -140,6 +145,7 @@ class UserRepository
         }
 
         UserMetaRepository::addMeta($user, UserMetaKeys::Verified, "false"); 
+        UserMetaRepository::addMeta($user, UserMetaKeys::hasTfaOn, "false");
 
         return $user;
     }

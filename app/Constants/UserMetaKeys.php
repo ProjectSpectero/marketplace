@@ -9,6 +9,7 @@ class UserMetaKeys {
     const PhoneNumber = 'phone_no';
     const SecretKey = 'secret';
     const Verified = 'verified';
+    const hasTfaOn = 'has_tfa_on';
 
     static function getConstants()
     {

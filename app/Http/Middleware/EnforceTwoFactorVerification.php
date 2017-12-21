@@ -4,10 +4,19 @@ namespace App\Http\Middleware;
 
 use Closure;
 use App\UserMeta;
+use App\Repositories\UserRepository;
 use App\Constants\UserMetaKeys;
 
-class Verify
+class EnforceTwoFactorVerification
 {
+
+    protected $userRepository;    
+    
+    public function __construct(UserRepository $userRepository)
+    {
+        $this->userRepository = $userRepository;
+    }
+    
     /**
      * Handle an incoming request.
      *
@@ -18,12 +27,12 @@ class Verify
     public function handle($request, Closure $next)
     {
         // Pre-Middleware Action
-      
-     // $userVerified = UserMeta::loadMeta($request->user(), UserMetaKeys::Verified)->first();
+        $verified = $this->userRepository->verifyUser($request->user(), $request->secret);        
 
-     // if ($userVerified->meta_value != 'true') {
-     //   return response()->json(['error' => 'User not verified'], 401);
-     // } 
+        if (!$verified) {
+            return response()->json(['temp error' => 'User not verifed']);
+        }
+           
 
         // Post-Middleware Action
 

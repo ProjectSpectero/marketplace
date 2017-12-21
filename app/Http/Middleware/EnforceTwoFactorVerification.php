@@ -19,11 +19,11 @@ class Verify
     {
         // Pre-Middleware Action
       
-      $userVerified = UserMeta::loadMeta($request->user(), UserMetaKeys::Verified)->first();
+     // $userVerified = UserMeta::loadMeta($request->user(), UserMetaKeys::Verified)->first();
 
-      if ($userVerified->meta_value != 'true') {
-        return response()->json(['error' => 'User not verified'], 401);
-      } 
+     // if ($userVerified->meta_value != 'true') {
+     //   return response()->json(['error' => 'User not verified'], 401);
+     // } 
 
         // Post-Middleware Action
 

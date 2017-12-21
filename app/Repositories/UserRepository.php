@@ -93,7 +93,6 @@ class UserRepository
         foreach ($backupCodes as $code) {
             if ($secret == $code->code) {
                 $code->delete();
-                UserMetaRepository::addMeta($user, UserMetaKeys::Verified, 'true');
                 return true;
             }
         }
@@ -142,7 +141,6 @@ class UserRepository
             UserMetaRepository::addMeta($user, $key, $value);
         }
 
-        UserMetaRepository::addMeta($user, UserMetaKeys::Verified, "false"); 
         UserMetaRepository::addMeta($user, UserMetaKeys::hasTfaOn, "false");
 
         return $user;

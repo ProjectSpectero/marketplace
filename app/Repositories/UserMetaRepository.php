@@ -13,6 +13,7 @@ class UserMetaRepository
           $userMeta = UserMeta::loadMeta($user, $key)->first();
           $userMeta->meta_value = $value;
           $userMeta->save();
+          return;
         }        
         
         UserMeta::create([

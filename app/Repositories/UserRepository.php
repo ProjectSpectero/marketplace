@@ -91,7 +91,6 @@ class UserRepository
             if ($secret == $code->code) {
                 $code->delete();
                 UserMetaRepository::addMeta($user, UserMetaKeys::Verified, 'true');
-                UserMetaRepository::addMeta($user, UserMetaKeys::hasTfaOn, 'true');
                 return true;
             }
         }

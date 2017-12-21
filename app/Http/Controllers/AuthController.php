@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Repositories\UserRepository;
 use App\Constants\UserMetaKeys;
+use App\Constants\Errors;
 use App\UserMeta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -96,7 +97,7 @@ class AuthController extends ApiController
         $errors = array();
         if (empty($secret)) {
             $errors = [
-                'SECRET_IS_REQUIRED' => 'You must enter a secret key'
+                Errors::SECRET_IS_REQUIRED
             ];
         }
 
@@ -115,7 +116,7 @@ class AuthController extends ApiController
         $errors = array();
         if (!$refreshToken['success']) {
             $errors = [
-                'ERROR_ISSUING_REFRESH_TOKEN' => 'Error issuing refresh token'
+                Errors::ERROR_ISSUING_REFRESH_TOKEN
             ];
         }
 

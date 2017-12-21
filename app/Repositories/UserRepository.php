@@ -8,6 +8,7 @@ use App\User;
 use App\BackupCode;
 use App\Repositories\UserMetaRepository;
 use App\Constants\UserMetaKeys;
+use App\Constants\Errors;
 use GuzzleHttp\Client;
 use PragmaRX\Google2FA\Google2FA;
 
@@ -56,7 +57,7 @@ class UserRepository
             }
         } else {
             $errors = array(
-                'BACKUP_ALREADY_PRESENT' => 'You already have backup codes'
+                Errors::BACKUP_CODES_ALREADY_PRESENT                
             );
         }
     

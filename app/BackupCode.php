@@ -15,4 +15,14 @@ class BackupCode extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function generateCodes($user)
+    {   
+        for ($i = 0; $i < 5; $i++) {
+            BackupCode::create([
+                'user_id' => $user->id,
+                'code' => md5(uniqid(mt_rand(), true))
+            ]);
+        }
+    } 
 }

@@ -46,15 +46,10 @@ class UserRepository
         $google2fa = new Google2FA();
         $secretKey = $google2fa->generateSecretKey();
         $errors = array();
-
+        $backupCodes = new BackupCode();
         if (empty($user->backupCodes->all())) { 
             // Generate 5 backup codes
-            for ($i = 0; $i < 5; $i++) {
-                BackupCode::create([
-                    'user_id' => $user->id,
-                    'code' => md5(uniqid(mt_rand(), true))
-                ]);
-            }
+            $backupCodes->generateCodes($user); 
         } else {
             $errors = array(
                 Errors::BACKUP_CODES_ALREADY_PRESENT                
@@ -77,6 +72,25 @@ class UserRepository
             'qr_code' => $google2fa_url,
             'backup_codes' => BackupCode::where('user_id', $user->id)->pluck('code')
         ];
+    }
+
+    /**
+     * Invalidate previous backup codes 
+     * and generate new ones
+     */
+
+    public function regenKeys($user)
+    {
+        foreach($user->backupCodes as $code) {
+            $code->delete(); 
+        }
+
+        $backupCodes = new BackupCode();
+        $backupCodes->generateCodes($user);
+
+        return [
+          'backup_codes' => $user->backupCodes->pluck('code')
+        ]; 
     }
 
     /**

@@ -64,31 +64,7 @@ class AuthController extends ApiController
 
     }
 
-    /**
-     * When a user enables TFA the keygen method
-     * is called to generate a secret key
-     */
-
-    public function keygen(Request $request)
-    {
-        $user = Auth::guard('api')->user();       
-        
-        $secretKey = $this->userRepository->generateSecretKey($user);
-
-        if (!is_null($secretKey['errors'])) {
-            $errors = $secretKey['errors'];
-            unset($secretKey['errors']);
-        } else {
-            $errors = array();
-        }
-         
-        return $this->unifiedResponse(
-            $errors,
-            $secretKey,
-            Messages::SECRET_KEY_GENERATED
-        );
-    }
-
+   
     public function verify(Request $request)
     {
         $secret = $request->get('secret');

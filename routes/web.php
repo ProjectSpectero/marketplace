@@ -30,7 +30,8 @@ $api->version('v1', function ($api) {
     $api->group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => ['auth:api', 'cors']], function ($api) {
         $api->post('refresh', 'AuthController@refreshToken');
         $api->post('verify', 'AuthController@verify');
-        $api->post('keygen', 'AuthController@keygen');
+        $api->post('keygen', 'UsersController@keygen');
+        $api->post('regenerateBackupCodes', 'UsersController@regenerateBackupCodes');
     });
 
     $api->group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => ['enforce.tfa']], function($api) {

@@ -69,6 +69,8 @@ class UserRepository
             \App\UserMeta::loadMeta($user, UserMetaKeys::SecretKey)
         );        
 
+        UserMetaRepository::addMeta($user, UserMetaKeys::hasTfaOn, 'true');
+
         return [
             'errors' => $errors,
             'secret_key' => $secretKey,
@@ -99,10 +101,6 @@ class UserRepository
         $valid = $google2fa->verifyKey(
           \App\UserMeta::loadMeta($user, UserMetaKeys::SecretKey)->first()->meta_value, $secret
         );
-
-        if ($valid) {
-          UserMetaRepository::addMeta($user, UserMetaKeys::hasTfaOn, 'true');
-        }
         
         return $valid;      
     }

@@ -31,7 +31,7 @@ $api->version('v1', function ($api) {
         $api->post('refresh', 'AuthController@refreshToken');
         $api->post('verify', 'AuthController@verify');
         $api->post('keygen', 'UsersController@keygen');
-        $api->post('regenerateBackupCodes', 'UsersController@regenerateBackupCodes');
+        $api->post('codes', 'UsersController@regenerateBackupCodes');
     });
 
     $api->group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => ['enforce.tfa']], function($api) {

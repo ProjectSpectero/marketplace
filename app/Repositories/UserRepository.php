@@ -43,9 +43,9 @@ class UserRepository
      */
 
     public function generateSecretKey($user)
-    {
+    { 
         $google2fa = new Google2FA();
-        $secretKey = $google2fa->generateSecretKey();
+        $secretKey = UserMeta::loadMeta($user, UserMetaKeys::SecretKey);
         $errors = array();
         $backupCodes = new BackupCode();
         if (empty($user->backupCodes->all())) { 
@@ -56,8 +56,11 @@ class UserRepository
                 Errors::BACKUP_CODES_ALREADY_PRESENT                
             );
         }
-    
-        UserMetaRepository::addMeta($user, UserMetaKeys::SecretKey, $secretKey);
+         
+        if (empty($secretKey->first())) {
+            $secretKey = $google2fa->generateSecretKey();
+            UserMetaRepository::addMeta($user, UserMetaKeys::SecretKey, $secretKey);
+        }
         
         $google2fa_url = $google2fa->getQRCodeGoogleUrl(
             env('COMPANY_NAME'),
@@ -67,7 +70,7 @@ class UserRepository
 
         return [
             'errors' => $errors,
-            'secret_key' => $secretKey,
+            'secret_key' => $secretKey->first()->meta_value,
             'qr_code' => $google2fa_url,
             'backup_codes' => BackupCode::where('user_id', $user->id)->pluck('code')
         ];

@@ -22,10 +22,21 @@ class UserRepository
      * @param string $password
      */
 
-    public function attemptLogin($email, $password)
+    public function attemptLogin($email, $password, $secret = "")
     {
-        $user = User::where('email', '=', $email)->get();
+        $user = User::where('email', '=', $email)->first();
         $grantType = 'password';
+
+        if (!is_null($user) && UserMeta::loadMeta($user, UserMetaKeys::hasTfaOn)->first()->meta_value == 'true') {
+          if ($this->verifyUser($user, $secret)) {
+                return $this->proxy($grantType, [
+                   'username' => $email,
+                   'password' => $password
+                ]);
+            } else {
+                return response()->json('TFA_NEEDED');
+            }
+        }       
 
         if (!is_null($user)) {
             return $this->proxy($grantType, [

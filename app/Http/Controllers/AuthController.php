@@ -6,6 +6,7 @@ use App\Repositories\UserRepository;
 use App\Constants\UserMetaKeys;
 use App\Constants\Errors;
 use App\UserMeta;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Constants\Messages;
@@ -48,13 +49,20 @@ class AuthController extends ApiController
     {
         $email = $request->get('username');
         $password = $request->get('password');
+        $secret = $request->get('secret');
 
         $validator = Validator::make($request->all(), [
             'username' => 'required|email',
             'password' => 'required'
         ]);
 
-        $login = $this->userRepository->attemptLogin($email, $password);
+        $user = User::where('email', '=', $email)->first();
+
+        if (!is_null($user) && \App\UserMeta::loadMeta($user, UserMetaKeys::hasTfaOn)->first()->meta_value == 'true') {
+            $login = $this->userRepository->attemptLogin($email, $password, $secret);
+        } else {
+            $login = $this->userRepository->attemptLogin($email, $password);
+        }
 
         return $this->unifiedResponse(
             $validator->errors(),

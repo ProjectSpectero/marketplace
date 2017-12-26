@@ -5,6 +5,7 @@ namespace App\Repositories;
 
 
 use App\User;
+use App\UserMeta;
 use App\BackupCode;
 use App\Repositories\UserMetaRepository;
 use App\Constants\UserMetaKeys;
@@ -61,10 +62,8 @@ class UserRepository
         $google2fa_url = $google2fa->getQRCodeGoogleUrl(
             env('COMPANY_NAME'),
             $user->email,
-            \App\UserMeta::loadMeta($user, UserMetaKeys::SecretKey)
+            UserMeta::loadMeta($user, UserMetaKeys::SecretKey)
         );        
-
-        UserMetaRepository::addMeta($user, UserMetaKeys::hasTfaOn, 'true');
 
         return [
             'errors' => $errors,
@@ -112,8 +111,12 @@ class UserRepository
         }
         
         $valid = $google2fa->verifyKey(
-          \App\UserMeta::loadMeta($user, UserMetaKeys::SecretKey)->first()->meta_value, $secret
+          UserMeta::loadMeta($user, UserMetaKeys::SecretKey)->first()->meta_value, $secret
         );
+
+        if ($valid && UserMeta::loadMeta($user, UserMetaKeys::hasTfaOn) == 'false') {
+            UserMetaRepository::addMeta($user, UserMetaKeys::hasTfaOn, 'true');
+        }
         
         return $valid;      
     }

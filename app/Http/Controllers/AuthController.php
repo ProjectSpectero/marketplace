@@ -90,7 +90,10 @@ class AuthController extends ApiController
     {
         $refreshToken = $request->get('refresh_token');
         $errors = array();
-        if (!$refreshToken['success']) {
+
+        $response = $this->userRepository->refreshToken($refreshToken);
+
+        if (!$response['success']) {
             $errors = [
                 Errors::ERROR_ISSUING_REFRESH_TOKEN
             ];
@@ -98,7 +101,7 @@ class AuthController extends ApiController
 
         return $this->unifiedResponse(
             $errors,
-            $this->userRepository->refreshToken($refreshToken),
+            $response,
             Messages::REFRESH_TOKEN_ISSUED
         );
     }

@@ -191,7 +191,7 @@ class UserRepository
         ]);
 
         $data = json_decode($response->getBody());
-
+        
         return [
             'access_token' => $data->access_token,
             'refresh_token' => $data->refresh_token,

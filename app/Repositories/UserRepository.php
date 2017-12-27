@@ -6,9 +6,9 @@ namespace App\Repositories;
 
 use App\User;
 use App\BackupCode;
-use App\Repositories\UserMetaRepository;
 use App\Constants\UserMetaKeys;
 use App\Constants\Errors;
+use App\UserMeta;
 use GuzzleHttp\Client;
 use PragmaRX\Google2FA\Google2FA;
 
@@ -61,7 +61,7 @@ class UserRepository
         $google2fa_url = $google2fa->getQRCodeGoogleUrl(
             env('COMPANY_NAME'),
             $user->email,
-            \App\UserMeta::loadMeta($user, UserMetaKeys::SecretKey)
+            UserMeta::loadMeta($user, UserMetaKeys::SecretKey)
         );        
 
         UserMetaRepository::addMeta($user, UserMetaKeys::hasTfaOn, 'true');
@@ -112,7 +112,7 @@ class UserRepository
         }
         
         $valid = $google2fa->verifyKey(
-          \App\UserMeta::loadMeta($user, UserMetaKeys::SecretKey)->first()->meta_value, $secret
+          UserMeta::loadMeta($user, UserMetaKeys::SecretKey)->first()->meta_value, $secret
         );
         
         return $valid;      
@@ -180,7 +180,9 @@ class UserRepository
 
         $params = array_merge($oauthType, $data);
 
-        $response = $http->post(env('APP_URL') . '/oauth/token', [
+        $uri = env('APP_URL') . '/oauth/token';
+
+        $response = $http->post($uri, [
             'form_params' => $params
         ]);
 

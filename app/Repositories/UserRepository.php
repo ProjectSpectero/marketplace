@@ -5,6 +5,7 @@ namespace App\Repositories;
 
 
 use App\User;
+use App\UserMeta;
 use App\BackupCode;
 use App\Constants\UserMetaKeys;
 use App\Constants\Errors;
@@ -21,10 +22,21 @@ class UserRepository
      * @param string $password
      */
 
-    public function attemptLogin($email, $password)
+    public function attemptLogin($email, $password, $secret = "")
     {
-        $user = User::where('email', '=', $email)->get();
+        $user = User::where('email', '=', $email)->first();
         $grantType = 'password';
+
+        if (!is_null($user) && UserMeta::loadMeta($user, UserMetaKeys::hasTfaOn)->first()->meta_value == 'true') {
+          if ($this->verifyUser($user, $secret)) {
+                return $this->proxy($grantType, [
+                   'username' => $email,
+                   'password' => $password
+                ]);
+            } else {
+                return response()->json('TFA_NEEDED');
+            }
+        }       
 
         if (!is_null($user)) {
             return $this->proxy($grantType, [
@@ -42,9 +54,9 @@ class UserRepository
      */
 
     public function generateSecretKey($user)
-    {
+    { 
         $google2fa = new Google2FA();
-        $secretKey = $google2fa->generateSecretKey();
+        $secretKey = UserMeta::loadMeta($user, UserMetaKeys::SecretKey);
         $errors = array();
         $backupCodes = new BackupCode();
         if (empty($user->backupCodes->all())) { 
@@ -55,8 +67,11 @@ class UserRepository
                 Errors::BACKUP_CODES_ALREADY_PRESENT                
             );
         }
-    
-        UserMetaRepository::addMeta($user, UserMetaKeys::SecretKey, $secretKey);
+         
+        if (empty($secretKey->first())) {
+            $secretKey = $google2fa->generateSecretKey();
+            UserMetaRepository::addMeta($user, UserMetaKeys::SecretKey, $secretKey);
+        }
         
         $google2fa_url = $google2fa->getQRCodeGoogleUrl(
             env('COMPANY_NAME'),
@@ -64,11 +79,9 @@ class UserRepository
             UserMeta::loadMeta($user, UserMetaKeys::SecretKey)
         );        
 
-        UserMetaRepository::addMeta($user, UserMetaKeys::hasTfaOn, 'true');
-
         return [
             'errors' => $errors,
-            'secret_key' => $secretKey,
+            'secret_key' => $secretKey->first()->meta_value,
             'qr_code' => $google2fa_url,
             'backup_codes' => BackupCode::where('user_id', $user->id)->pluck('code')
         ];
@@ -114,6 +127,10 @@ class UserRepository
         $valid = $google2fa->verifyKey(
           UserMeta::loadMeta($user, UserMetaKeys::SecretKey)->first()->meta_value, $secret
         );
+
+        if ($valid && UserMeta::loadMeta($user, UserMetaKeys::hasTfaOn) == 'false') {
+            UserMetaRepository::addMeta($user, UserMetaKeys::hasTfaOn, 'true');
+        }
         
         return $valid;      
     }
@@ -187,7 +204,7 @@ class UserRepository
         ]);
 
         $data = json_decode($response->getBody());
-
+        
         return [
             'access_token' => $data->access_token,
             'refresh_token' => $data->refresh_token,

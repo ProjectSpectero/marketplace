@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
 use App\Libraries\Utility;
 use App\Models\Opaque\OAuthResponse;
@@ -69,7 +70,7 @@ class AuthController extends V1Controller
 
         }
         else
-            return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], null, 403);
+            return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], null, ResponseType::FORBIDDEN);
     }
 
 
@@ -83,7 +84,7 @@ class AuthController extends V1Controller
         if ($oauthResponse->success)
             return $this->respond($oauthResponse->toArray(), [], Messages::OAUTH_TOKEN_REFRESHED);
 
-        return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], null, 403);
+        return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], null, ResponseType::FORBIDDEN);
     }
 
     /**

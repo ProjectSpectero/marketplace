@@ -67,7 +67,7 @@ class UserController extends CRUDController
         foreach ($input as $key => $value)
             UserMeta::addOrUpdateMeta($user, $key, $value);
 
-        return $this->respond($user->toArray(), [], Messages::USER_CREATED, 201);
+        return $this->respond($user->toArray(), [], Messages::USER_CREATED, ResponseType::CREATED);
     }
 
    /**

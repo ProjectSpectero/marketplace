@@ -15,27 +15,33 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
+/** @var Dingo\Api\Routing\Router $api */
 $api = app('Dingo\Api\Routing\Router');
 
-$api->version('v1', function ($api) {
-    $api->group(['prefix' => 'oauth'], function ($api) {
-        $api->post('token', '\Laravel\Passport\Http\Controllers\AccessTokenController@issueToken');
-    });
+$api->version('v1', function ($api)
+{
+    /** @var Dingo\Api\Routing\Router $api */
 
-    $api->group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function ($api) {
+    $api->group(['namespace' => 'App\Http\Controllers'], function ($api)
+    {
+        // Group without authg
         $api->post('auth', 'AuthController@auth');
-        $api->post('register', 'AuthController@register');
+        $api->post('auth/refresh', 'AuthController@refreshToken');
+        $api->post('register', 'UserController@doCreate');
     });
 
-    $api->group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => ['auth:api', 'cors']], function ($api) {
-        $api->post('refresh', 'AuthController@refreshToken');
-        $api->post('verify', 'AuthController@verify');
-        $api->post('keygen', 'UsersController@keygen');
-        $api->post('codes', 'UsersController@regenerateBackupCodes');
+    $api->group(['namespace' => 'App\Http\Controllers', 'middleware' => ['auth:api', 'cors']], function ($api)
+    {
+        $api->post('verify', 'TwoFactorController@verify');
+        $api->post('keygen', 'UserController@keygen');
+        $api->post('codes', 'UserController@regenerateBackupCodes');
     });
 
-    $api->group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => ['enforce.tfa']], function($api) {
-      $api->get('test', function () {
+
+    $api->group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => ['enforce.tfa']], function($api)
+    {
+      $api->get('test', function ()
+      {
         return 'Success';
       });
     });

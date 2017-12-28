@@ -5,16 +5,59 @@ namespace App\Http\Controllers;
 use App\Constants\Messages;
 use App\User;
 use App\Repositories\UserRepository;
+use App\UserMeta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class UsersController extends ApiController
+class UserController extends V1Controller
 {
     private $userRepository;
 
     public function __construct(UserRepository $userRepository)
     {
         $this->userRepository = $userRepository;
+    }
+
+    public function doCreate(User $user)
+    {
+        dd($user);
+    }
+
+    public function doEdit(User $user)
+    {
+        // TODO: Implement doEdit() method.
+    }
+
+    public function doDelete(User $user)
+    {
+        // TODO: Implement doDelete() method.
+    }
+
+    public function register(Request $request)
+    {
+        $this->validate($request, [
+            'name' => 'required',
+            'email' => 'required|email',
+            'password' => 'required',
+            'post_code' => 'sometimes|required|integer',
+            'phone_no' => 'sometimes|required'
+        ]);
+
+        $input = $request->all();
+        $user = User::create([
+            'name' => $input['name'],
+            'email' => $input['email']
+        ]);
+        $user->password = \Hash::make($input['password']);
+        $user->saveOrFail();
+
+        // Remove the ones that go into the original model
+        unset($input['name'], $input['email'], $input['password']);
+
+        foreach ($input as $key => $value)
+            UserMeta::addOrUpdateMeta($user, $key, $value);
+
+        return $this->respond($user, null, Messages::USER_CREATED, 201);
     }
 
    /**

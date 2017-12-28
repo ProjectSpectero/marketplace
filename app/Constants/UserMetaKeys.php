@@ -7,8 +7,8 @@ class UserMetaKeys {
     const City = 'city';
     const PostCode = 'post_code';
     const PhoneNumber = 'phone_no';
-    const SecretKey = 'secret';
-    const hasTfaOn = 'has_tfa_on';
+    const TwoFactorSecretKey = 'tfa.secret';
+    const TwoFactorEnabled = 'tfa.enabled';
 
     static function getConstants()
     {

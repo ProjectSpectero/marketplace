@@ -2,117 +2,132 @@
 
 namespace App\Http\Controllers;
 
-use App\Repositories\UserRepository;
 use App\Constants\UserMetaKeys;
+use App\Libraries\Utility;
+use App\Models\Opaque\OAuthResponse;
+use App\Models\Opaque\TwoFactorResponse;
+use App\PartialAuth;
 use App\Constants\Errors;
-use App\UserMeta;
 use App\User;
+use App\UserMeta;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use App\Constants\Messages;
-use Illuminate\Support\Facades\Auth;
 
-class AuthController extends ApiController
+class AuthController extends V1Controller
 {
-    private $userRepository;
-
-    /**
-     * AuthController constructor.
-     * @param $userRepository
-     */
-    public function __construct(UserRepository $userRepository)
-    {
-        $this->userRepository = $userRepository;
-    }
-
-    public function register(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'email' => 'required|email',
-            'password' => 'required',
-            'c_password' => 'required|same:password',
-            'post_code' => 'sometimes|required|integer',
-            'phone_no' => 'sometimes|required'
-        ]);
-
-        $register = $validator->fails() ? 'Error creating user' : $this->userRepository->userCreate($request->all());
-
-        return $this->unifiedResponse(
-            $validator->errors(),
-            $register, 
-            Messages::USER_CREATED
-        );    
-    }
 
     public function auth(Request $request)
     {
-        $email = $request->get('username');
-        $password = $request->get('password');
-        $secret = $request->get('secret');
-
-        $validator = Validator::make($request->all(), [
+        $this->validate($request, [
             'username' => 'required|email',
             'password' => 'required'
         ]);
 
-        $user = User::where('email', '=', $email)->first();
+        $email = $request->get('username');
+        $password = $request->get('password');
 
-        if (!is_null($user) && \App\UserMeta::loadMeta($user, UserMetaKeys::hasTfaOn)->first()->meta_value == 'true') {
-            $login = $this->userRepository->attemptLogin($email, $password, $secret);
-        } else {
-            $login = $this->userRepository->attemptLogin($email, $password);
+        $oauthResponse = $this->proxy("password", [
+            'username' => $email,
+            'password' => $password
+        ]);
+
+        if ($oauthResponse->success)
+        {
+            // FirstOrFail not needed, oAuth succeeded, this user exists.
+            $user = User::where('email', $email)->first();
+            try
+            {
+                // Simple existence check, we do not care about the values. That is not our responsibility.
+                UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorEnabled])->firstOrFail();
+                UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorSecretKey])->firstOrFail();
+            }
+            catch (ModelNotFoundException $silenced)
+            {
+                // User either doesn't have two factor turned on, or user's secret key somehow (!) doesn't exist
+                // Return response as normal
+                return $this->respond($oauthResponse->toArray(), [], Messages::OAUTH_TOKEN_ISSUED);
+            }
+            // At this stage, user has Two Factor auth turned on. Let us create a partial auth entry
+            $partialAuthToken = Utility::getRandomString();
+
+            $partialAuth = new PartialAuth();
+            $partialAuth->user_id = $user->id;
+            $partialAuth->data = $oauthResponse;
+            $partialAuth->two_factor_token = $partialAuthToken;
+
+            // Exception deliberately not handled, it'll flow up to the error handler if something doesn't work to create a OBJECT_PERSIST_ERROR
+            $partialAuth->saveOrFail();
+
+            $twoFactorResponse = new TwoFactorResponse();
+            $twoFactorResponse->twoFactorToken = $partialAuthToken;
+            $twoFactorResponse->userId = $user->id;
+
+            return $this->respond($twoFactorResponse->toArray(), [], Messages::TWO_FACTOR_VERIFICATION_NEEDED);
+
         }
-
-        return $this->unifiedResponse(
-            $validator->errors(),
-            $login,
-            Messages::OAUTH_TOKEN_ISSUED
-        );
-
+        else
+            return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], null, 403);
     }
 
-   
-    public function verify(Request $request)
-    {
-        $secret = $request->get('secret');
-
-        $user = Auth::guard('api')->user();
-        $errors = array();
-        if (empty($secret)) {
-            $errors = [
-                Errors::SECRET_IS_REQUIRED
-            ];
-        }
-
-        $verifyUser = $this->userRepository->verifyUser($user, $secret);
-
-        return $this->unifiedResponse(
-            $errors,
-            $verifyUser,
-            Messages::VERIY_SECRET_KEY
-        );
-    }
 
     public function refreshToken(Request $request)
     {
         $refreshToken = $request->get('refresh_token');
-        $errors = array();
+        $oauthResponse = $this->proxy('refresh_token', [
+                'refresh_token' => $refreshToken
+            ]);
 
-        $response = $this->userRepository->refreshToken($refreshToken);
+        if ($oauthResponse->success)
+            return $this->respond($oauthResponse->toArray(), [], Messages::OAUTH_TOKEN_REFRESHED);
 
-        if (!$response['success']) {
-            $errors = [
-                Errors::ERROR_ISSUING_REFRESH_TOKEN
-            ];
-        }
-
-        return $this->unifiedResponse(
-            $errors,
-            $response,
-            Messages::REFRESH_TOKEN_ISSUED
-        );
+        return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], null, 403);
     }
 
+    /**
+     * Proxy a request to the OAuth server
+     *
+     * @param string $grantType - what type of grant should be proxied
+     * @param array $data - the data to send to the server
+     */
 
+    private function proxy($grantType, array $data = []) : OAuthResponse
+    {
+        $http = new Client();
+        $ret = new OAuthResponse();
+
+        $oauthType = array(
+            'grant_type' => $grantType,
+            'client_id' => env('PASSWORD_CLIENT_ID'),
+            'client_secret' => env('PASSWORD_CLIENT_SECRET')
+        );
+
+        $params = array_merge($oauthType, $data);
+
+        $uri = sprintf("%s/%s", env('APP_URL'), 'oauth/token');
+
+        try
+        {
+            $response = $http->post($uri, [
+                'form_params' => $params
+            ]);
+            if ($response->getStatusCode() == 200)
+            {
+                $data = json_decode($response->getBody());
+                $ret->accessToken = $data->access_token;
+                $ret->refreshToken = $data->refresh_token;
+                $ret->expiry = $data->expires_in;
+                $ret->success = true;
+            }
+        }
+        catch (RequestException $requestException)
+        {
+            // API gave something other than 200, assume fail.
+            $ret->success = false;
+        }
+
+        return $ret;
+    }
 }

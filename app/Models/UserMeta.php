@@ -32,4 +32,20 @@ class UserMeta extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public static function addOrUpdateMeta ($user, $key, $value)
+    {
+        if (!empty(static::loadMeta($user, $key)->all())) {
+            $userMeta = UserMeta::loadMeta($user, $key)->first();
+            $userMeta->meta_value = $value;
+            $userMeta->save();
+            return;
+        }
+
+        static::create([
+            'user_id' => $user->id,
+            'meta_key' => $key,
+            'meta_value' => $value
+        ]);
+    }
 }

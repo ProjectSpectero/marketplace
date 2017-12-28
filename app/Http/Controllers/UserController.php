@@ -2,38 +2,43 @@
 
 namespace App\Http\Controllers;
 
-use App\Constants\Messages;
+use App\Constants\Errors;
+use App\Constants\ResponseType;
+use App\Errors\NotSupportedException;
+use App\Errors\UserFriendlyException;
 use App\User;
-use App\Repositories\UserRepository;
 use App\UserMeta;
+use App\Constants\Messages;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
-class UserController extends V1Controller
+class UserController extends CRUDController
 {
-    private $userRepository;
-
-    public function __construct(UserRepository $userRepository)
+    public function doEdit(Request $user) : JsonResponse
     {
-        $this->userRepository = $userRepository;
-    }
-
-    public function doCreate(User $user)
-    {
-        dd($user);
-    }
-
-    public function doEdit(User $user)
-    {
+        throw new NotSupportedException();
         // TODO: Implement doEdit() method.
     }
 
-    public function doDelete(User $user)
+    public function doDelete(int $id) : JsonResponse
     {
+        throw new NotSupportedException();
         // TODO: Implement doDelete() method.
     }
 
-    public function register(Request $request)
+    public function viewOne (int $id) : JsonResponse
+    {
+        throw new NotSupportedException();
+    }
+
+    public function viewAll () : JsonResponse
+    {
+        throw new NotSupportedException();
+    }
+
+    public function doCreate(Request $request) : JsonResponse
     {
         $this->validate($request, [
             'name' => 'required',
@@ -44,11 +49,16 @@ class UserController extends V1Controller
         ]);
 
         $input = $request->all();
+
+        if (User::where('email', $input['email'])->exists())
+            throw new UserFriendlyException(Errors::RESOURCE_ALREADY_EXISTS, ResponseType::CONFLICT);
+
+        /** @var User $user */
         $user = User::create([
             'name' => $input['name'],
             'email' => $input['email']
         ]);
-        $user->password = \Hash::make($input['password']);
+        $user->password = Hash::make($input['password']);
         $user->saveOrFail();
 
         // Remove the ones that go into the original model
@@ -57,7 +67,7 @@ class UserController extends V1Controller
         foreach ($input as $key => $value)
             UserMeta::addOrUpdateMeta($user, $key, $value);
 
-        return $this->respond($user, null, Messages::USER_CREATED, 201);
+        return $this->respond($user->toArray(), [], Messages::USER_CREATED, 201);
     }
 
    /**

@@ -9,8 +9,8 @@ use App\UserMeta;
 use App\BackupCode;
 use App\Constants\UserMetaKeys;
 use App\Constants\Errors;
-use App\UserMeta;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Hash;
 use PragmaRX\Google2FA\Google2FA;
 
 class UserRepository
@@ -155,7 +155,7 @@ class UserRepository
     public function userCreate(array $input)
     {
         if (isset($input['password'])) {
-            $input['password'] = \Illuminate\Support\Facades\Hash::make($input['password']);
+            $input['password'] = Hash::make($input['password']);
         }
 
         $user = User::create([

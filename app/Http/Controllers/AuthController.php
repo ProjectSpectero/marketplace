@@ -67,7 +67,6 @@ class AuthController extends V1Controller
             $twoFactorResponse->userId = $user->id;
 
             return $this->respond($twoFactorResponse->toArray(), [], Messages::TWO_FACTOR_VERIFICATION_NEEDED);
-
         }
         else
             return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], null, ResponseType::FORBIDDEN);
@@ -94,7 +93,7 @@ class AuthController extends V1Controller
      * @param array $data - the data to send to the server
      */
 
-    private function proxy($grantType, array $data = []) : OAuthResponse
+    private function proxy(String $grantType, array $data = []) : OAuthResponse
     {
         $http = new Client();
         $ret = new OAuthResponse();

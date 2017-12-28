@@ -12,7 +12,8 @@
         "barryvdh/laravel-cors": "^0.10.0",
         "dingo/api": "2.0.0-alpha1",
         "guzzlehttp/guzzle": "~6.0",
-        "pragmarx/google2fa": "^2.0"
+        "pragmarx/google2fa": "^2.0",
+        "spatie/laravel-permission": "^2.7"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

@@ -92,6 +92,9 @@ $app->configure('cors');
     Dusterio\LumenPassport\LumenPassport::routes($app);
     $app->register(Barryvdh\Cors\ServiceProvider::class);
     $app->register(Dingo\Api\Provider\LumenServiceProvider::class);
+    $app->register(YaroslavMolchan\Rbac\RbacServiceProvider::class);
+    $app->register(Spatie\Permission\PermissionServiceProvider::class);
+    $app->configure('permission');
 
 /*
 |--------------------------------------------------------------------------

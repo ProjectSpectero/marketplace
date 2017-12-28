@@ -1,11 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Database\Eloquent\Model as Model;
+use Illuminate\Http\Request as Request;
 
 abstract class CRUDController extends V1Controller
 {
-    abstract function doCreate ($model);
-    abstract function doEdit (Model $model);
-    abstract function doDelete (Model $model);
+    abstract function doCreate (Request $request);
+    abstract function doEdit (Request $request);
+    abstract function doDelete (Request $request);
+    abstract function viewOne (int $id);
+    abstract function viewAll ();
 }

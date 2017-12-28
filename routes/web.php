@@ -27,7 +27,7 @@ $api->version('v1', function ($api)
         // Group without authg
         $api->post('auth', 'AuthController@auth');
         $api->post('auth/refresh', 'AuthController@refreshToken');
-        $api->post('register', 'UserController@doCreate');
+        $api->post('user', 'UserController@doCreate');
     });
 
     $api->group(['namespace' => 'App\Http\Controllers', 'middleware' => ['auth:api', 'cors']], function ($api)

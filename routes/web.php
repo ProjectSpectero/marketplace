@@ -10,39 +10,33 @@
 | and give it the Closure to call when that URI is requested.
 |
 */
-
-$router->get('/', function () use ($router) {
-    return $router->app->version();
-});
-
-/** @var Dingo\Api\Routing\Router $api */
-$api = app('Dingo\Api\Routing\Router');
-
-$api->version('v1', function ($api)
+/** @var \Illuminate\Routing\Router $router */
+$router->group(['prefix' => 'v1'], function($api)
 {
-    /** @var Dingo\Api\Routing\Router $api */
-
-    $api->group(['namespace' => 'App\Http\Controllers'], function ($api)
+    /** @var \Illuminate\Routing\Router $api */
+    $api->group(['as' => 'NoAuthRequired'], function ($api)
     {
+        /** @var \Illuminate\Routing\Router $api */
         // Group without authg
         $api->post('auth', 'AuthController@auth');
         $api->post('auth/refresh', 'AuthController@refreshToken');
         $api->post('user', 'UserController@doCreate');
     });
 
-    $api->group(['namespace' => 'App\Http\Controllers', 'middleware' => ['auth:api', 'cors']], function ($api)
+    $api->group(['as' => 'AuthRequired', 'middleware' => ['auth:api', 'cors']], function ($api)
     {
+        /** @var \Illuminate\Routing\Router $api */
         $api->post('verify', 'TwoFactorController@verify');
         $api->post('keygen', 'UserController@keygen');
         $api->post('codes', 'UserController@regenerateBackupCodes');
     });
 
-
-    $api->group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => ['enforce.tfa']], function($api)
+    $api->group(['as' => 'DebugTest', 'middleware' => ['enforce.tfa']], function($api)
     {
-      $api->get('test', function ()
-      {
-        return 'Success';
-      });
+        /** @var \Illuminate\Routing\Router $api */
+        $api->get('test', function ()
+        {
+            return 'Success';
+        });
     });
 });

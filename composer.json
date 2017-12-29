@@ -10,7 +10,6 @@
         "flipbox/lumen-generator": "^5.4",
         "dusterio/lumen-passport": "^0.2.4",
         "barryvdh/laravel-cors": "^0.10.0",
-        "dingo/api": "2.0.0-alpha1",
         "guzzlehttp/guzzle": "~6.0",
         "pragmarx/google2fa": "^2.0",
         "spatie/laravel-permission": "^2.7"

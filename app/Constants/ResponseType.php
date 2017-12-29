@@ -11,5 +11,6 @@ class ResponseType
     const FORBIDDEN = 403;
     const NOT_FOUND = 404;
     const CONFLICT = 409;
+    const UNPROCESSABLE_ENTITY = 422;
     const INTERNAL_SERVER_ERROR = 500;
 }

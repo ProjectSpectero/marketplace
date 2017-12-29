@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends CRUDController
 {
-    public function doEdit(Request $user) : JsonResponse
+    public function doEdit(Request $user, int $id) : JsonResponse
     {
         throw new NotSupportedException();
         // TODO: Implement doEdit() method.

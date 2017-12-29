@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Libraries\Utility;
 use Illuminate\Http\JsonResponse;
 
 class V1Controller extends Controller
@@ -45,13 +46,7 @@ class V1Controller extends Controller
 
     public function respond (Array $data = null, Array $errors = [], String $message = null, int $statusCode = 200, Array $headers = []) : JsonResponse
     {
-        return response()
-            ->json([
-                'errors' => $errors,
-                'result' => $data,
-                'message' => $message,
-                'version' => $this->version
-            ], $statusCode, $headers);
+        return Utility::generateResponse($data, $errors, $message, $this->version, $statusCode, $headers);
     }
 
 }

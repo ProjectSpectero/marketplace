@@ -18,4 +18,9 @@ class Environment
     {
         return strcasecmp($a, $b) == 0;
     }
+
+    public static function isProduction ()
+    {
+        return static::compare(app()->environment(), "production");
+    }
 }

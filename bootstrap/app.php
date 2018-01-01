@@ -68,6 +68,8 @@ $app->configure('cors');
 
  $app->routeMiddleware([
      'auth' => App\Http\Middleware\Authenticate::class,
+     'permission' => Spatie\Permission\Middlewares\PermissionMiddleware::class,
+     'role'       => Spatie\Permission\Middlewares\RoleMiddleware::class,
      'cors' => \Barryvdh\Cors\HandleCors::class,
      'enforce.tfa' => App\Http\Middleware\EnforceTwoFactorVerification::class,
  ]);
@@ -91,8 +93,9 @@ $app->configure('cors');
     $app->register(Dusterio\LumenPassport\PassportServiceProvider::class);
     Dusterio\LumenPassport\LumenPassport::routes($app);
     $app->register(Barryvdh\Cors\ServiceProvider::class);
-    $app->register(Spatie\Permission\PermissionServiceProvider::class);
+
     $app->configure('permission');
+    $app->register(Spatie\Permission\PermissionServiceProvider::class);
 
 /*
 |--------------------------------------------------------------------------

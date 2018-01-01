@@ -10,13 +10,13 @@
 | and give it the Closure to call when that URI is requested.
 |
 */
-/** @var \Illuminate\Routing\Router $router */
-$router->group(['prefix' => 'v1'], function($api)
+/** @var \Laravel\Lumen\Routing\Router $router */
+$router->group(['prefix' => 'v1', "namespace" => "V1" ], function($api)
 {
-    /** @var \Illuminate\Routing\Router $api */
+    /** @var \Laravel\Lumen\Routing\Router $api */
     $api->group(['as' => 'NoAuthRequired'], function ($api)
     {
-        /** @var \Illuminate\Routing\Router $api */
+        /** @var \Laravel\Lumen\Routing\Router $api */
         // Group without authg
         $api->post('auth', 'AuthController@auth');
         $api->post('auth/refresh', 'AuthController@refreshToken');
@@ -25,18 +25,19 @@ $router->group(['prefix' => 'v1'], function($api)
 
     $api->group(['as' => 'AuthRequired', 'middleware' => ['auth:api', 'cors']], function ($api)
     {
-        /** @var \Illuminate\Routing\Router $api */
+        /** @var \Laravel\Lumen\Routing\Router $api */
         $api->post('verify', 'TwoFactorController@verify');
         $api->post('keygen', 'UserController@keygen');
         $api->post('codes', 'UserController@regenerateBackupCodes');
     });
 
-    $api->group(['as' => 'DebugTest', 'middleware' => ['enforce.tfa']], function($api)
+    if (! \App\Constants\Environment::isProduction())
     {
-        /** @var \Illuminate\Routing\Router $api */
-        $api->get('test', function ()
+        $api->group(['prefix' => 'debug' ], function($api)
         {
-            return 'Success';
+            /** @var \Laravel\Lumen\Routing\Router $api */
+            $api->post("/cache", "DebugController@storeAction");
+            $api->get("/cache", "DebugController@retrieveAction");
         });
-    });
+    }
 });

@@ -15,6 +15,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
 class Handler extends ExceptionHandler
 {
@@ -90,6 +91,9 @@ class Handler extends ExceptionHandler
                 break;
             case $e instanceof ValidationException:
                 return Utility::generateResponse(null, [ Errors::VALIDATION_FAILED => $e->errors() ], Errors::REQUEST_FAILED, $version, ResponseType::UNPROCESSABLE_ENTITY);
+                break;
+            case $e instanceof MethodNotAllowedHttpException:
+                return Utility::generateResponse(null, [ Errors::METHOD_NOT_ALLOWED => "" ], Errors::REQUEST_FAILED, $version, ResponseType::METHOD_NOT_ALLOWED);
                 break;
         }
 

@@ -48,4 +48,11 @@ class UserMeta extends Model
             'meta_value' => $value
         ]);
     }
+
+    public static function deleteMeta (User $user, String $key)
+    {
+        $userMeta = UserMeta::loadMeta($user, $key)->first();
+        if (! empty($userMeta))
+            $userMeta->delete();
+    }
 }

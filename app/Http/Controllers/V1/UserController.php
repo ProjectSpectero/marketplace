@@ -11,34 +11,16 @@ use App\UserMeta;
 use App\Constants\Messages;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends CRUDController
 {
-    public function doEdit(Request $user, int $id) : JsonResponse
-    {
-        throw new NotSupportedException();
-        // TODO: Implement doEdit() method.
-    }
-
-    public function doDelete(int $id) : JsonResponse
-    {
-        throw new NotSupportedException();
-        // TODO: Implement doDelete() method.
-    }
-
-    public function viewOne (int $id) : JsonResponse
+    public function index() : JsonResponse
     {
         throw new NotSupportedException();
     }
 
-    public function viewAll () : JsonResponse
-    {
-        throw new NotSupportedException();
-    }
-
-    public function doCreate(Request $request) : JsonResponse
+    public function store(Request $request) : JsonResponse
     {
         $this->validate($request, [
             'name' => 'required',
@@ -70,44 +52,19 @@ class UserController extends CRUDController
         return $this->respond($user->toArray(), [], Messages::USER_CREATED, ResponseType::CREATED);
     }
 
-   /**
-     * When a user enables TFA the keygen method
-     * is called to generate a secret key
-     */
-
-    public function keygen(Request $request)
+    public function show(int $id): JsonResponse
     {
-        $user = Auth::guard('api')->user();       
-        
-        $secretKey = $this->userRepository->generateSecretKey($user);
-
-        if (!is_null($secretKey['errors'])) {
-            $errors = $secretKey['errors'];
-            unset($secretKey['errors']);
-        } else {
-            $errors = array();
-        }
-         
-        return $this->unifiedResponse(
-            $errors,
-            $secretKey,
-            Messages::SECRET_KEY_GENERATED
-        );
+        throw new NotSupportedException();
     }
 
-    public function regenerateBackupCodes(Request $request)
+    public function update(Request $request, int $id): JsonResponse
     {
-        $user = Auth::guard('api')->user();
-        // TODO: Error handling
-        $errors = array();
+        throw new NotSupportedException();
+    }
 
-        $regenCodes = $this->userRepository->regenKeys($user);
 
-        return $this->unifiedResponse(
-            $errors,
-            $regenCodes,
-            Messages::BACKUP_CODES_REGENERATED
-        );        
-    } 
-
+    public function destroy(int $id): JsonResponse
+    {
+        throw new NotSupportedException();
+    }
 }

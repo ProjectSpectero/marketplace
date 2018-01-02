@@ -6,7 +6,6 @@ namespace App\Libraries;
 
 use Illuminate\Http\JsonResponse;
 use Laravel\Lumen\Routing\Router;
-use PhpParser\Node\Expr\Array_;
 
 class Utility
 {
@@ -38,11 +37,13 @@ class Utility
     private static function generateRouteOptions (String $controller, String $action, Array $middlewares) : array
     {
         $options = [ "uses" => $controller . "@" . $action ];
-        if (count($middlewares) > 1)
+        if (count($middlewares) != 0)
         {
             $options["middleware"] = $middlewares;
         }
 
         return $options;
     }
+
+
 }

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -18,5 +19,10 @@ class AppServiceProvider extends ServiceProvider
         {
             $this->app->register(IdeHelperServiceProvider::class);
         }
+    }
+
+    public function boot ()
+    {
+        Validator::extend("country", "App\Validators\CountryValidator@validate");
     }
 }

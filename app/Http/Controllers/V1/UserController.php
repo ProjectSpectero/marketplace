@@ -5,7 +5,6 @@ namespace App\Http\Controllers\V1;
 use App\Constants\Errors;
 use App\Constants\ResponseType;
 use App\Errors\NotSupportedException;
-use App\Errors\UserFriendlyException;
 use App\User;
 use App\UserMeta;
 use App\Constants\Messages;
@@ -22,18 +21,21 @@ class UserController extends CRUDController
 
     public function store(Request $request) : JsonResponse
     {
-        $this->validate($request, [
+        $rules = [
             'name' => 'required',
-            'email' => 'required|email',
+            'email' => 'required|email|unique:users',
             'password' => 'required',
-            'post_code' => 'sometimes|required|integer',
+            'address_line_1' => 'sometimes|required',
+            'address_line_2' => 'sometimes|required',
+            'city' => 'sometimes|required',
+            'state' => 'sometimes|required',
+            'post_code' => 'sometimes|required',
+            'country' => 'sometimes|country',
             'phone_no' => 'sometimes|required'
-        ]);
+        ];
 
-        $input = $request->all();
-
-        if (User::where('email', $input['email'])->exists())
-            throw new UserFriendlyException(Errors::RESOURCE_ALREADY_EXISTS, ResponseType::CONFLICT);
+        $this->validate($request, $rules);
+        $input = $this->cherryPick($request, $rules);
 
         /** @var User $user */
         $user = User::create([

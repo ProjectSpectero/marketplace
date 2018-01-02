@@ -97,7 +97,7 @@ class TwoFactorController extends V1Controller
         if ($authenticationSucceeded)
             $this->respond(\json_decode($partialAuth->data, true), [], Messages::OAUTH_TOKEN_ISSUED);
 
-        return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], null, ResponseType::FORBIDDEN);
+        return $this->respond(null, [ Errors::AUTHENTICATION_FAILED => "" ], null, ResponseType::FORBIDDEN);
     }
 
 

@@ -7,6 +7,7 @@ use App\Constants\Errors;
 use App\Constants\Messages;
 use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
+use App\Libraries\Utility;
 use App\Models\Opaque\TwoFactorManagementResponse;
 use App\PartialAuth;
 use App\User;
@@ -122,7 +123,7 @@ class TwoFactorController extends V1Controller
                     $backupCode->delete();
             }
             // Let us generate the default amount of backup codes for the user
-            $generatedBackupCodes = $this->generateBackupCodes(env("DEFAULT_BACKUP_CODES_COUNT", 5), $user);
+            $generatedBackupCodes = $this->generateBackupCodes($user, env("DEFAULT_BACKUP_CODES_COUNT", 5));
 
             // Let us generate and persist the user's secret key.
             $secretKey = $twoFactorService->generateSecretKey();
@@ -170,6 +171,21 @@ class TwoFactorController extends V1Controller
             // If these two don't exist, that means TFA was NOT turned on.
             return $this->respond(null, [ Errors::TWO_FACTOR_NOT_ENABLED => "" ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
         }
+    }
+
+    private function generateBackupCodes(User $user, int $count) : array
+    {
+        $codes = [];
+        for ($i = 0; $i < $count; $i++)
+        {
+            $currentCode = Utility::getRandomString();
+            BackupCode::create([
+                'user_id' => $user->id,
+                'code' => $currentCode
+            ]);
+            $codes[] = $currentCode;
+        }
+        return $codes;
     }
 
     /**

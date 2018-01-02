@@ -51,7 +51,7 @@ class UserMeta extends Model
 
     public static function deleteMeta (User $user, String $key)
     {
-        $userMeta = UserMeta::loadMeta($user, $key)->first();
+        $userMeta = static::loadMeta($user, $key)->first();
         if (! empty($userMeta))
             $userMeta->delete();
     }

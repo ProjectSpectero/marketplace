@@ -51,12 +51,13 @@ class AuthController extends V1Controller
                 // Return response as normal
                 return $this->respond($oauthResponse->toArray(), [], Messages::OAUTH_TOKEN_ISSUED);
             }
+
             // At this stage, user has Two Factor auth turned on. Let us create a partial auth entry
             $partialAuthToken = Utility::getRandomString();
 
             $partialAuth = new PartialAuth();
             $partialAuth->user_id = $user->id;
-            $partialAuth->data = $oauthResponse;
+            $partialAuth->data = $oauthResponse->toJson();
             $partialAuth->two_factor_token = $partialAuthToken;
 
             // Exception deliberately not handled, it'll flow up to the error handler if something doesn't work to create a OBJECT_PERSIST_ERROR

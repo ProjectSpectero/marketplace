@@ -4,6 +4,8 @@
 namespace App\Http\Controllers\V1;
 
 
+use App\UserMeta;
+
 class TwoFactorController extends V1Controller
 {
     /**

@@ -8,6 +8,11 @@ class OpaqueBase implements OpaqueInterface
 {
     public function toArray(): array
     {
-        return \json_decode(\json_encode($this), true);
+        return \json_decode($this->toJson(), true);
+    }
+
+    public function toJson(): String
+    {
+        return \json_encode($this);
     }
 }

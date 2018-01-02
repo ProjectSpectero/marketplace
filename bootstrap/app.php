@@ -71,7 +71,7 @@ $app->configure('cors');
      'permission' => Spatie\Permission\Middlewares\PermissionMiddleware::class,
      'role'       => Spatie\Permission\Middlewares\RoleMiddleware::class,
      'cors' => \Barryvdh\Cors\HandleCors::class,
-     'enforce.tfa' => App\Http\Middleware\EnforceTwoFactorVerification::class,
+     'enforce-tfa' => App\Http\Middleware\EnforceTwoFactorVerification::class,
  ]);
 
 /*

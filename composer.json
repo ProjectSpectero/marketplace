@@ -4,7 +4,7 @@
     "license": "Restrictive",
     "type": "project",
     "require": {
-        "php": ">=7.0",
+        "php": ">=7.2",
         "laravel/lumen-framework": "5.5.*",
         "vlucas/phpdotenv": "~2.2",
         "flipbox/lumen-generator": "^5.4",

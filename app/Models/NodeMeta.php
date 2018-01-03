@@ -18,9 +18,8 @@ class NodeMeta extends Model
 
     public function scopeLoadMeta($query, $node, $key = '')
     {
-        if (empty($key)) {
+        if (empty($key))
             return $node->nodeMeta;
-        }
 
         return $query->where(['node_id' => $node->id, 'meta_key' => $key])->get();
     }
@@ -28,9 +27,8 @@ class NodeMeta extends Model
     public function getValue()
     {
         $value = $this->meta_value;
-        if (in_array($this->value_type, $this->dataTypes)) {
+        if (in_array($this->value_type, $this->dataTypes))
             settype($value, $this->value_type);
-        }
 
         return $value;
     }
@@ -40,7 +38,10 @@ class NodeMeta extends Model
         $type = gettype($value);
         $type = in_array($type, self::$dataTypes) ? $type : 'string';
 
-        if (!empty(static::loadMeta($node, $key)->all())) {
+        if (!empty(static::loadMeta($node, $key)->all()))
+        {
+
+            /** @var NodeMeta $nodeMeta */
             $nodeMeta = NodeMeta::loadMeta($node, $key)->first();
             $nodeMeta->meta_value = $value;
             $nodeMeta->value_type = $type;

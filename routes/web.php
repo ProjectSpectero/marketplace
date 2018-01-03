@@ -45,8 +45,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->group(['prefix' => 'debug' ], function($api)
         {
             /** @var \Laravel\Lumen\Routing\Router $api */
-            $api->post('/cache', 'DebugController@storeAction');
-            $api->get('/cache', 'DebugController@retrieveAction');
+            $api->get('/test/multifactor-middleware', 'DebugController@multiFactorTest');
         });
     }
 });

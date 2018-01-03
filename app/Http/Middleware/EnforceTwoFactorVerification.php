@@ -25,9 +25,15 @@ class EnforceTwoFactorVerification
     {
         // Get the context values required
         $user = $request->user();
-        $token = $request->get("generatedToken");
 
-        if ($user == null || empty($token))
+        if ($request->has("generatedToken"))
+            $token = $request->get("generatedToken");
+        elseif ($request->hasHeader("X-MULTIFACTOR-TOKEN"))
+            $token = $request->headers("X-MULTIFACTOR-TOKEN");
+        else
+            $token = null;
+
+        if ($user == null || $token == null)
         {
             // BANISH HIM!
             return Utility::generateResponse(null, [ Errors::MULTI_FACTOR_PARAMETERS_MISSING => "" ], Errors::REQUEST_FAILED, $this->version, ResponseType::UNPROCESSABLE_ENTITY);

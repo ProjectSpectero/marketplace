@@ -29,10 +29,14 @@ class MultifactorVerifier
 
         try
         {
+            $multifactorEnabled = UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorEnabled])->firstOrFail();
             $userSecret = UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorSecretKey])->firstOrFail();
         }
         catch (ModelNotFoundException $silenced)
         {
+            // This should be empty if the user doesn't have TFA turned on, in which case we can return true.
+            if (empty($multifactorEnabled))
+                return true;
             return false;
         }
 

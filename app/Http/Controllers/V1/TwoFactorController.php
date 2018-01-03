@@ -54,7 +54,6 @@ class TwoFactorController extends V1Controller
         try
         {
             $user = User::findOrFail($userId);
-            UserMeta::where(['user_id' => $userId, 'meta_key' => UserMetaKeys::TwoFactorEnabled])->firstOrFail();
             $partialAuth = PartialAuth::where("user_id", $userId)
                 ->where("two_factor_token", $twoFactorToken)
                 ->firstOrFail();
@@ -119,7 +118,7 @@ class TwoFactorController extends V1Controller
             return $this->respond($response->toArray(), [], Messages::TWO_FACTOR_FIRSTTIME_VERIFICATION_NEEDED);
         }
         // If not thrown, user has two factor turned on already. Trying to turn it on again does not make sense.
-        return $this->respond(null, [ Errors::TWO_FACTOR_ALREADY_ENABLED => "" ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
+        return $this->respond(null, [ Errors::MULTI_FACTOR_ALREADY_ENABLED => "" ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
     }
 
     public function disableTwoFactor (Request $request) : JsonResponse
@@ -144,7 +143,7 @@ class TwoFactorController extends V1Controller
         catch (ModelNotFoundException $silenced)
         {
             // If these two don't exist, that means TFA was NOT turned on.
-            return $this->respond(null, [ Errors::TWO_FACTOR_NOT_ENABLED => "" ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
+            return $this->respond(null, [ Errors::MULTI_FACTOR_NOT_ENABLED => "" ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
         }
     }
 

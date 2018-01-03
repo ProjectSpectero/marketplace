@@ -13,6 +13,7 @@ use App\Models\Opaque\TwoFactorManagementResponse;
 use App\PartialAuth;
 use App\User;
 use App\UserMeta;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,6 +57,7 @@ class TwoFactorController extends V1Controller
             $user = User::findOrFail($userId);
             $partialAuth = PartialAuth::where('user_id', $userId)
                 ->where('two_factor_token', $twoFactorToken)
+                ->where('expires', '>', Carbon::now())
                 ->firstOrFail();
         }
         catch (ModelNotFoundException $silenced)

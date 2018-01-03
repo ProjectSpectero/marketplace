@@ -11,6 +11,7 @@ use App\PartialAuth;
 use App\Constants\Errors;
 use App\User;
 use App\UserMeta;
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -59,6 +60,7 @@ class AuthController extends V1Controller
             $partialAuth->user_id = $user->id;
             $partialAuth->data = $oauthResponse->toJson();
             $partialAuth->two_factor_token = $partialAuthToken;
+            $partialAuth->expires = Carbon::now()->addMinute(env('TOKEN_EXPIRY', 10)); // Entry expires at the same time the generated auth token does
 
             // Exception deliberately not handled, it'll flow up to the error handler if something doesn't work to create a OBJECT_PERSIST_ERROR
             $partialAuth->saveOrFail();

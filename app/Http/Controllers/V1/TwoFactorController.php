@@ -7,6 +7,7 @@ use App\Constants\Errors;
 use App\Constants\Messages;
 use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
+use App\Libraries\MultifactorVerifier;
 use App\Libraries\Utility;
 use App\Models\Opaque\TwoFactorManagementResponse;
 use App\PartialAuth;
@@ -53,7 +54,6 @@ class TwoFactorController extends V1Controller
         try
         {
             $user = User::findOrFail($userId);
-            $userSecret = UserMeta::where(['user_id' => $userId, 'meta_key' => UserMetaKeys::TwoFactorSecretKey])->firstOrFail();
             UserMeta::where(['user_id' => $userId, 'meta_key' => UserMetaKeys::TwoFactorEnabled])->firstOrFail();
             $partialAuth = PartialAuth::where("user_id", $userId)
                 ->where("two_factor_token", $twoFactorToken)
@@ -67,35 +67,9 @@ class TwoFactorController extends V1Controller
         }
 
         // At this stage, we know that the user exists and actually has TFA turned on.
-        // We have all required information for TFA verification. Let's pull up the partial auth entry.
-        $authenticationSucceeded = false;
-
-        // Flow: exists and matches (backupcode) ? success : verify TOTP
-        $backupCodes = $user->backupCodes;
-        foreach ($backupCodes as $backupCode)
-        {
-            /** @var BackupCode $backupCode */
-            if ($backupCode->code === $totpToken)
-            {
-                $backupCode->delete();
-                $authenticationSucceeded = true;
-                break;
-            }
-        }
-
-        if (! $authenticationSucceeded)
-        {
-            // Backupcodes weren't used, let's go verify TOTP
-            $userSecret = $userSecret->meta_value;
-            $verifier = $this->initializeTwoFactor();
-            if ($verifier->verifyKey($userSecret, $totpToken))
-            {
-                // TOTP valid, provide auth data.
-                $authenticationSucceeded = true;
-            }
-        }
-
-        if ($authenticationSucceeded)
+        // An assumption has been made here, we assume that if tfa is enabled, their secret exists too.
+        // Someone correct me if this (^) is not always true.
+        if (MultifactorVerifier::verify($user, $totpToken))
             return $this->respond(\json_decode($partialAuth->data, true), [], Messages::OAUTH_TOKEN_ISSUED);
 
         return $this->respond(null, [ Errors::AUTHENTICATION_FAILED => "" ], null, ResponseType::FORBIDDEN);

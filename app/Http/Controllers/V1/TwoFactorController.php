@@ -79,6 +79,7 @@ class TwoFactorController extends V1Controller
             {
                 $backupCode->delete();
                 $authenticationSucceeded = true;
+                break;
             }
         }
 

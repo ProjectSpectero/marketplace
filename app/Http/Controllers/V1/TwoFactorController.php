@@ -63,7 +63,7 @@ class TwoFactorController extends V1Controller
         {
             // Have to catch and manually bail, otherwise the 404 generated is a way to enumerate users into their internal IDs.
             // Any one of the 4 calls above failing is an indicator of TFA not being possible.
-            return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], null, ResponseType::FORBIDDEN);
+            return $this->respond(null, [ Errors::AUTHENTICATION_FAILED => "" ], null, ResponseType::FORBIDDEN);
         }
 
         // At this stage, we know that the user exists and actually has TFA turned on.
@@ -96,7 +96,7 @@ class TwoFactorController extends V1Controller
         }
 
         if ($authenticationSucceeded)
-            $this->respond(\json_decode($partialAuth->data, true), [], Messages::OAUTH_TOKEN_ISSUED);
+            return $this->respond(\json_decode($partialAuth->data, true), [], Messages::OAUTH_TOKEN_ISSUED);
 
         return $this->respond(null, [ Errors::AUTHENTICATION_FAILED => "" ], null, ResponseType::FORBIDDEN);
     }

@@ -45,7 +45,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->group(['prefix' => 'debug' ], function($api)
         {
             /** @var \Laravel\Lumen\Routing\Router $api */
-            $api->get('/test/multifactor-middleware', 'DebugController@multiFactorTest');
+            $api->get('/test/multifactor-middleware', [ 'middleware' => [ 'auth:api', 'cors', 'enforce-tfa' ], 'uses' => 'DebugController@multiFactorTest']);
         });
     }
 });

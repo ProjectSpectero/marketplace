@@ -17,7 +17,7 @@ class CreateTablePartialAuth extends Migration
             $table->increments('id');
             $table->string('user_id');
             $table->string('two_factor_token');
-            $table->string('data');
+            $table->mediumText('data');
             $table->timestamps();
         });
     }

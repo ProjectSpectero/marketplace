@@ -31,7 +31,9 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
 
         // Enable and disable have different endpoints because disable needs to pass the TFA filter as well.
         $api->get('auth/multifactor/enable', 'TwoFactorController@enableTwoFactor');
-        $api->get('auth/multifactor/disable', 'TwoFactorController@disableTwoFactor');
+        $api->get('auth/multifactor/disable', [ 'middleware' => 'enforce-tfa', 'uses' => 'TwoFactorController@disableTwoFactor' ]);
+        $api->get('auth/multifactor/codes', 'TwoFactorController@showUserBackupCodes');
+        $api->get('auth/multifactor/codes/regenerate', 'TwoFactorController@regenerateUserBackupCodes');
 
         $api->post('verify', 'TwoFactorController@verify');
         $api->post('keygen', 'UserController@keygen');
@@ -45,7 +47,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->group(['prefix' => 'debug' ], function($api)
         {
             /** @var \Laravel\Lumen\Routing\Router $api */
-            $api->get('/test/multifactor-middleware', [ 'middleware' => [ 'auth:api', 'cors', 'enforce-tfa' ], 'uses' => 'DebugController@multiFactorTest']);
+            $api->get('/test/multifactor-middleware', [ 'middleware' => [ 'auth:api', 'cors', 'enforce-tfa' ], 'uses' => 'DebugController@multiFactorTest' ]);
         });
     }
 });

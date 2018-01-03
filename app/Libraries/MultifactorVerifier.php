@@ -9,6 +9,7 @@ use App\Constants\UserMetaKeys;
 use App\User;
 use App\UserMeta;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use PragmaRX\Google2FA\Exceptions\InvalidCharactersException;
 use PragmaRX\Google2FA\Google2FA;
 
 class MultifactorVerifier
@@ -59,10 +60,17 @@ class MultifactorVerifier
 
             /** @var Google2FA $verifier */
             $verifier = static::initializeTwoFactor();
-            if ($verifier->verifyKey($userSecret, $totpToken))
+            try
             {
-                // TOTP valid, provide auth data.
-                $authenticationSucceeded = true;
+                if ($verifier->verifyKey($userSecret, $totpToken))
+                {
+                    // TOTP valid, provide auth data.
+                    $authenticationSucceeded = true;
+                }
+            }
+            catch (InvalidCharactersException $silenced)
+            {
+                // Mostly happens if the key is invalid, shouldn't be unless it was manually input
             }
         }
 

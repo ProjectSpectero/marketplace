@@ -69,7 +69,11 @@ class TwoFactorController extends V1Controller
         // An assumption has been made here, we assume that if tfa is enabled, their secret exists too.
         // Someone correct me if this (^) is not always true.
         if (MultifactorVerifier::verify($user, $totpToken))
+        {
+            $partialAuth->delete();
             return $this->respond(\json_decode($partialAuth->data, true), [], Messages::OAUTH_TOKEN_ISSUED);
+        }
+
 
         return $this->respond(null, [ Errors::AUTHENTICATION_FAILED => '' ], null, ResponseType::FORBIDDEN);
     }
@@ -145,6 +149,22 @@ class TwoFactorController extends V1Controller
             // If these two don't exist, that means TFA was NOT turned on.
             return $this->respond(null, [ Errors::MULTI_FACTOR_NOT_ENABLED => '' ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
         }
+    }
+
+    public function showUserBackupCodes (Request $request)
+    {
+        $user = $request->user();
+        try
+        {
+            UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorEnabled])->firstOrFail();
+        }
+        catch (ModelNotFoundException $silenced)
+        {
+            return $this->respond(null, [ Errors::MULTI_FACTOR_NOT_ENABLED => '' ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
+        }
+
+        $codes = $user->backupCodes->pluck('code');
+        return $this->respond($codes);
     }
 
     private function generateBackupCodes(User $user, int $count) : array

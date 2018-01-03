@@ -17,6 +17,7 @@ class EnforceTwoFactorVerification
      * This middleware NEEDS TO execute after the auth middleware, multifactor-less auth is available in the Auth | TwoFactor controllers
      * i.e: This middleware may only protect pages, but it cannot be used to log people in the first time if they have multifactor on
      *
+     * TODO: This needs to handle cases of first-time TFA enablement.
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
      * @return mixed

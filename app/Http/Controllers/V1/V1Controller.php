@@ -8,7 +8,7 @@ use Illuminate\Http\JsonResponse;
 
 class V1Controller extends Controller
 {
-    public $version = "v1";
+    public $version = 'v1';
 
     /**
      * Method to use the spectero standard unified response style when returning

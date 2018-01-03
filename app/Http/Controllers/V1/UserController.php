@@ -64,7 +64,6 @@ class UserController extends CRUDController
         throw new NotSupportedException();
     }
 
-
     public function destroy(int $id): JsonResponse
     {
         throw new NotSupportedException();

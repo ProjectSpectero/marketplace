@@ -60,26 +60,26 @@ class Handler extends ExceptionHandler
 
         $returnCode = $e->getCode() != 0 ? $e->getCode() : 400;
         $message = $e->getMessage();
-        $data = method_exists($e, "getData") ? $e->getData() : "";
+        $data = method_exists($e, 'getData') ? $e->getData() : '';
         $version = null;
 
         $matchedRoute = $request->route();
         if (isset($matchedRoute[1]['uses']))
         {
-            list ($controller, $method) = explode("@", $matchedRoute[1]['uses']);
+            list ($controller, $method) = explode('@', $matchedRoute[1]['uses']);
             if (class_exists($controller))
             {
                 $controller = new $controller();
                 if (is_object($controller))
                 {
-                    if (property_exists($controller, "version"))
+                    if (property_exists($controller, 'version'))
                         $version = $controller->version;
                 }
             }
         }
 
         if ($version == null)
-            $version = "v1";
+            $version = 'v1';
 
         // Production error rendering.
         // List of errors we have custom handlers for.
@@ -93,7 +93,7 @@ class Handler extends ExceptionHandler
                 return Utility::generateResponse(null, [ Errors::VALIDATION_FAILED => $e->errors() ], Errors::REQUEST_FAILED, $version, ResponseType::UNPROCESSABLE_ENTITY);
                 break;
             case $e instanceof MethodNotAllowedHttpException:
-                return Utility::generateResponse(null, [ Errors::METHOD_NOT_ALLOWED => "" ], Errors::REQUEST_FAILED, $version, ResponseType::METHOD_NOT_ALLOWED);
+                return Utility::generateResponse(null, [ Errors::METHOD_NOT_ALLOWED => '' ], Errors::REQUEST_FAILED, $version, ResponseType::METHOD_NOT_ALLOWED);
                 break;
         }
 

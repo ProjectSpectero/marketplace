@@ -1,13 +1,11 @@
 <?php
 
-
 namespace App\Constants;
-
 
 class Environment
 {
-    const PRODUCTION = "PRODUCTION";
-    const DEVELOPMENT = "DEVELOPMENT";
+    const PRODUCTION = 'PRODUCTION';
+    const DEVELOPMENT = 'DEVELOPMENT';
 
     /*
      * @param String $a
@@ -21,6 +19,6 @@ class Environment
 
     public static function isProduction ()
     {
-        return static::compare(app()->environment(), "production");
+        return static::compare(app()->environment(), 'production');
     }
 }

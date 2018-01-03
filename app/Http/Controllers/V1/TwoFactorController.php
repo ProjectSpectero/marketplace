@@ -27,7 +27,6 @@ class TwoFactorController extends V1Controller
 
         $this->googleTwoFactor = new Google2FA();
         return $this->googleTwoFactor;
-
     }
 
     /**
@@ -41,22 +40,22 @@ class TwoFactorController extends V1Controller
     public function verifyToken (Request $request) : JsonResponse
     {
         $this->validate($request, [
-            "userId" => "required|numeric",
-            "twoFactorToken" => "required",
-            "generatedToken" => "required"
+            'userId' => 'required|numeric',
+            'twoFactorToken' => 'required',
+            'generatedToken' => 'required'
         ]);
 
-        $userId = $request->get("userId");
-        $twoFactorToken = $request->get("twoFactorToken");
-        $totpToken = $request->get("generatedToken");
+        $userId = $request->get('userId');
+        $twoFactorToken = $request->get('twoFactorToken');
+        $totpToken = $request->get('generatedToken');
 
         try
         {
             $user = User::findOrFail($userId);
             $userSecret = UserMeta::where(['user_id' => $userId, 'meta_key' => UserMetaKeys::TwoFactorSecretKey])->firstOrFail();
             UserMeta::where(['user_id' => $userId, 'meta_key' => UserMetaKeys::TwoFactorEnabled])->firstOrFail();
-            $partialAuth = PartialAuth::where("user_id", $userId)
-                ->where("two_factor_token", $twoFactorToken)
+            $partialAuth = PartialAuth::where('user_id', $userId)
+                ->where('two_factor_token', $twoFactorToken)
                 ->firstOrFail();
         }
         catch (ModelNotFoundException $silenced)
@@ -123,14 +122,14 @@ class TwoFactorController extends V1Controller
                     $backupCode->delete();
             }
             // Let us generate the default amount of backup codes for the user
-            $generatedBackupCodes = $this->generateBackupCodes($user, env("DEFAULT_BACKUP_CODES_COUNT", 5));
+            $generatedBackupCodes = $this->generateBackupCodes($user, env('DEFAULT_BACKUP_CODES_COUNT', 5));
 
             // Let us generate and persist the user's secret key.
             $secretKey = $twoFactorService->generateSecretKey();
             UserMeta::addOrUpdateMeta($user, UserMetaKeys::TwoFactorSecretKey, $secretKey);
 
             // Let us generate an URL to the QR code
-            $qrCodeUrl = $twoFactorService->getQRCodeGoogleUrl(env('COMPANY_NAME', "smartplace"),
+            $qrCodeUrl = $twoFactorService->getQRCodeGoogleUrl(env('COMPANY_NAME', 'smartplace'),
                 $user->email,
                 $secretKey
             );
@@ -144,12 +143,13 @@ class TwoFactorController extends V1Controller
             return $this->respond($response->toArray(), [], Messages::TWO_FACTOR_FIRSTTIME_VERIFICATION_NEEDED);
         }
         // If not thrown, user has two factor turned on already. Trying to turn it on again does not make sense.
-        return $this->respond(null, [ Errors::TWO_FACTOR_ALREADY_ENABLED => "" ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
+        return $this->respond(null, [ Errors::TWO_FACTOR_ALREADY_ENABLED => '' ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
     }
 
     public function disableTwoFactor (Request $request) : JsonResponse
     {
         $user = $request->user();
+
         try
         {
             $isTwoFactorEnabled = UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorEnabled])->firstOrFail();
@@ -169,7 +169,7 @@ class TwoFactorController extends V1Controller
         catch (ModelNotFoundException $silenced)
         {
             // If these two don't exist, that means TFA was NOT turned on.
-            return $this->respond(null, [ Errors::TWO_FACTOR_NOT_ENABLED => "" ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
+            return $this->respond(null, [ Errors::TWO_FACTOR_NOT_ENABLED => '' ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
         }
     }
 
@@ -206,6 +206,4 @@ class TwoFactorController extends V1Controller
             'backup_codes' => $user->backupCodes->pluck('code')
         ];
     }
-
-
 }

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Errors;
-
 
 use App\Constants\Errors;
 use Throwable;

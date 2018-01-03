@@ -9,7 +9,7 @@ class NodeMeta extends Model
 
   protected $fillable = ['node_id', 'meta_key', 'value_type', 'meta_value'];
 
-  protected $dataTypes = ['boolean', 'integer', 'double', 'float', 'string'];
+  protected static $dataTypes = ['boolean', 'integer', 'double', 'float', 'string'];
 
   public function node()
   {
@@ -38,7 +38,7 @@ class NodeMeta extends Model
   public static function addOrUpdateMeta($node, $key, $value)
   {
     $type = gettype($value);
-    $type = in_array($type, $this->dataTypes) ? $type : 'string';
+    $type = in_array($type, self::$dataTypes) ? $type : 'string';
 
     if (!empty(static::loadMeta($node, $key)->all())) {
       $nodeMeta = NodeMeta::loadMeta($node, $key)->first();

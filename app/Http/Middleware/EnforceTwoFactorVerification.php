@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 
 class EnforceTwoFactorVerification
 {
-    protected $version = "v1";
+    protected $version = 'v1';
     /**
      * Handle an incoming request.
      * This middleware NEEDS TO execute after the auth middleware, multifactor-less auth is available in the Auth | TwoFactor controllers
@@ -26,23 +26,23 @@ class EnforceTwoFactorVerification
         // Get the context values required
         $user = $request->user();
 
-        if ($request->has("generatedToken"))
-            $token = $request->get("generatedToken");
-        elseif ($request->hasHeader("X-MULTIFACTOR-TOKEN"))
-            $token = $request->headers("X-MULTIFACTOR-TOKEN");
+        if ($request->has('generatedToken'))
+            $token = $request->get('generatedToken');
+        elseif ($request->hasHeader('X-MULTIFACTOR-TOKEN'))
+            $token = $request->headers('X-MULTIFACTOR-TOKEN');
         else
             $token = null;
 
         if ($user == null || $token == null)
         {
             // BANISH HIM!
-            return Utility::generateResponse(null, [ Errors::MULTI_FACTOR_PARAMETERS_MISSING => "" ], Errors::REQUEST_FAILED, $this->version, ResponseType::UNPROCESSABLE_ENTITY);
+            return Utility::generateResponse(null, [ Errors::MULTI_FACTOR_PARAMETERS_MISSING => '' ], Errors::REQUEST_FAILED, $this->version, ResponseType::UNPROCESSABLE_ENTITY);
         }
 
         if (! MultifactorVerifier::verify($user, $token))
         {
             // Guy failed multifactor verification
-            return Utility::generateResponse(null, [ Errors::MULTI_FACTOR_VERIFICATION_FAILED => "" ], Errors::REQUEST_FAILED, $this->version, ResponseType::FORBIDDEN);
+            return Utility::generateResponse(null, [ Errors::MULTI_FACTOR_VERIFICATION_FAILED => '' ], Errors::REQUEST_FAILED, $this->version, ResponseType::FORBIDDEN);
         }
 
         // Forward the request on, since the guy either didn't have TFA turned on, or passed it

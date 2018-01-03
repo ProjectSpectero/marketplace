@@ -7,7 +7,7 @@ use Laravel\Lumen\Routing\Controller as BaseController;
 
 class Controller extends BaseController
 {
-    public function cherryPick (Request $request, Array $validationRules)
+    public function cherryPick(Request $request, Array $validationRules)
     {
         $curatedData = [];
         foreach ($validationRules as $field => $rules)

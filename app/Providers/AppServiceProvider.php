@@ -15,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        if (strtolower($this->app->environment()) != "production")
+        if (strtolower($this->app->environment()) != 'production')
         {
             $this->app->register(IdeHelperServiceProvider::class);
         }
@@ -23,6 +23,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot ()
     {
-        Validator::extend("country", "App\Validators\CountryValidator@validate");
+        Validator::extend('country', 'App\Validators\CountryValidator@validate');
     }
 }

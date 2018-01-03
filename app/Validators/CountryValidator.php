@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Validators;
-
 
 class CountryValidator
 {
@@ -14,7 +12,7 @@ class CountryValidator
     public function messages ()
     {
         return [
-            'country' => "Please enter your ISO Alpha-2 country code."
+            'country' => 'Please enter your ISO Alpha-2 country code.'
         ];
     }
 

@@ -19,7 +19,6 @@ use App\Constants\Messages;
 
 class AuthController extends V1Controller
 {
-
     public function auth(Request $request)
     {
         $this->validate($request, [
@@ -30,7 +29,7 @@ class AuthController extends V1Controller
         $email = $request->get('username');
         $password = $request->get('password');
 
-        $oauthResponse = $this->proxy("password", [
+        $oauthResponse = $this->proxy('password', [
             'username' => $email,
             'password' => $password
         ]);
@@ -39,6 +38,7 @@ class AuthController extends V1Controller
         {
             // FirstOrFail not needed, oAuth succeeded, this user exists.
             $user = User::where('email', $email)->first();
+            
             try
             {
                 // Simple existence check, we do not care about the values. That is not our responsibility.
@@ -107,7 +107,7 @@ class AuthController extends V1Controller
 
         $params = array_merge($oauthType, $data);
 
-        $uri = sprintf("%s/%s", env('APP_URL'), 'oauth/token');
+        $uri = sprintf('%s/%s', env('APP_URL'), 'oauth/token');
 
         try
         {

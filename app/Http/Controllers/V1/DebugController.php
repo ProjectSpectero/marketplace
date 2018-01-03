@@ -10,8 +10,8 @@ class DebugController
 
     public function storeAction ()
     {
-        Cache::put($this->key, "This is a cached element", 5);
-        return "Everything went better than expected! :)";
+        Cache::put($this->key, 'This is a cached element', 5);
+        return 'Everything went better than expected! :)';
     }
 
     public function retrieveAction ()
@@ -19,6 +19,6 @@ class DebugController
         if (Cache::has($this->key))
             return Cache::get($this->key);
 
-        return "Cache didn't have our key, boo!";
+        return 'Cache didn\'t have our key, boo!';
     }
 }

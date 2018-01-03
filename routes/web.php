@@ -10,8 +10,9 @@
 | and give it the Closure to call when that URI is requested.
 |
 */
+
 /** @var \Laravel\Lumen\Routing\Router $router */
-$router->group(['prefix' => 'v1', "namespace" => "V1" ], function($api)
+$router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
 {
     /** @var \Laravel\Lumen\Routing\Router $api */
     $api->group(['as' => 'NoAuthRequired'], function ($api)
@@ -20,7 +21,7 @@ $router->group(['prefix' => 'v1', "namespace" => "V1" ], function($api)
         // Group without auth
         $api->post('auth', 'AuthController@auth');
         $api->post('auth/refresh', 'AuthController@refreshToken');
-        $api->post('auth/multifactor', "TwoFactorController@verifyToken");
+        $api->post('auth/multifactor', 'TwoFactorController@verifyToken');
     });
 
     $api->group(['as' => 'AuthRequired', 'middleware' => ['auth:api', 'cors']], function ($api)
@@ -29,23 +30,23 @@ $router->group(['prefix' => 'v1', "namespace" => "V1" ], function($api)
         // Group with auth
 
         // Enable and disable have different endpoints because disable needs to pass the TFA filter as well.
-        $api->get('auth/multifactor/enable', "TwoFactorController@enableTwoFactor");
-        $api->get('auth/multifactor/disable', "TwoFactorController@disableTwoFactor");
+        $api->get('auth/multifactor/enable', 'TwoFactorController@enableTwoFactor');
+        $api->get('auth/multifactor/disable', 'TwoFactorController@disableTwoFactor');
 
         $api->post('verify', 'TwoFactorController@verify');
         $api->post('keygen', 'UserController@keygen');
         $api->post('codes', 'UserController@regenerateBackupCodes');
 
-        \App\Libraries\Utility::defineResourceRoute("user", "UserController", $api, []);
+        \App\Libraries\Utility::defineResourceRoute('user', 'UserController', $api, []);
     });
 
-    if (! \App\Constants\Environment::isProduction())
+    if (!\App\Constants\Environment::isProduction())
     {
         $api->group(['prefix' => 'debug' ], function($api)
         {
             /** @var \Laravel\Lumen\Routing\Router $api */
-            $api->post("/cache", "DebugController@storeAction");
-            $api->get("/cache", "DebugController@retrieveAction");
+            $api->post('/cache', 'DebugController@storeAction');
+            $api->get('/cache', 'DebugController@retrieveAction');
         });
     }
 });

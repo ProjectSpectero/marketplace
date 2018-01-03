@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "e2ff0afd9bb492354e644c099456bc12",
+    "content-hash": "19a30246f5ca822847002dfa148c43db",
     "packages": [
         {
             "name": "barryvdh/laravel-cors",
@@ -385,16 +385,16 @@
         },
         {
             "name": "flipbox/lumen-generator",
-            "version": "5.4.4",
+            "version": "5.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/flipboxstudio/lumen-generator.git",
-                "reference": "d5d3acaf4673d5982aaf7ab3cbaee7f76cd08223"
+                "reference": "a6154e5cc8810f22f08d791d1db7b4cbb45112d0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/flipboxstudio/lumen-generator/zipball/d5d3acaf4673d5982aaf7ab3cbaee7f76cd08223",
-                "reference": "d5d3acaf4673d5982aaf7ab3cbaee7f76cd08223",
+                "url": "https://api.github.com/repos/flipboxstudio/lumen-generator/zipball/a6154e5cc8810f22f08d791d1db7b4cbb45112d0",
+                "reference": "a6154e5cc8810f22f08d791d1db7b4cbb45112d0",
                 "shasum": ""
             },
             "require": {
@@ -420,7 +420,7 @@
                 }
             ],
             "description": "A Lumen Generator You Are Missing",
-            "time": "2017-10-24T06:17:06+00:00"
+            "time": "2018-01-02T08:50:01+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -2880,16 +2880,16 @@
         },
         {
             "name": "spatie/laravel-permission",
-            "version": "2.7.6",
+            "version": "2.7.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-permission.git",
-                "reference": "03eb748141432b5d94eb1613b99f818aac1f5070"
+                "reference": "e63427e4c364061f05f03fc893727198669c43c7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-permission/zipball/03eb748141432b5d94eb1613b99f818aac1f5070",
-                "reference": "03eb748141432b5d94eb1613b99f818aac1f5070",
+                "url": "https://api.github.com/repos/spatie/laravel-permission/zipball/e63427e4c364061f05f03fc893727198669c43c7",
+                "reference": "e63427e4c364061f05f03fc893727198669c43c7",
                 "shasum": ""
             },
             "require": {
@@ -2941,7 +2941,7 @@
                 "security",
                 "spatie"
             ],
-            "time": "2017-11-27T10:22:46+00:00"
+            "time": "2018-01-02T16:39:56+00:00"
         },
         {
             "name": "symfony/console",
@@ -5811,7 +5811,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.0"
+        "php": ">=7.2"
     },
     "platform-dev": []
 }

@@ -27,31 +27,47 @@ class MultifactorVerifier
     public static function verify (User $user, String $totpToken) : bool
     {
         $authenticationSucceeded = false;
+        $firstTime = false;
 
+        $multifactorEnabled = null;
+        $userSecret = null;
         try
         {
-            $multifactorEnabled = UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorEnabled])->firstOrFail();
+            // The order here matters, since secret MAY sometimes exist, but tfa.enabled may not (first-time cases)
             $userSecret = UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorSecretKey])->firstOrFail();
+            $multifactorEnabled = UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorEnabled])->firstOrFail();
         }
         catch (ModelNotFoundException $silenced)
         {
-            // This should be empty if the user doesn't have TFA turned on, in which case we can return true.
-            if (empty($multifactorEnabled))
+            // If both are null, user does NOT have two-factor turned on. We can say we succeeded.
+            if ($userSecret == null && $multifactorEnabled == null)
                 return true;
-            return false;
+
+            // If only tfa.enabled is empty but a secret exists, that means it's the user's first time verifying multifactor
+            // Any other combination means that required details to verify are not available, and we consider the user
+            // to have failed multifactor verification
+            if ($multifactorEnabled == null && is_object($userSecret))
+                $firstTime = true;
+            else
+                return false;
         }
 
-        // Flow: exists and matches (backupcode) ? success : verify TOTP
-        foreach ($user->backupCodes as $backupCode)
+        if (!$firstTime)
         {
-            /** @var BackupCode $backupCode */
-            if ($backupCode->code === $totpToken)
+            // Flow: exists and matches (backupcode) ? success : verify TOTP
+            // Backup code verification is NOT available if it is the first time, they MUST use TOTP
+            foreach ($user->backupCodes as $backupCode)
             {
-                $backupCode->delete();
-                $authenticationSucceeded = true;
-                break;
+                /** @var BackupCode $backupCode */
+                if ($backupCode->code === $totpToken)
+                {
+                    $backupCode->delete();
+                    $authenticationSucceeded = true;
+                    break;
+                }
             }
         }
+
 
         if (! $authenticationSucceeded)
         {
@@ -66,6 +82,8 @@ class MultifactorVerifier
                 {
                     // TOTP valid, provide auth data.
                     $authenticationSucceeded = true;
+                    if ($firstTime)
+                        UserMeta::addOrUpdateMeta($user, UserMetaKeys::TwoFactorEnabled, true);
                 }
             }
             catch (InvalidCharactersException $silenced)

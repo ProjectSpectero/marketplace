@@ -60,7 +60,7 @@ trait MetaTrait
 
     public static function deleteMeta (Model $model, String $key)
     {
-        $modelMeta = static::loadMeta($model, $key)->first();
+        $modelMeta = static::loadMeta($model, $key);
         if (! empty($modelMeta))
             $modelMeta->delete();
     }

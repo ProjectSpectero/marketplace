@@ -15,7 +15,7 @@ class CreateNodeMetasTable extends Migration
     {
         Schema::create('node_metas', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('node_id')->unique();
+            $table->integer('node_id');
             $table->string('meta_key')->unique();
             $table->string('value_type');
             $table->string('meta_value');

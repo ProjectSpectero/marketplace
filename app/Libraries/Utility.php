@@ -7,6 +7,9 @@ use Laravel\Lumen\Routing\Router;
 
 class Utility
 {
+
+    public static $metaDataTypes = ['boolean', 'integer', 'double', 'float', 'string'];
+
     public static function getRandomString () : String
     {
         return md5(uniqid(mt_rand(), true));

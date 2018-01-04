@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Libraries\Utility;
 
 class UserMeta extends Model
 {
@@ -12,20 +13,22 @@ class UserMeta extends Model
     /**
      * Custom scope that returns User meta_value by key
      *
-     * @param Model $user 
-     * @param string $flag
+     * @param Model $user
      * @param string $key
+     * @param bool $throwsException
      *
      * @return string meta_value
      */
 
-    public function scopeLoadMeta($query, $user, $key = '')
+    public function scopeLoadMeta($query, $user, $key = '', $throwsException = false)
     {
-        if (empty($key)) {
+        if (empty($key))
             return $user->userMeta;
-        }
 
-        return $query->where(['user_id' => $user->id, 'meta_key' => $key])->get();
+        if ($throwsException)
+            return $query->where(['user_id' => $user->id, 'meta_key' => $key])->firstOrFail();
+
+        return $query->where(['user_id' => $user->id, 'meta_key' => $key])->first();
     }
 
     public function user()
@@ -33,9 +36,22 @@ class UserMeta extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function getValue()
+    {
+        $value = $this->meta_value;
+        if (in_array($this->value_type, Utility::$metaDataTypes))
+            settype($value, $this->value_type);
+
+        return $value;
+    }
+
     public static function addOrUpdateMeta ($user, $key, $value)
     {
-        if (!empty(static::loadMeta($user, $key)->all())) {
+        $type = gettype($value);
+        $type = in_array($type, Utility::$metaDataTypes) ? $type : 'string';
+
+        if (!empty(static::loadMeta($user, $key)->all()))
+        {
             $userMeta = UserMeta::loadMeta($user, $key)->first();
             $userMeta->meta_value = $value;
             $userMeta->save();
@@ -45,6 +61,7 @@ class UserMeta extends Model
         static::create([
             'user_id' => $user->id,
             'meta_key' => $key,
+            'value_type' => $type,
             'meta_value' => $value
         ]);
     }

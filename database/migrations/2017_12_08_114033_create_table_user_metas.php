@@ -17,6 +17,7 @@ class CreateTableUserMetas extends Migration
             $table->increments('id');
             $table->integer('user_id');
             $table->string('meta_key');
+            $table->string('value_type');
             $table->string('meta_value');
             $table->timestamps();
         });

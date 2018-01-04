@@ -34,8 +34,8 @@ class MultifactorVerifier
         try
         {
             // The order here matters, since secret MAY sometimes exist, but tfa.enabled may not (first-time cases)
-            $userSecret = UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorSecretKey])->firstOrFail();
-            $multifactorEnabled = UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorEnabled])->firstOrFail();
+            $userSecret = UserMeta::loadMeta($user, UserMetaKeys::TwoFactorSecretKey, true);
+            $multifactorEnabled = UserMeta::loadMeta($user, UserMetaKeys::TwoFactorEnabled, true);
         }
         catch (ModelNotFoundException $silenced)
         {

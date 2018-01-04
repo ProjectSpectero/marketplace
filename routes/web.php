@@ -35,10 +35,6 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->get('auth/multifactor/codes', 'TwoFactorController@showUserBackupCodes');
         $api->get('auth/multifactor/codes/regenerate', 'TwoFactorController@regenerateUserBackupCodes');
 
-        $api->post('verify', 'TwoFactorController@verify');
-        $api->post('keygen', 'UserController@keygen');
-        $api->post('codes', 'UserController@regenerateBackupCodes');
-
         \App\Libraries\Utility::defineResourceRoute('user', 'UserController', $api, []);
     });
 

@@ -64,10 +64,12 @@ class UserController extends CRUDController
 
     public function update(Request $request, int $id): JsonResponse
     {
+        $user = User::findOrFail($id);
+
         $rules = [
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required',
+            'name' => 'sometimes|required',
+            'email' => 'sometimes|required|email'.$request->get('id'),
+            'password' => 'sometimes|required|min:5|max:72',
             'address_line_1' => 'sometimes|required',
             'address_line_2' => 'sometimes|required',
             'city' => 'sometimes|required',
@@ -80,25 +82,17 @@ class UserController extends CRUDController
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
-        try
-        {
-            $user = User::findOrFail($id);
-            $user->name = $input['name'];
-            $user->email = $input['email'];
-            $user->password = Hash::make($input['password']);
+        $user->name = $input['name'];
+        $user->email = $input['email'];
+        $user->password = Hash::make($input['password']);
 
-            // Remove the ones that go into the original model
-            unset($input['name'], $input['email'], $input['password']);
+        // Remove the ones that go into the original model
+        unset($input['name'], $input['email'], $input['password']);
 
-            foreach ($input as $key => $value)
-                UserMeta::addOrUpdateMeta($user, $key, $value);
+        foreach ($input as $key => $value)
+            UserMeta::addOrUpdateMeta($user, $key, $value);
 
-            $user->saveOrFail();
-        }
-        catch (ModelNotFoundException $exception)
-        {
-            $this->respond(null, Errors::USER_NOT_FOUND, null, ResponseType::NOT_FOUND);
-        }
+        $user->saveOrFail();
 
         return $this->respond($user->toArray(), [], Messages::USER_UPDATED);
     }

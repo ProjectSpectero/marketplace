@@ -20,7 +20,7 @@ trait MetaTrait
 
     public function scopeLoadMeta($query, Model $model, $key = '', $throwsException = false)
     {
-        $modelName = str_singular($model->getTable());
+        $modelName = $this::getModelName($model);
         $modelMeta = $modelName . 'Meta';
 
         if (empty($key))
@@ -33,7 +33,7 @@ trait MetaTrait
 
     public static function addOrUpdateMeta (Model $model, String $key, $value)
     {
-        $modelName = str_singular($model->getTable());
+        $modelName = self::getModelName($model);
         $resolvedType = gettype($value);
         $type = in_array($resolvedType, Utility::$metaDataTypes) ? $resolvedType : 'string';
         $modelMeta = null;
@@ -72,5 +72,10 @@ trait MetaTrait
             settype($value, $this->value_type);
 
         return $value;
+    }
+
+    private static function getModelName(Model $model)
+    {
+        return str_singular($model->getTable());
     }
 }

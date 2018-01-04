@@ -21,7 +21,7 @@ trait MetaTrait
 
     public function scopeLoadMeta($query, Model $model, $key = '', $throwsException = false)
     {
-        $modelName = $this::getModelName($model);
+        $modelName = self::getModelName($model);
         $modelMeta = $modelName . 'Meta';
 
         if (empty($key))
@@ -41,7 +41,7 @@ trait MetaTrait
 
         if ($type == 'string' && strlen($value) > 255)
             throw new FatalException("Length of string type " . strlen($value) .
-                "longer than what the meta_value column can handle");
+                " longer than what the meta_value column can handle");
 
         try
         {

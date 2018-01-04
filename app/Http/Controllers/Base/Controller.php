@@ -11,5 +11,4 @@ class Controller extends BaseController
     {
         return $request->only(array_keys($validationRules));
     }
-
 }

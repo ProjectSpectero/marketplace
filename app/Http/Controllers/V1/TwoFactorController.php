@@ -94,14 +94,8 @@ class TwoFactorController extends V1Controller
         {
             // If this is thrown, we can proceed. It means that the user does NOT have TFA turned on.
             $twoFactorService = $this->initializeTwoFactor();
-            $existingBackupCodes = $user->backupCodes->all();
-            if (! empty($existingBackupCodes))
-            {
-                // Get rid of stale backup codes, these should not exist to begin with.
-                // They will however exist if two factor was turned on, then off.
-                foreach ($existingBackupCodes as $backupCode)
-                    $backupCode->delete();
-            }
+            // Let's get rid of all old backup codes just in case.
+            $this->clearBackupCodes($user);
             // Let us generate the default amount of backup codes for the user
             $generatedBackupCodes = $this->generateBackupCodes($user, env('DEFAULT_BACKUP_CODES_COUNT', 5));
 
@@ -136,13 +130,7 @@ class TwoFactorController extends V1Controller
             $userSecretKey = UserMeta::loadMeta($user, UserMetaKeys::TwoFactorSecretKey, true);
             $isTwoFactorEnabled->delete();
             $userSecretKey->delete();
-            $existingBackupCodes = $user->backupCodes->all();
-            if (! empty($existingBackupCodes))
-            {
-                // Get rid of all backup codes too.
-                foreach ($existingBackupCodes as $backupCode)
-                    $backupCode->delete();
-            }
+            $this->clearBackupCodes($user);
 
             return $this->respond(null, [], Messages::TWO_FACTOR_DISABLED);
         }
@@ -153,20 +141,40 @@ class TwoFactorController extends V1Controller
         }
     }
 
-    public function showUserBackupCodes (Request $request)
+    public function showUserBackupCodes (Request $request) : JsonResponse
     {
         $user = $request->user();
+        if (! $this->isMultifactorEnabled($user))
+            return $this->respond(null, [ Errors::MULTI_FACTOR_NOT_ENABLED => '' ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
+
+        $codes = $user->backupCodes->pluck('code');
+        return $this->respond($codes->toArray());
+    }
+
+    public function regenerateUserBackupCodes (Request $request) : JsonResponse
+    {
+        $user = $request->user();
+        if (! $this->isMultifactorEnabled($user))
+            return $this->respond(null, [ Errors::MULTI_FACTOR_NOT_ENABLED => '' ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
+
+        // MFA is turned on, let's clear all old codes and generate new ones
+        $this->clearBackupCodes($user);
+        $codes = $this->generateBackupCodes($user, env('DEFAULT_BACKUP_CODES_COUNT', 5));
+
+        return $this->respond($codes);
+    }
+
+    private function isMultifactorEnabled (User $user) : bool
+    {
         try
         {
             UserMeta::loadMeta($user, UserMetaKeys::TwoFactorEnabled, true);
         }
         catch (ModelNotFoundException $silenced)
         {
-            return $this->respond(null, [ Errors::MULTI_FACTOR_NOT_ENABLED => '' ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
+            return false;
         }
-
-        $codes = $user->backupCodes->pluck('code');
-        return $this->respond($codes);
+        return true;
     }
 
     private function generateBackupCodes(User $user, int $count) : array
@@ -184,22 +192,14 @@ class TwoFactorController extends V1Controller
         return $codes;
     }
 
-    /**
-     * Invalidate previous backup codes
-     * and generate new ones
-     */
-
-    public function regenKeys($user)
+    private function clearBackupCodes (User $user) : void
     {
-        foreach($user->backupCodes as $code) {
-            $code->delete();
+        $existingBackupCodes = $user->backupCodes->all();
+        if (! empty($existingBackupCodes))
+        {
+            // Get rid of all backup codes too.
+            foreach ($existingBackupCodes as $backupCode)
+                $backupCode->delete();
         }
-
-        $backupCodes = new BackupCode();
-        $backupCodes->generateCodes($user);
-
-        return [
-            'backup_codes' => $user->backupCodes->pluck('code')
-        ];
     }
 }

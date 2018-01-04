@@ -5,6 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use App\Libraries\Utility;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserMeta extends Model
 {
@@ -46,23 +47,28 @@ class UserMeta extends Model
 
     public static function addOrUpdateMeta (User $user, String $key, $value) : UserMeta
     {
-        $type = gettype($value);
-        $type = in_array($type, Utility::$metaDataTypes) ? $type : 'string';
+        $resolvedType = gettype($value);
+        $type = in_array($resolvedType, Utility::$metaDataTypes) ? $resolvedType : 'string';
+        $userMeta = null;
 
-        if (!empty(static::loadMeta($user, $key)->all()))
+        try
         {
-            $userMeta = UserMeta::loadMeta($user, $key)->first();
+            $userMeta = static::loadMeta($user, $key, true);
             $userMeta->meta_value = $value;
+            $userMeta->value_type = $type;
             $userMeta->save();
-            return $userMeta;
+        }
+        catch (ModelNotFoundException $silenced)
+        {
+            $userMeta = static::create([
+                                         'user_id' => $user->id,
+                                         'meta_key' => $key,
+                                         'value_type' => $type,
+                                         'meta_value' => $value
+                                     ]);
         }
 
-        return static::create([
-            'user_id' => $user->id,
-            'meta_key' => $key,
-            'value_type' => $type,
-            'meta_value' => $value
-        ]);
+        return $userMeta;
     }
 
     public static function deleteMeta (User $user, String $key)

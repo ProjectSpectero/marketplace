@@ -87,8 +87,8 @@ class TwoFactorController extends V1Controller
         $user = $request->user();
         try
         {
-            UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorEnabled])->firstOrFail();
-            UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorSecretKey])->firstOrFail();
+            UserMeta::loadMeta($user, UserMetaKeys::TwoFactorEnabled, true);
+            UserMeta::loadMeta($user, UserMetaKeys::TwoFactorSecretKey, true);
         }
         catch (ModelNotFoundException $silenced)
         {
@@ -132,8 +132,8 @@ class TwoFactorController extends V1Controller
         $user = $request->user();
         try
         {
-            $isTwoFactorEnabled = UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorEnabled])->firstOrFail();
-            $userSecretKey = UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorSecretKey])->firstOrFail();
+            $isTwoFactorEnabled = UserMeta::loadMeta($user, UserMetaKeys::TwoFactorEnabled, true);
+            $userSecretKey = UserMeta::loadMeta($user, UserMetaKeys::TwoFactorSecretKey, true);
             $isTwoFactorEnabled->delete();
             $userSecretKey->delete();
             $existingBackupCodes = $user->backupCodes->all();
@@ -158,7 +158,7 @@ class TwoFactorController extends V1Controller
         $user = $request->user();
         try
         {
-            UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorEnabled])->firstOrFail();
+            UserMeta::loadMeta($user, UserMetaKeys::TwoFactorEnabled, true);
         }
         catch (ModelNotFoundException $silenced)
         {

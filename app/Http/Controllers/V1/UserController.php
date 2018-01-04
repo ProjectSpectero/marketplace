@@ -109,6 +109,6 @@ class UserController extends CRUDController
 
         $user->delete();
 
-        $this->respond(null, [], Messages::USER_DESTROYED);
+        $this->respond(null, [], Messages::USER_DESTROYED, ResponseType::NO_CONTENT);
     }
 }

@@ -32,6 +32,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         // Enable and disable have different endpoints because disable needs to pass the TFA filter as well.
         $api->get('auth/multifactor/enable', 'TwoFactorController@enableTwoFactor');
         $api->get('auth/multifactor/disable', [ 'middleware' => 'enforce-tfa', 'uses' => 'TwoFactorController@disableTwoFactor' ]);
+        $api->get('auth/multifactor/first-time', [ 'middleware' => 'enforce-tfa', 'uses' => 'TwoFactorController@firstTimeMultiFactor' ]);
         $api->get('auth/multifactor/codes', 'TwoFactorController@showUserBackupCodes');
         $api->get('auth/multifactor/codes/regenerate', 'TwoFactorController@regenerateUserBackupCodes');
 

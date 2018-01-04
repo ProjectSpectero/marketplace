@@ -69,7 +69,7 @@ class AuthController extends V1Controller
             $twoFactorResponse->twoFactorToken = $partialAuthToken;
             $twoFactorResponse->userId = $user->id;
 
-            return $this->respond($twoFactorResponse->toArray(), [], Messages::TWO_FACTOR_VERIFICATION_NEEDED);
+            return $this->respond($twoFactorResponse->toArray(), [], Messages::MULTI_FACTOR_VERIFICATION_NEEDED);
         }
         else
             return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], null, ResponseType::FORBIDDEN);

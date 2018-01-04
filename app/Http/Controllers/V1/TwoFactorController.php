@@ -115,7 +115,7 @@ class TwoFactorController extends V1Controller
             $response->qrCodeUrl = $qrCodeUrl;
             $response->secretCode = $secretKey;
 
-            return $this->respond($response->toArray(), [], Messages::TWO_FACTOR_FIRSTTIME_VERIFICATION_NEEDED);
+            return $this->respond($response->toArray(), [], Messages::MULTI_FACTOR_FIRSTTIME_VERIFICATION_NEEDED);
         }
         // If not thrown, user has two factor turned on already. Trying to turn it on again does not make sense.
         return $this->respond(null, [ Errors::MULTI_FACTOR_ALREADY_ENABLED => '' ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
@@ -132,7 +132,7 @@ class TwoFactorController extends V1Controller
             $userSecretKey->delete();
             $this->clearBackupCodes($user);
 
-            return $this->respond(null, [], Messages::TWO_FACTOR_DISABLED);
+            return $this->respond(null, [], Messages::MULTI_FACTOR_DISABLED);
         }
         catch (ModelNotFoundException $silenced)
         {
@@ -162,6 +162,11 @@ class TwoFactorController extends V1Controller
         $codes = $this->generateBackupCodes($user, env('DEFAULT_BACKUP_CODES_COUNT', 5));
 
         return $this->respond($codes);
+    }
+
+    public function firstTimeMultiFactor (Request $request) : JsonResponse
+    {
+        return $this->respond(null, [], Messages::MULTI_FACTOR_ENABLED);
     }
 
     private function isMultifactorEnabled (User $user) : bool

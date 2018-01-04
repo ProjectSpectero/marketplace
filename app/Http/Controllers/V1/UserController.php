@@ -26,13 +26,13 @@ class UserController extends CRUDController
             'name' => 'required',
             'email' => 'required|email|unique:users',
             'password' => 'required',
-            'address_line_1' => 'sometimes|required',
-            'address_line_2' => 'sometimes|required',
-            'city' => 'sometimes|required',
-            'state' => 'sometimes|required',
-            'post_code' => 'sometimes|required',
-            'country' => 'sometimes|country',
-            'phone_no' => 'sometimes|required'
+            'address_line_1' => 'required',
+            'address_line_2' => 'required',
+            'city' => 'required',
+            'state' => 'required',
+            'post_code' => 'alpha_num|required',
+            'country' => 'required|country',
+            'phone_no' => 'required'
         ];
 
         $this->validate($request, $rules);
@@ -67,16 +67,16 @@ class UserController extends CRUDController
         $user = User::findOrFail($id);
 
         $rules = [
-            'name' => 'sometimes|required',
-            'email' => 'sometimes|required|email'.$request->get('id'),
-            'password' => 'sometimes|required|min:5|max:72',
-            'address_line_1' => 'sometimes|required',
-            'address_line_2' => 'sometimes|required',
-            'city' => 'sometimes|required',
-            'state' => 'sometimes|required',
-            'post_code' => 'sometimes|required',
-            'country' => 'sometimes|country',
-            'phone_no' => 'sometimes|required'
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email,' . $request->get('id'),
+            'password' => 'sometimes|min:5|max:72',
+            'address_line_1' => 'required',
+            'address_line_2' => 'required',
+            'city' => 'required',
+            'state' => 'required',
+            'post_code' => 'alpha_num|required',
+            'country' => 'required|country',
+            'phone_no' => 'required'
         ];
 
         $this->validate($request, $rules);
@@ -84,7 +84,9 @@ class UserController extends CRUDController
 
         $user->name = $input['name'];
         $user->email = $input['email'];
-        $user->password = Hash::make($input['password']);
+
+        if (isset($input['password']))
+            $user->password = Hash::make($input['password']);
 
         // Remove the ones that go into the original model
         unset($input['name'], $input['email'], $input['password']);

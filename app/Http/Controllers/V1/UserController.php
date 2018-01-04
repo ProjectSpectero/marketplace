@@ -30,7 +30,7 @@ class UserController extends CRUDController
             'address_line_2' => 'required',
             'city' => 'required',
             'state' => 'required',
-            'post_code' => 'alpha_num|required',
+            'post_code' => 'required|alpha_num',
             'country' => 'required|country',
             'phone_no' => 'required'
         ];
@@ -74,7 +74,7 @@ class UserController extends CRUDController
             'address_line_2' => 'required',
             'city' => 'required',
             'state' => 'required',
-            'post_code' => 'alpha_num|required',
+            'post_code' => 'required|alpha_num',
             'country' => 'required|country',
             'phone_no' => 'required'
         ];

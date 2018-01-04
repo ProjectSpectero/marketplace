@@ -2,9 +2,11 @@
 
 namespace App\Traits;
 
+use App\Errors\FatalException;
 use App\Libraries\Utility;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Symfony\Component\Debug\Exception\FatalErrorException;
 
 trait MetaTrait
 {
@@ -34,9 +36,12 @@ trait MetaTrait
     public static function addOrUpdateMeta (Model $model, String $key, $value)
     {
         $modelName = self::getModelName($model);
+        $modelMeta = null;
         $resolvedType = gettype($value);
         $type = in_array($resolvedType, Utility::$metaDataTypes) ? $resolvedType : 'string';
-        $modelMeta = null;
+
+        if ($type == 'string' && strlen($value) > 255)
+            throw new FatalException();
 
         try
         {

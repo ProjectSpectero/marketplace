@@ -26,13 +26,13 @@ class UserController extends CRUDController
             'name' => 'required',
             'email' => 'required|email|unique:users',
             'password' => 'required',
-            'address_line_1' => 'required',
-            'address_line_2' => 'required',
-            'city' => 'required',
-            'state' => 'required',
-            'post_code' => 'required|alpha_num',
-            'country' => 'required|country',
-            'phone_no' => 'required'
+            'address_line_1' => 'required|max:255',
+            'address_line_2' => 'required|max:255',
+            'city' => 'required|max:255',
+            'state' => 'required|max:255',
+            'post_code' => 'required|alpha_num|max:255',
+            'country' => 'required|country|max:255',
+            'phone_no' => 'required|max:255'
         ];
 
         $this->validate($request, $rules);
@@ -70,13 +70,13 @@ class UserController extends CRUDController
             'name' => 'required',
             'email' => 'required|email|unique:users,email,' . $request->get('id'),
             'password' => 'sometimes|min:5|max:72',
-            'address_line_1' => 'required',
-            'address_line_2' => 'required',
-            'city' => 'required',
-            'state' => 'required',
-            'post_code' => 'required|alpha_num',
-            'country' => 'required|country',
-            'phone_no' => 'required'
+            'address_line_1' => 'required|max:255',
+            'address_line_2' => 'required|max:255',
+            'city' => 'required|max:255',
+            'state' => 'required|max:255',
+            'post_code' => 'required|alpha_num|max:255',
+            'country' => 'required|country|max:255',
+            'phone_no' => 'required|max:255'
         ];
 
         $this->validate($request, $rules);

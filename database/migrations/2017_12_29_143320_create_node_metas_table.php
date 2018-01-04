@@ -19,6 +19,7 @@ class CreateNodeMetasTable extends Migration
             $table->string('meta_key')->unique();
             $table->string('value_type');
             $table->string('meta_value');
+            $table->unique(['node_id', 'meta_key'], 'nodeid_metakey_unique_index');
             $table->timestamps();
         });
     }

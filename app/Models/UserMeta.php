@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use App\Libraries\Utility;
 
@@ -17,18 +18,16 @@ class UserMeta extends Model
      * @param string $key
      * @param bool $throwsException
      *
-     * @return string meta_value
+     * @return Collection UserMeta
      */
 
-    public function scopeLoadMeta($query, $user, $key = '', $throwsException = false)
+    public function scopeLoadMeta($query, User $user, $key = '', $throwsException = false)
     {
         if (empty($key))
             return $user->userMeta;
 
-        if ($throwsException)
-            return $query->where(['user_id' => $user->id, 'meta_key' => $key])->firstOrFail();
-
-        return $query->where(['user_id' => $user->id, 'meta_key' => $key])->first();
+        $constraint = $query->where(['user_id' => $user->id, 'meta_key' => $key]);
+        return $throwsException ? $constraint->firstOrFail() : $constraint->first();
     }
 
     public function user()
@@ -45,7 +44,7 @@ class UserMeta extends Model
         return $value;
     }
 
-    public static function addOrUpdateMeta ($user, $key, $value)
+    public static function addOrUpdateMeta (User $user, String $key, $value) : UserMeta
     {
         $type = gettype($value);
         $type = in_array($type, Utility::$metaDataTypes) ? $type : 'string';
@@ -55,10 +54,10 @@ class UserMeta extends Model
             $userMeta = UserMeta::loadMeta($user, $key)->first();
             $userMeta->meta_value = $value;
             $userMeta->save();
-            return;
+            return $userMeta;
         }
 
-        static::create([
+        return static::create([
             'user_id' => $user->id,
             'meta_key' => $key,
             'value_type' => $type,
@@ -68,7 +67,7 @@ class UserMeta extends Model
 
     public static function deleteMeta (User $user, String $key)
     {
-        $userMeta = static::loadMeta($user, $key)->first();
+        $userMeta = static::loadMeta($user, $key);
         if (! empty($userMeta))
             $userMeta->delete();
     }

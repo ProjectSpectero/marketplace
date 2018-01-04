@@ -6,7 +6,6 @@ use App\Errors\FatalException;
 use App\Libraries\Utility;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Symfony\Component\Debug\Exception\FatalErrorException;
 
 trait MetaTrait
 {
@@ -41,7 +40,8 @@ trait MetaTrait
         $type = in_array($resolvedType, Utility::$metaDataTypes) ? $resolvedType : 'string';
 
         if ($type == 'string' && strlen($value) > 255)
-            throw new FatalException();
+            throw new FatalException("Length of string type " . strlen($value) .
+                "longer than what the meta_value column can handle");
 
         try
         {

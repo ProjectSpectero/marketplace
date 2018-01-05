@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use App\Constants\Errors;
 use App\Constants\ResponseType;
 use App\Errors\BaseException;
+use App\Errors\NotSupportedException;
 use App\Errors\UserFriendlyException;
 use App\Libraries\Environment;
 use App\Libraries\Utility;
@@ -97,6 +98,9 @@ class Handler extends ExceptionHandler
                 break;
             case $e instanceof ModelNotFoundException:
                 return Utility::generateResponse(null, [ Errors::RESOURCE_NOT_FOUND => '' ], Errors::REQUEST_FAILED, $version, ResponseType::NOT_FOUND);
+                break;
+            case $e instanceof NotSupportedException:
+                return Utility::generateResponse(null, [ Errors::ACTION_NOT_SUPPORTED => '' ], Errors::REQUEST_FAILED, $version, ResponseType::BAD_REQUEST);
                 break;
         }
 

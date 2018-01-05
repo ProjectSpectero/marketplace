@@ -20,6 +20,7 @@ class CreateNodesTable extends Migration
             $table->string('protocol');
             $table->string('access_token');
             $table->integer('install_id');
+            $table->boolean('active');
             $table->integer('user_id');
             $table->string('market_model'); // Do not set this without the constants array
             $table->timestamps();

@@ -55,7 +55,7 @@ class Handler extends ExceptionHandler
     public function render($request, Exception $e)
     {
         // This means the env is NOT production, we're free to throw whatever we feel like.
-        if (! Environment::compare(app()->environment(), Environment::PRODUCTION))
+        if (! Environment::isProduction())
             return parent::render($request, $e);
 
         $returnCode = $e->getCode() != 0 ? $e->getCode() : 400;

@@ -2,7 +2,7 @@
 
 namespace App\Constants;
 
-class UserMetaKeys
+class UserMetaKeys extends Holder
 {
     const AddressLineOne = 'address_line_1';
     const AddressLineTwo = 'address_line_2';
@@ -13,11 +13,4 @@ class UserMetaKeys
     const PhoneNumber = 'phone_no';
     const TwoFactorSecretKey = 'tfa.secret';
     const TwoFactorEnabled = 'tfa.enabled';
-
-    static function getConstants()
-    {
-        $class = new \ReflectionClass(UserMetaKeys::class);
-        return $class->getConstants();
-    }    
 }
-

@@ -2,7 +2,8 @@
 
 namespace App\Constants;
 
-class Messages {
+class Messages extends Holder
+{
     const OAUTH_TOKEN_ISSUED = 'OAUTH_TOKEN_ISSUED';
     const OAUTH_TOKEN_REFRESHED = 'OAUTH_TOKEN_REFRESHED';
     const USER_CREATED = 'USER_CREATED';

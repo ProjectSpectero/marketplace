@@ -2,11 +2,11 @@
 
 namespace App\Exceptions;
 
-use App\Constants\Environment;
 use App\Constants\Errors;
 use App\Constants\ResponseType;
 use App\Errors\BaseException;
 use App\Errors\UserFriendlyException;
+use App\Libraries\Environment;
 use App\Libraries\Utility;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -94,6 +94,9 @@ class Handler extends ExceptionHandler
                 break;
             case $e instanceof MethodNotAllowedHttpException:
                 return Utility::generateResponse(null, [ Errors::METHOD_NOT_ALLOWED => '' ], Errors::REQUEST_FAILED, $version, ResponseType::METHOD_NOT_ALLOWED);
+                break;
+            case $e instanceof ModelNotFoundException:
+                return Utility::generateResponse(null, [ Errors::RESOURCE_NOT_FOUND => '' ], Errors::REQUEST_FAILED, $version, ResponseType::NOT_FOUND);
                 break;
         }
 

@@ -17,11 +17,15 @@ class CreateNodesTable extends Migration
             $table->increments('id');
             $table->string('ip');
             $table->integer('port');
+            $table->string('protocol');
             $table->string('access_token');
             $table->integer('install_id');
             $table->integer('user_id');
-            $table->string('market_model');
+            $table->string('market_model'); // Do not set this without the constants array
             $table->timestamps();
+
+            $table->unique([ 'ip', 'port' ], "unique_ip_port_index");
+            $table->unique('install_id', 'unique_install_id_index');
         });
     }
 

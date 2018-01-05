@@ -12,6 +12,9 @@
 */
 
 /** @var \Laravel\Lumen\Routing\Router $router */
+
+use App\Libraries\Environment;
+
 $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
 {
     /** @var \Laravel\Lumen\Routing\Router $api */
@@ -39,7 +42,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         \App\Libraries\Utility::defineResourceRoute('user', 'UserController', $api, []);
     });
 
-    if (!\App\Constants\Environment::isProduction())
+    if (!Environment::isProduction())
     {
         $api->group(['prefix' => 'debug' ], function($api)
         {

@@ -2,7 +2,7 @@
 
 namespace App\Constants;
 
-class ResponseType
+class ResponseType extends Holder
 {
     const CREATED = 201;
     const NO_CONTENT = 204;

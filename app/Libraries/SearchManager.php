@@ -33,7 +33,13 @@ class SearchManager
         $model = Utility::getModelFromResourceSlug($caller);
         $constraints = [];
         foreach ($searchEntity->rules as $rule)
+        {
+            if ($rule['operator'] == 'LIKE')
+                $rule['value'] = '%' . $rule['value'] . '%';
+
             $constraints[] = [ $rule['field'], $rule['operator'], $rule['value'] ];
+        }
+
 
         return $model->where($constraints)->get();
     }

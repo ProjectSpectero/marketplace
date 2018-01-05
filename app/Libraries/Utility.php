@@ -2,6 +2,8 @@
 
 namespace App\Libraries;
 
+use App\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Laravel\Lumen\Routing\Router;
 
@@ -44,5 +46,12 @@ class Utility
         }
 
         return $options;
+    }
+
+    public static function getModelFromResourceSlug (String $slug) : Model
+    {
+        $baseModelNamespace = 'App\\';
+        $modelName = $baseModelNamespace . studly_case($slug);
+        return new $modelName;
     }
 }

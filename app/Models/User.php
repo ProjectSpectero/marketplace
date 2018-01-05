@@ -32,6 +32,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'password',
     ];
 
+    public $searchAble = [
+        'name', 'email'
+    ];
+
     public function userMeta()
     {
         return $this->hasMany(UserMeta::class);

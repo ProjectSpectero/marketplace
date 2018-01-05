@@ -32,12 +32,16 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         /** @var \Laravel\Lumen\Routing\Router $api */
         // Group with auth
 
+        // Multifactor Auth Routes
         // Enable and disable have different endpoints because disable needs to pass the TFA filter as well.
         $api->get('auth/multifactor/enable', 'TwoFactorController@enableTwoFactor');
         $api->get('auth/multifactor/disable', [ 'middleware' => 'enforce-tfa', 'uses' => 'TwoFactorController@disableTwoFactor' ]);
         $api->get('auth/multifactor/first-time', [ 'middleware' => 'enforce-tfa', 'uses' => 'TwoFactorController@firstTimeMultiFactor' ]);
         $api->get('auth/multifactor/codes', 'TwoFactorController@showUserBackupCodes');
         $api->get('auth/multifactor/codes/regenerate', 'TwoFactorController@regenerateUserBackupCodes');
+
+        // Search/Filtering routes
+        $api->post('search', 'SearchController@handleSearch');
 
         \App\Libraries\Utility::defineResourceRoute('user', 'UserController', $api, []);
         \App\Libraries\Utility::defineResourceRoute('node', 'NodeController', $api, []);

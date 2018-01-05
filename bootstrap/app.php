@@ -97,6 +97,8 @@ $app->configure('cors');
     $app->configure('permission');
     $app->register(Spatie\Permission\PermissionServiceProvider::class);
 
+    $app->configure('search');
+
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes

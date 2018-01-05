@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends CRUDController
 {
-    public function index() : JsonResponse
+    public function index(Request $request) : JsonResponse
     {
         return $this->respond(User::all(), [], Messages::GET_USERS_LIST);
     }
@@ -57,13 +57,15 @@ class UserController extends CRUDController
 
     public function show(int $id): JsonResponse
     {
+        /** @var User $user */
         $user = User::findOrFail($id);
 
-        return $this->respond($user, [], Messages::GET_USER);
+        return $this->respond($user->toArray(), [], Messages::GET_USER);
     }
 
     public function update(Request $request, int $id): JsonResponse
     {
+        /** @var User $user */
         $user = User::findOrFail($id);
 
         $rules = [
@@ -101,10 +103,11 @@ class UserController extends CRUDController
 
     public function destroy(int $id): JsonResponse
     {
+        /** @var User $user */
         $user = User::findOrFail($id);
 
         $user->delete();
 
-        $this->respond(null, [], Messages::USER_DESTROYED, ResponseType::NO_CONTENT);
+        return $this->respond(null, [], Messages::USER_DESTROYED, ResponseType::NO_CONTENT);
     }
 }

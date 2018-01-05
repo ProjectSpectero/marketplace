@@ -1,14 +1,34 @@
 <?php
 
 namespace App\Http\Controllers\V1;
+use App\Errors\NotSupportedException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request as Request;
 
-abstract class CRUDController extends V1Controller
+class CRUDController extends V1Controller
 {
-    abstract function store(Request $request) : JsonResponse;
-    abstract function update(Request $request, int $id) : JsonResponse;
-    abstract function destroy(int $id) : JsonResponse;
-    abstract function show(int $id) : JsonResponse;
-    abstract function index() : JsonResponse;
+    public function index (Request $request) : JsonResponse
+    {
+        throw new NotSupportedException();
+    }
+
+    public function store (Request $request) : JsonResponse
+    {
+        throw new NotSupportedException();
+    }
+
+    public function update (Request $request, int $id) : JsonResponse
+    {
+        throw new NotSupportedException();
+    }
+
+    public function destroy (int $id) : JsonResponse
+    {
+        throw new NotSupportedException();
+    }
+
+    public function show (int $id) : JsonResponse
+    {
+        throw new NotSupportedException();
+    }
 }

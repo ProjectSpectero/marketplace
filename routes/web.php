@@ -40,5 +40,6 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->get('auth/multifactor/codes/regenerate', 'TwoFactorController@regenerateUserBackupCodes');
 
         \App\Libraries\Utility::defineResourceRoute('user', 'UserController', $api, []);
+        \App\Libraries\Utility::defineResourceRoute('node', 'NodeController', $api, []);
     });
 });

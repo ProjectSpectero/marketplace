@@ -4,7 +4,7 @@
 namespace App\Http\Controllers\V1;
 
 
-class NodeController
+class NodeController extends CRUDController
 {
 
 }

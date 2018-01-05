@@ -41,13 +41,4 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
 
         \App\Libraries\Utility::defineResourceRoute('user', 'UserController', $api, []);
     });
-
-    if (!Environment::isProduction())
-    {
-        $api->group(['prefix' => 'debug' ], function($api)
-        {
-            /** @var \Laravel\Lumen\Routing\Router $api */
-            $api->get('/test/multifactor-middleware', [ 'middleware' => [ 'auth:api', 'cors', 'enforce-tfa' ], 'uses' => 'DebugController@multiFactorTest' ]);
-        });
-    }
 });

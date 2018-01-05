@@ -5,7 +5,7 @@ use Illuminate\Http\Request;
 
 class DebugController
 {
-    public function multiFactorTest (Request $request)
+    public function helloWorld (Request $request)
     {
         echo "Everything went better than expected!";
     }

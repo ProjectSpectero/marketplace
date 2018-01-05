@@ -110,8 +110,11 @@ $app->configure('cors');
 
 $app->router->group([
     'namespace' => 'App\Http\Controllers',
-], function ($router) {
+], function ($router)
+{
     require __DIR__.'/../routes/web.php';
+    if (! \App\Libraries\Environment::isProduction())
+        require __DIR__.'/../routes/debug.php';
 });
 
 return $app;

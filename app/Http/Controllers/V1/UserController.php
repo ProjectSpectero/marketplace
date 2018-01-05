@@ -17,7 +17,7 @@ class UserController extends CRUDController
 {
     public function index(Request $request) : JsonResponse
     {
-        return $this->respond(User::all(), [], Messages::GET_USERS_LIST);
+        return $this->respond(User::all()->toArray());
     }
 
     public function store(Request $request) : JsonResponse
@@ -60,7 +60,7 @@ class UserController extends CRUDController
         /** @var User $user */
         $user = User::findOrFail($id);
 
-        return $this->respond($user->toArray(), [], Messages::GET_USER);
+        return $this->respond($user->toArray());
     }
 
     public function update(Request $request, int $id): JsonResponse

@@ -25,7 +25,7 @@ class UserController extends CRUDController
         $rules = [
             'name' => 'required',
             'email' => 'required|email|unique:users',
-            'password' => 'required',
+            'password' => 'sometimes|min:5|max:72',
             'address_line_1' => 'required|max:255',
             'address_line_2' => 'required|max:255',
             'city' => 'required|max:255',

@@ -5,6 +5,7 @@ namespace App\Libraries;
 
 
 use App\Constants\Errors;
+use App\Constants\ResponseType;
 use App\Errors\UserFriendlyException;
 use App\Models\Opaque\SearchEntity;
 use Illuminate\Database\Eloquent\Collection;
@@ -24,7 +25,7 @@ class SearchManager
         $searchEntity = \Cache::has($key) ? \Cache::get($key) : null;
 
         if ($searchEntity == null)
-            throw new UserFriendlyException(Errors::SEARCH_ID_INVALID_OR_EXPIRED);
+            throw new UserFriendlyException(Errors::SEARCH_ID_INVALID_OR_EXPIRED, ResponseType::UNPROCESSABLE_ENTITY);
 
         if ($searchEntity->resource !== $caller)
             throw new UserFriendlyException(Errors::SEARCH_RESOURCE_MISMATCH);

@@ -4,6 +4,7 @@
 namespace App\Http\Controllers\V1;
 
 
+use App\Libraries\SearchManager;
 use App\Libraries\Utility;
 use App\Models\Opaque\SearchEntity;
 use App\Models\Opaque\SearchResponse;
@@ -23,7 +24,7 @@ class SearchController extends V1Controller
 
         // Figure out what fields are marked searchable for this model
         $resource = $request->input('resource');
-        $searchAbleFields = $this->getSearchAbleFieldsForResource($resource);
+        $searchAbleFields = SearchManager::getSearchAbleFieldsForResource($resource);
 
         $rules = [
             'expires' => 'sometimes|numeric|max:' . config('search.maxExpiry', 600),
@@ -42,30 +43,11 @@ class SearchController extends V1Controller
         $searchEntity->resource = $resource;
         $searchEntity->rules = $request->input('rules');
 
-        \Cache::put($this->generateSearchKey($searchId), $searchEntity, $expires);
+        \Cache::put(SearchManager::generateSearchKey($searchId), $searchEntity, $expires);
 
         $response = new SearchResponse();
         $response->searchId = $searchId;
 
         return $this->respond($response->toArray());
-    }
-
-    private function generateSearchKey (String $id) : string
-    {
-        return "searches." . $id;
-    }
-
-    private function getSearchAbleFieldsForResource (String $resource) : array
-    {
-        $key = 'searches.fields.' . $resource;
-        if (\Cache::has($key))
-            return \Cache::get($key, []);
-
-        $modelFieldCacheMinutes = config('search.modelFieldCacheMinutes', 30);
-        $underlyingModel = Utility::getModelFromResourceSlug($resource);
-        $value = property_exists($underlyingModel, 'searchAble') ? $underlyingModel->searchAble : [];
-        \Cache::put($key, $value, $modelFieldCacheMinutes);
-
-        return $value;
     }
 }

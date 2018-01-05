@@ -5,6 +5,7 @@ namespace App\Http\Controllers\V1;
 use App\Constants\Errors;
 use App\Constants\ResponseType;
 use App\Errors\NotSupportedException;
+use App\Libraries\SearchManager;
 use App\User;
 use App\UserMeta;
 use App\Constants\Messages;
@@ -17,6 +18,18 @@ class UserController extends CRUDController
 {
     public function index(Request $request) : JsonResponse
     {
+        $rules = [
+            'searchId' => 'sometimes|alphanum'
+        ];
+        $this->validate($request, $rules);
+
+        if ($request->has('searchId'))
+        {
+            $searchId = $request->input('searchId');
+            $results = SearchManager::process($searchId, 'user');
+            return $this->respond($results->toArray());
+        }
+
         return $this->respond(User::all()->toArray());
     }
 

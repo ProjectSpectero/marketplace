@@ -13,8 +13,6 @@
 
 /** @var \Laravel\Lumen\Routing\Router $router */
 
-use App\Libraries\Environment;
-
 $router->group(['prefix' => 'v1', 'namespace' => 'V1', 'middleware' => [ 'cors' ]], function($api)
 {
     /** @var \Laravel\Lumen\Routing\Router $api */
@@ -45,9 +43,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1', 'middleware' => [ 'cors' 
         $api->post('search', 'SearchController@handleSearch');
 
         \App\Libraries\Utility::defineResourceRoute('user', 'UserController', $api, [], [
-            'excluded' => [
-                \App\Constants\CRUDActions::STORE
-                ]
+            'excluded' =>  \App\Constants\CRUDActions::STORE
         ]);
         \App\Libraries\Utility::defineResourceRoute('node', 'NodeController', $api, []);
     });

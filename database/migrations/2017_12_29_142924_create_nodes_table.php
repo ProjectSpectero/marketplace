@@ -24,6 +24,7 @@ class CreateNodesTable extends Migration
             $table->integer('user_id');
             $table->string('market_model'); // Do not set this without the constants array
             $table->timestamps();
+            $table->softDeletes();
 
             $table->unique([ 'ip', 'port' ], "unique_ip_port_index");
             $table->unique('install_id', 'unique_install_id_index');

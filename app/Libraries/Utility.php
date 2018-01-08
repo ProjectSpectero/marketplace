@@ -3,7 +3,6 @@
 namespace App\Libraries;
 
 use App\Constants\CRUDActions;
-use App\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Laravel\Lumen\Routing\Router;

@@ -39,6 +39,11 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1', 'middleware' => [ 'cors' 
         $api->get('auth/multifactor/codes', 'TwoFactorController@showUserBackupCodes');
         $api->get('auth/multifactor/codes/regenerate', 'TwoFactorController@regenerateUserBackupCodes');
 
+        // User CRUD
+        $api->get('user/{id}', 'UserController@show');
+        $api->patch('user/{id}', 'UserController@update');
+        $api->delete('user/{id}', 'UserController@destroy');
+
         // Search/Filtering routes
         $api->post('search', 'SearchController@handleSearch');
 

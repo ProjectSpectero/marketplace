@@ -15,7 +15,7 @@
 
 use App\Libraries\Environment;
 
-$router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
+$router->group(['prefix' => 'v1', 'namespace' => 'V1', 'middleware' => [ 'cors' ]], function($api)
 {
     /** @var \Laravel\Lumen\Routing\Router $api */
     $api->group(['as' => 'NoAuthRequired'], function ($api)
@@ -25,9 +25,10 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->post('auth', 'AuthController@auth');
         $api->post('auth/refresh', 'AuthController@refreshToken');
         $api->post('auth/multifactor', 'TwoFactorController@verifyToken');
+        $api->post('user', 'UserController@store');
     });
 
-    $api->group(['as' => 'AuthRequired', 'middleware' => ['auth:api', 'cors']], function ($api)
+    $api->group(['as' => 'AuthRequired', 'middleware' => ['auth:api']], function ($api)
     {
         /** @var \Laravel\Lumen\Routing\Router $api */
         // Group with auth
@@ -43,7 +44,11 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         // Search/Filtering routes
         $api->post('search', 'SearchController@handleSearch');
 
-        \App\Libraries\Utility::defineResourceRoute('user', 'UserController', $api, []);
+        \App\Libraries\Utility::defineResourceRoute('user', 'UserController', $api, [], [
+            'excluded' => [
+                \App\Constants\CRUDActions::STORE
+                ]
+        ]);
         \App\Libraries\Utility::defineResourceRoute('node', 'NodeController', $api, []);
     });
 });

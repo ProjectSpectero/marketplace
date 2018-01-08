@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers\V1;
 
-use App\Constants\Errors;
 use App\Constants\ResponseType;
-use App\Errors\NotSupportedException;
 use App\Libraries\SearchManager;
 use App\User;
 use App\UserMeta;
 use App\Constants\Messages;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;

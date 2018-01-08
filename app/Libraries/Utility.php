@@ -2,6 +2,7 @@
 
 namespace App\Libraries;
 
+use App\Constants\CRUDActions;
 use App\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -28,24 +29,45 @@ class Utility
             ], $statusCode, $headers);
     }
 
-    public static function defineResourceRoute (String $slug, String $controller, Router $router, Array $middlewares) : void
+    public static function defineResourceRoute (String $slug, String $controller, Router $router, Array $middlewares, Array $rules = []) : void
     {
-        $router->get($slug, self::generateRouteOptions($controller, 'index', $middlewares));
-        $router->get($slug . '/{id}', self::generateRouteOptions($controller, 'show', $middlewares));
-        $router->post($slug, self::generateRouteOptions($controller, 'store', $middlewares));
-        $router->put($slug . '/{id}', self::generateRouteOptions($controller, 'update', $middlewares));
-        $router->delete($slug . '/{id}', self::generateRouteOptions($controller, 'destroy', $middlewares));
+        if (! self::checkIfActionIsExcluded($rules, CRUDActions::INDEX))
+            $router->get($slug, self::generateRouteOptions($slug, $controller, CRUDActions::INDEX, $middlewares));
+
+        if (! self::checkIfActionIsExcluded($rules, CRUDActions::SHOW))
+            $router->get($slug . '/{id}', self::generateRouteOptions($slug, $controller, CRUDActions::SHOW, $middlewares));
+
+        if (! self::checkIfActionIsExcluded($rules, CRUDActions::STORE))
+            $router->post($slug, self::generateRouteOptions($slug, $controller, CRUDActions::STORE, $middlewares));
+
+        if (! self::checkIfActionIsExcluded($rules, CRUDActions::UPDATE))
+            $router->put($slug . '/{id}', self::generateRouteOptions($slug, $controller, CRUDActions::UPDATE, $middlewares));
+
+        if (! self::checkIfActionIsExcluded($rules, CRUDActions::DESTROY))
+            $router->delete($slug . '/{id}', self::generateRouteOptions($slug, $controller, CRUDActions::DESTROY, $middlewares));
     }
 
-    private static function generateRouteOptions (String $controller, String $action, Array $middlewares) : array
+    private static function generateRouteOptions (String $slug, String $controller, String $action, Array $middlewares) : array
     {
-        $options = [ 'uses' => $controller . '@' . $action ];
+        $options = [
+            'uses' => $controller . '@' . $action,
+            'as' => $slug . '_' . $action
+        ];
+
         if (count($middlewares) != 0)
         {
             $options['middleware'] = $middlewares;
         }
 
         return $options;
+    }
+
+    private static function checkIfActionIsExcluded (Array $rules, String $action) : bool
+    {
+        if (isset($rules['excluded']))
+            return is_array($rules['excluded']) ? in_array($action, $rules['excluded']) : $action == $rules['excluded'];
+
+        return false;
     }
 
     public static function getModelFromResourceSlug (String $slug) : Model

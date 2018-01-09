@@ -13,4 +13,9 @@ class Node extends Model
     {
         return $this->hasMany(NodeMeta::class);
     }
+
+    public function accessor () : String
+    {
+        return sprintf('%s://%s:%d', $this->protocol, $this->ip, $this->port);
+    }
 }

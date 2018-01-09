@@ -13,11 +13,13 @@ class UserRolesSeeder extends Seeder
      */
     public function run()
     {
+        $userResource = config('resources')['user'];
+
         $admin = Role::create(['name' => 'admin']);
-        Role::create(['name' => 'user'])->givePermissionTo(CRUDActions::STORE);
+        Role::create(['name' => 'user'])->givePermissionTo($userResource.'.'.CRUDActions::STORE);
 
         foreach (CRUDActions::getConstants() as $permission) {
-            $admin->givePermissionTo($permission);
+            $admin->givePermissionTo($userResource.'.'.$permission);
         }
     }
 }

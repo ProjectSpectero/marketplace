@@ -50,6 +50,7 @@ $app->singleton(
 
 $app->configure('auth');
 $app->configure('cors');
+$app->configure('resources');
 
 /*
 |--------------------------------------------------------------------------

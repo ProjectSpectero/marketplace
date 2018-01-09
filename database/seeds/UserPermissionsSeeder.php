@@ -13,8 +13,9 @@ class UserPermissionsSeeder extends Seeder
      */
     public function run()
     {
+        $userResource = config('resources')['user'];
         foreach (CRUDActions::getConstants() as $permission   ) {
-            Permission::create(['name' => $permission]);
+            Permission::create(['name' => $userResource.'.'.$permission]);
         }
     }
 }

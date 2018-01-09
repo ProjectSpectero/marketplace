@@ -18,4 +18,9 @@ class Node extends Model
     {
         return sprintf('%s://%s:%d', $this->protocol, $this->ip, $this->port);
     }
+
+    public function user ()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

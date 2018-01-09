@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use App\Constants\UserRoles;
 
 class UsersTableSeeder extends Seeder
 {
@@ -14,13 +15,13 @@ class UsersTableSeeder extends Seeder
       factory(App\User::class, 5)->create();
 
       foreach(App\User::all() as $user) {
-          $user->assignRole('user');
+          $user->assignRole(UserRoles::USER);
       }
 
       \App\User::create([
         "name" => "Spectero Dev",
         "email" => "spectero@dev.com",
         "password" => \Illuminate\Support\Facades\Hash::make('temppass') 
-      ])->assignRole('admin');
+      ])->assignRole(UserRoles::ADMIN);
     }
 }

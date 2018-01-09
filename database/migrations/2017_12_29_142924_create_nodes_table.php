@@ -28,6 +28,7 @@ class CreateNodesTable extends Migration
 
             $table->unique([ 'ip', 'port' ], "unique_ip_port_index");
             $table->unique('install_id', 'unique_install_id_index');
+            $table->unique([ 'access_token', 'install_id' ], 'unique_token_install_id_index');
         });
     }
 

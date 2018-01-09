@@ -11,7 +11,7 @@ class UserMeta extends Model
 
     use MetaTrait;
 
-    protected $fillable = ['user_id', 'meta_key', 'meta_value'];
+    protected $fillable = [ 'user_id', 'meta_key', 'meta_value', 'value_type' ];
 
 
     public function user()

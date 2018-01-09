@@ -11,7 +11,7 @@ class NodeMeta extends Model
 
     use MetaTrait;
 
-    protected $fillable = ['node_id', 'meta_key', 'value_type', 'meta_value'];
+    protected $fillable = [ 'node_id', 'meta_key', 'value_type', 'meta_value' ];
 
 
     public function node()

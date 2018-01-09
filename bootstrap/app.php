@@ -18,6 +18,13 @@ try {
 | application as an "IoC" container and router for this framework.
 |
 */
+if (!function_exists('app_path'))
+{
+    function app_path($path = '')
+    {
+        return app('path').($path ? DIRECTORY_SEPARATOR.$path : $path);
+    }
+}
 
 $app = new Laravel\Lumen\Application(
     realpath(__DIR__.'/../')
@@ -69,8 +76,6 @@ $app->configure('resources');
 
  $app->routeMiddleware([
      'auth' => App\Http\Middleware\Authenticate::class,
-     'permission' => Spatie\Permission\Middlewares\PermissionMiddleware::class,
-     'role' => Spatie\Permission\Middlewares\RoleMiddleware::class,
      'cors' => \Barryvdh\Cors\HandleCors::class,
      'enforce-tfa' => App\Http\Middleware\EnforceTwoFactorVerification::class,
  ]);
@@ -94,11 +99,25 @@ $app->configure('resources');
     $app->register(Dusterio\LumenPassport\PassportServiceProvider::class);
     Dusterio\LumenPassport\LumenPassport::routes($app);
     $app->register(Barryvdh\Cors\ServiceProvider::class);
-
-    $app->configure('permission');
-    $app->register(Spatie\Permission\PermissionServiceProvider::class);
+    $app->register(Silber\Bouncer\BouncerServiceProvider::class);
 
     $app->configure('search');
+
+/*
+|--------------------------------------------------------------------------
+| Class Aliases
+|--------------------------------------------------------------------------
+|
+| This array of class aliases will be registered when this application
+| is started. However, feel free to register as many as you wish as
+| the aliases are "lazy" loaded so they don't hinder performance.
+|
+*/
+
+if (!class_exists('Bouncer'))
+{
+    class_alias('Silber\Bouncer\BouncerFacade', 'Bouncer');
+}
 
 /*
 |--------------------------------------------------------------------------

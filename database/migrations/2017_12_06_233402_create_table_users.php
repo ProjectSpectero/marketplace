@@ -17,6 +17,7 @@ class CreateTableUsers extends Migration
             $table->increments('id');
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('status'); // Do not set without the constants array
             $table->string('password');
             $table->timestamps();
         });

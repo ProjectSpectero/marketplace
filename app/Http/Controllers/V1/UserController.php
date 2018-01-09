@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Constants\Events;
 use App\Constants\ResponseType;
+use App\Constants\UserStatus;
+use App\Events\UserEvent;
 use App\Libraries\SearchManager;
 use App\User;
 use App\UserMeta;
@@ -51,7 +54,8 @@ class UserController extends CRUDController
         /** @var User $user */
         $user = User::create([
             'name' => $input['name'],
-            'email' => $input['email']
+            'email' => $input['email'],
+            'status' => UserStatus::EMAIL_VERIFICATION_NEEDED
         ]);
         $user->password = Hash::make($input['password']);
         $user->saveOrFail();
@@ -62,6 +66,7 @@ class UserController extends CRUDController
         foreach ($input as $key => $value)
             UserMeta::addOrUpdateMeta($user, $key, $value);
 
+        event(new UserEvent(Events::USER_CREATED, $user));
         return $this->respond($user->toArray(), [], Messages::USER_CREATED, ResponseType::CREATED);
     }
 
@@ -108,6 +113,7 @@ class UserController extends CRUDController
 
         $user->saveOrFail();
 
+        event(new UserEvent(Events::USER_UPDATED, $user));
         return $this->respond($user->toArray(), [], Messages::USER_UPDATED);
     }
 
@@ -118,6 +124,7 @@ class UserController extends CRUDController
 
         $user->delete();
 
+        event(new UserEvent(Events::USER_DELETED, $user));
         return $this->respond(null, [], Messages::USER_DESTROYED, ResponseType::NO_CONTENT);
     }
 }

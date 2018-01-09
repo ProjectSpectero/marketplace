@@ -20,13 +20,13 @@ class CreateNodesTable extends Migration
             $table->string('protocol');
             $table->string('access_token');
             $table->integer('install_id');
-            $table->boolean('active');
+            $table->string('status');
             $table->integer('user_id');
             $table->string('market_model'); // Do not set this without the constants array
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique([ 'ip', 'port' ], "unique_ip_port_index");
+            $table->unique('ip', "unique_ip_index");
             $table->unique('install_id', 'unique_install_id_index');
             $table->unique([ 'access_token', 'install_id' ], 'unique_token_install_id_index');
         });

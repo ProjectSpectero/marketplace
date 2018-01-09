@@ -4,6 +4,7 @@ namespace App\Constants;
 
 class ResponseType extends Holder
 {
+    const OK = 200;
     const CREATED = 201;
     const NO_CONTENT = 204;
     const BAD_REQUEST = 400;

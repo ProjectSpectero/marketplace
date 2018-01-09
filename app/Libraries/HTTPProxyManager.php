@@ -17,24 +17,29 @@ class HTTPProxyManager
         ]);
     }
 
-    public function verify (String $outgoingIP, String $proxyHost, String $proxyPort, String $proxyUsername, String $proxyPassword)
+    public function verify (String $outgoingIP, String $proxyHost, String $proxyPort, String $proxyUsername, String $proxyPassword, int $attempts = 2)
     {
-        try
-        {
-            $proxy = $this->formatProxy($proxyHost, $proxyPort, $proxyUsername, $proxyPassword);
-            $response = $this->client->get('/', [
-                'proxy' => $proxy,
-                'connect_timeout' => env('EXTERNAL_IP_RESOLUTION_TIMEOUT_SECONDS', 5)
-            ]);
+        $proxy = $this->formatProxy($proxyHost, $proxyPort, $proxyUsername, $proxyPassword);
+        $connectTimeout = env('EXTERNAL_IP_RESOLUTION_TIMEOUT_SECONDS', 5);
 
-            if ($response->getStatusCode() == ResponseType::OK)
-                return $response->getBody()->getContents() === $outgoingIP;
-        }
-        catch (RequestException $exception)
+        for ($i = 0; $i < $attempts; $i++)
         {
-            // IP resolver gave something other than 200, who knows why?
-            // That or the proxy didn't work, again not our headache.
-            return false;
+            try
+            {
+                $response = $this->client->get('/', [
+                    'proxy' => $proxy,
+                    'connect_timeout' => $connectTimeout
+                ]);
+
+                if ($response->getStatusCode() == ResponseType::OK)
+                    return $response->getBody()->getContents() === $outgoingIP;
+            }
+            catch (RequestException $silenced)
+            {
+                // IP resolver gave something other than 200, who knows why?
+                // That or the proxy didn't work, again not our headache.
+                // Let us retry as long as attempts remain
+            }
         }
 
         return false;

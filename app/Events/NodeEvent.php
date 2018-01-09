@@ -2,22 +2,22 @@
 
 namespace App\Events;
 
-use App\User;
+use App\Node;
 
-class UserEvent extends Event
+class NodeEvent extends Event
 {
-    public $user;
+    public $node;
 
     /**
      * Create a new event instance.
      *
      * @param String $type
-     * @param User $user
+     * @param Node $node
      * @param array $dataBag
      */
-    public function __construct(String $type, User $user,  array $dataBag = [])
+    public function __construct(String $type, Node $node, array $dataBag = [])
     {
-        $this->user = $user;
+        $this->node = $node;
         $this->type = $type;
         $this->dataBag = $dataBag;
     }

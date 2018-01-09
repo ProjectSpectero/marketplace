@@ -4,7 +4,7 @@
 namespace App\Constants;
 
 
-class CRUDActions
+class CRUDActions extends Holder
 {
     const INDEX = 'index';
     const STORE = 'store';

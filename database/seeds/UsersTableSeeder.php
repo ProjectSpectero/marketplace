@@ -13,10 +13,14 @@ class UsersTableSeeder extends Seeder
     {
       factory(App\User::class, 5)->create();
 
+      foreach(App\User::all() as $user) {
+          $user->assignRole('user');
+      }
+
       \App\User::create([
         "name" => "Spectero Dev",
         "email" => "spectero@dev.com",
         "password" => \Illuminate\Support\Facades\Hash::make('temppass') 
-      ]);
+      ])->assignRole('admin');
     }
 }

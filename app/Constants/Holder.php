@@ -8,7 +8,7 @@ class Holder
 {
     static function getConstants()
     {
-        $class = new \ReflectionClass(self::class);
+        $class = new \ReflectionClass(static::class);
         return $class->getConstants();
     }
 }

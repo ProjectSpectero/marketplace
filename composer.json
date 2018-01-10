@@ -13,8 +13,7 @@
         "guzzlehttp/guzzle": "~6.0",
         "silber/bouncer": "dev-master",
         "pragmarx/google2fa": "^2.0",
-        "illuminate/redis": "^5.5",
-        "predis/predis": "^1.1"
+        "illuminate/redis": "^5.5"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

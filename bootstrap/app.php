@@ -30,10 +30,6 @@ $app = new Laravel\Lumen\Application(
     realpath(__DIR__.'/../')
 );
 
- $app->withFacades();
-
- $app->withEloquent();
-
 /*
 |--------------------------------------------------------------------------
 | Register Container Bindings
@@ -57,7 +53,17 @@ $app->singleton(
 
 $app->configure('auth');
 $app->configure('cors');
+$app->configure('database');
+$app->configure('cache');
+$app->configure('queue');
+$app->configure('broadcasting');
 $app->configure('resources');
+$app->configure('search');
+
+$app->withFacades();
+
+$app->withEloquent();
+
 
 /*
 |--------------------------------------------------------------------------
@@ -91,6 +97,7 @@ $app->configure('resources');
 |
 */
 
+    $app->register(Illuminate\Redis\RedisServiceProvider::class);
     $app->register(App\Providers\AppServiceProvider::class);
     $app->register(App\Providers\AuthServiceProvider::class);
     $app->register(App\Providers\EventServiceProvider::class);
@@ -100,8 +107,8 @@ $app->configure('resources');
     Dusterio\LumenPassport\LumenPassport::routes($app);
     $app->register(Barryvdh\Cors\ServiceProvider::class);
     $app->register(Silber\Bouncer\BouncerServiceProvider::class);
-    $app->register(Illuminate\Redis\RedisServiceProvider::class);
-    $app->configure('search');
+
+
 
 /*
 |--------------------------------------------------------------------------

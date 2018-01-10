@@ -10,8 +10,8 @@
 
 /** @var \Laravel\Lumen\Routing\Router $router */
 
-$router->group(['prefix' => 'debug' ], function($api)
+$router->group(['prefix' => 'debug', 'namespace' => 'V1' ], function($api)
 {
     /** @var \Laravel\Lumen\Routing\Router $api */
-    $api->get('/test/hello', [ 'middleware' => [ 'auth:api', 'cors', 'enforce-tfa' ], 'uses' => 'DebugController@helloWorld' ]);
+    $api->get('/test/hello', [ 'middleware' => [ 'auth:api', 'cors' ], 'uses' => 'DebugController@helloWorld' ]);
 });

@@ -100,7 +100,7 @@ $app->configure('resources');
     Dusterio\LumenPassport\LumenPassport::routes($app);
     $app->register(Barryvdh\Cors\ServiceProvider::class);
     $app->register(Silber\Bouncer\BouncerServiceProvider::class);
-
+    $app->register(Illuminate\Redis\RedisServiceProvider::class);
     $app->configure('search');
 
 /*

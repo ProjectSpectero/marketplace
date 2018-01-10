@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\V1;
+use App\Constants\CRUDActions;
 use App\Errors\FatalException;
 use App\Errors\NotSupportedException;
 use Illuminate\Auth\Access\Response;
@@ -51,7 +52,7 @@ class CRUDController extends V1Controller
     {
         $value = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $depth);
         $name = isset($value[2]['function']) ? $value[2]['function'] : null;
-        if ($name == null)
+        if ($name == null || ! in_array($name, CRUDActions::getConstants()))
             throw new FatalException("Could not autodetermine the calling function/method name, authorization is not possible.");
 
         return $name;

@@ -19,7 +19,7 @@ class CreateNodesTable extends Migration
             $table->integer('port');
             $table->string('protocol');
             $table->string('access_token');
-            $table->integer('install_id');
+            $table->string('install_id');
             $table->string('status');
             $table->integer('user_id');
             $table->string('market_model'); // Do not set this without the constants array

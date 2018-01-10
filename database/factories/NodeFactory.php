@@ -6,7 +6,7 @@ $factory->define(App\Node::class, function (Faker\Generator $faker) {
         'port' => $faker->randomNumber(4),
         'protocol' => 'HTTP',
         'access_token' => $faker->sha1,
-        'install_id' => $faker->unique()->randomNumber(1),
+        'install_id' => $faker->sha256,
         'status' => \App\Constants\NodeStatus::CONFIRMED,
         'user_id' => $faker->numberBetween(1, 6),
         'market_model' => \App\Constants\NodeMarketModel::UNLISTED,

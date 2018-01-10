@@ -16,8 +16,14 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends CRUDController
 {
+    public function __construct()
+    {
+        $this->resource = 'user';
+    }
+
     public function index(Request $request) : JsonResponse
     {
+        $this->authorizeResource();
         $rules = [
             'searchId' => 'sometimes|alphanum'
         ];
@@ -35,6 +41,8 @@ class UserController extends CRUDController
 
     public function store(Request $request) : JsonResponse
     {
+        // user.create permission not applied, since this is an anonymous registration route
+
         $rules = [
             'name' => 'required',
             'email' => 'required|email|unique:users',
@@ -70,10 +78,14 @@ class UserController extends CRUDController
         return $this->respond($user->toArray(), [], Messages::USER_CREATED, ResponseType::CREATED);
     }
 
-    public function show(int $id): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
         /** @var User $user */
         $user = User::findOrFail($id);
+
+        // This is done to allow the user to view themselves, since we can't mark an user to be able to 'own' other users
+        if ($request->user()->id != $id)
+            $this->authorizeResource();
 
         return $this->respond($user->toArray());
     }
@@ -82,6 +94,10 @@ class UserController extends CRUDController
     {
         /** @var User $user */
         $user = User::findOrFail($id);
+
+        // This is done to allow the user to update themselves, since we can't mark an user to be able to 'own' other users
+        if ($request->user()->id != $id)
+            $this->authorizeResource();
 
         $rules = [
             'name' => 'required',
@@ -117,11 +133,12 @@ class UserController extends CRUDController
         return $this->respond($user->toArray(), [], Messages::USER_UPDATED);
     }
 
-    public function destroy(int $id): JsonResponse
+    public function destroy(Request $request, int $id): JsonResponse
     {
+        $this->authorizeResource();
+
         /** @var User $user */
         $user = User::findOrFail($id);
-
         $user->delete();
 
         event(new UserEvent(Events::USER_DELETED, $user));

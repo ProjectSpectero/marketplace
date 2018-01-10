@@ -31,9 +31,19 @@ class RBACSeeder extends Seeder
         $userResource = $resources['user'];
         $nodeResource = $resources['node'];
 
+        // Allow normal users to create/index nodes
         $this->bouncer->allow(\App\Constants\UserRoles::USER)->to([
-            $userResource . '.' . CRUDActions::STORE,
-            $nodeResource . '.' . CRUDActions::STORE
+            $nodeResource . '.' . CRUDActions::STORE,
+            $nodeResource . '.' . CRUDActions::INDEX
         ]);
+
+        // Allow users to view/update/destroy THEIR OWN nodes
+        $this->bouncer->allow(\App\Constants\UserRoles::USER)
+            ->toOwn(\App\Node::class)
+            ->to([
+                     $nodeResource . '.' . CRUDActions::SHOW,
+                     $nodeResource . '.' . CRUDActions::UPDATE,
+                     $nodeResource . '.' . CRUDActions::DESTROY
+             ]);
     }
 }

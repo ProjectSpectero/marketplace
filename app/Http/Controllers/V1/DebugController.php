@@ -16,4 +16,15 @@ class DebugController
         event($event);
         dd($event);
     }
+
+    public function testPagination(Request $request)
+    {
+        $resource = $request->get('resource');
+        $perPage = $request->get('perPage');
+
+        if ($perPage == null || empty($perPage))
+            $perPage = config('pagination.default_per_page');
+
+        return \App\Libraries\PaginationManager::paginate($resource, $perPage);
+    }
 }

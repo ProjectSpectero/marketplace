@@ -59,6 +59,7 @@ $app->configure('queue');
 $app->configure('broadcasting');
 $app->configure('resources');
 $app->configure('search');
+$app->configure('pagination');
 
 $app->withFacades();
 

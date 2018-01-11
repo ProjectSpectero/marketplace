@@ -2,23 +2,26 @@
 
 namespace App\Libraries;
 
-use App\Libraries\Utility;
+use App\Constants\ResponseType;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use phpDocumentor\Reflection\Types\Integer;
 
 
 class PaginationManager
 {
-    public static function paginate(String $resource, $perPage)
+    public static function paginate(Request $request, Builder $builder) : JsonResponse
     {
+        $perPage = $request->get('perPage', config('pagination.default_per_page'));
         $maxPerPage = config('pagination.max_per_page');
 
-        $resourceName = in_array($resource, config('resources')) ? $resource : '';
         $perPage = $perPage <= $maxPerPage ? $perPage : $maxPerPage;
 
-        $model = Utility::getModelFromResourceSlug($resourceName)->firstOrFail();
+        $paginated = $builder->paginate($perPage);
+        $paginatedResource = $paginated->toArray();
+        $data = $paginatedResource['data'];
+        unset($paginatedResource['data']);
 
-        return $model::paginate($perPage);
+        return Utility::generateResponse($data, [], null, 'v1', ResponseType::OK, [], $paginatedResource);
     }
 }

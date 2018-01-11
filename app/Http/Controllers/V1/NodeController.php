@@ -9,6 +9,7 @@ use App\Constants\Events;
 use App\Constants\Protocols;
 use App\Constants\ResponseType;
 use App\Events\NodeEvent;
+use App\Libraries\PaginationManager;
 use App\Node;
 use App\Libraries\SearchManager;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -31,14 +32,9 @@ class NodeController extends CRUDController
         ];
         $this->validate($request, $rules);
 
-        if ($request->has('searchId'))
-        {
-            $searchId = $request->input('searchId');
-            $results = SearchManager::process($searchId, 'node');
-            return $this->respond($results->toArray());
-        }
+        $queryBuilder = SearchManager::process($request, 'node');
 
-        return $this->respond(Node::all()->toArray());
+        return PaginationManager::paginate($request, $queryBuilder);
     }
 
     public function store(Request $request): JsonResponse

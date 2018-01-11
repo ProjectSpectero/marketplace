@@ -31,6 +31,7 @@ class NodeManager
         ]);
 
         $this->headers = [
+            'User-Agent' => 'Spectero Verifier/v0.1~beta',
             'Accept' => 'application/json',
             'Content-Type' => 'application/json'
         ];

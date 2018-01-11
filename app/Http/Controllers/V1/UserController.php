@@ -6,6 +6,7 @@ use App\Constants\Events;
 use App\Constants\ResponseType;
 use App\Constants\UserStatus;
 use App\Events\UserEvent;
+use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
 use App\User;
 use App\UserMeta;
@@ -29,14 +30,9 @@ class UserController extends CRUDController
         ];
         $this->validate($request, $rules);
 
-        if ($request->has('searchId'))
-        {
-            $searchId = $request->input('searchId');
-            $results = SearchManager::process($searchId, 'user');
-            return $this->respond($results->toArray());
-        }
+        $queryBuilder = SearchManager::process($request, 'user');
 
-        return $this->respond(User::all()->toArray());
+        return PaginationManager::paginate($request, $queryBuilder);
     }
 
     public function store(Request $request) : JsonResponse

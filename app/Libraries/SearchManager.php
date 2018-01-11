@@ -8,41 +8,46 @@ use App\Constants\Errors;
 use App\Constants\ResponseType;
 use App\Errors\UserFriendlyException;
 use App\Models\Opaque\SearchEntity;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
 
 class SearchManager
 {
     /**
-     * @param String $searchId
+     * @param Request $request
      * @param String $caller
-     * @return Collection
+     * @return Builder
      * @throws UserFriendlyException
      */
-    public static function process (String $searchId, String $caller) : Collection
+    public static function process (Request $request, String $caller) : Builder
     {
-        /** @var SearchEntity $searchEntity */
-        $key = self::generateSearchKey($searchId);
-        $searchEntity = \Cache::has($key) ? \Cache::get($key) : null;
-
-        if ($searchEntity == null)
-            throw new UserFriendlyException(Errors::SEARCH_ID_INVALID_OR_EXPIRED, ResponseType::UNPROCESSABLE_ENTITY);
-
-        if ($searchEntity->resource !== $caller)
-            throw new UserFriendlyException(Errors::SEARCH_RESOURCE_MISMATCH);
-
-
         $model = Utility::getModelFromResourceSlug($caller);
-        $constraints = [];
-        foreach ($searchEntity->rules as $rule)
+        if ($request->has('searchId'))
         {
-            if ($rule['operator'] == 'LIKE')
-                $rule['value'] = '%' . $rule['value'] . '%';
+            $searchId = $request->get('searchId');
+            /** @var SearchEntity $searchEntity */
+            $key = self::generateSearchKey($searchId);
+            $searchEntity = \Cache::has($key) ? \Cache::get($key) : null;
 
-            $constraints[] = [ $rule['field'], $rule['operator'], $rule['value'] ];
+            if ($searchEntity == null)
+                throw new UserFriendlyException(Errors::SEARCH_ID_INVALID_OR_EXPIRED, ResponseType::UNPROCESSABLE_ENTITY);
+
+            if ($searchEntity->resource !== $caller)
+                throw new UserFriendlyException(Errors::SEARCH_RESOURCE_MISMATCH);
+
+            $constraints = [];
+            foreach ($searchEntity->rules as $rule)
+            {
+                if ($rule['operator'] == 'LIKE')
+                    $rule['value'] = '%' . $rule['value'] . '%';
+
+                $constraints[] = [ $rule['field'], $rule['operator'], $rule['value'] ];
+            }
+            return $model->where($constraints);
         }
 
-
-        return $model->where($constraints)->get();
+        return $model->newQuery();
     }
 
     public static function getSearchAbleFieldsForResource (String $resource) : array

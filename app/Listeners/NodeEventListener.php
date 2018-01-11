@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Constants\Events;
 use App\Events\NodeEvent;
+use App\Libraries\Utility;
 
 class NodeEventListener extends BaseListener
 {
@@ -25,9 +26,13 @@ class NodeEventListener extends BaseListener
      */
     public function handle(NodeEvent $event)
     {
+        $node = $event->node;
+        $oldState = Utility::getPreviousModel($event->dataBag);
+
         switch ($event->type)
         {
             case Events::NODE_CREATED:
+                // Great, let's actually attempt to discover this node's services
                 break;
             case Events::NODE_UPDATED:
                 break;

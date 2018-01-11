@@ -84,4 +84,9 @@ class Utility
         $modelName = $baseModelNamespace . studly_case($slug);
         return new $modelName;
     }
+
+    public static function getPreviousModel (Array $dataBag)
+    {
+        return isset($dataBag['previous']) ? $dataBag['previous'] : null;
+    }
 }

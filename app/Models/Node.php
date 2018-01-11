@@ -20,7 +20,7 @@ class Node extends Model
 
     /**
      * Scope to find the node by its install_id
-     *
+     * This is an indexed query
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @param String $installId
      * @return Node
@@ -29,6 +29,35 @@ class Node extends Model
     public function scopeFindByInstallIdOrFail ($query, String $installId) : Node
     {
         return $query->where('install_id', '=', $installId)->firstOrFail();
+    }
+
+    /**
+     * Scope to find the node by its IP Address
+     * This is an indexed query
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param String $ipAddress
+     * @return Node
+     */
+
+    public function scopeFindByIPAddressOrFail ($query, String $ipAddress) : Node
+    {
+        return $query->where('ip', '=', $ipAddress)->firstOrFail();
+    }
+
+    /**
+     * Scope to find the node by its IP Address
+     * This is an indexed query
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param String $installId
+     * @param String $ipAddress
+     * @return Node
+     */
+
+    public function scopeFindByIPOrInstallIdOrFail ($query, String $installId, String $ipAddress) : Node
+    {
+        return $query->where('ip', '=', $ipAddress)
+            ->orWhere('install_id', '=', $installId)
+            ->firstOrFail();
     }
 
     public function nodeMeta()
@@ -40,6 +69,8 @@ class Node extends Model
     {
         return sprintf('%s://%s:%d', $this->protocol, $this->ip, $this->port);
     }
+
+
 
     public function user ()
     {

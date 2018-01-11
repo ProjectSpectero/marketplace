@@ -46,24 +46,29 @@ class NodeController extends CRUDController
         $this->authorizeResource();
         $rules = [
             'protocol' => [ 'required', Rule::in(Protocols::getConstants())],
-            'ip' => 'required|ip',
+            'ip' => 'sometimes|ip',
             'port' => 'required|integer|min:1024|max:65534',
             'access_token' => 'required|min:5|max:72|regex:/^[a-zA-Z0-9]+:[a-zA-Z0-9-_]+$/',
-            'install_id' => 'required|alpha_num'
+            'install_id' => 'required|alpha_dash|size:36'
         ];
 
         //Puposefully not validating unique:nodes,install_id so we can return a 409/conflict instead to signal to the daemon that you're already registered
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
+        $ipAddress = $request->input('ip', $request->ip());
+
         try
         {
-            $node = Node::findByInstallIdOrFail($input['install_id']);
+            $node = Node::findByIPOrInstallIdOrFail($input['install_id'], $ipAddress);
             if ($node != null)
                 return $this->respond(null, [ Errors::RESOURCE_ALREADY_EXISTS ], Errors::REQUEST_FAILED, ResponseType::CONFLICT);
         }
         catch (ModelNotFoundException $silenced)
         {
             // This means node doesn't exist, we're clear to proceed.
+            // Add back IP (if not provided)
+            // TODO: consider storing access_token encrypted
+            $input['ip'] = $ipAddress;
             $node = Node::create($input);
         }
 

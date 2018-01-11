@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
+use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,5 +25,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot ()
     {
         Validator::extend('country', 'App\Validators\CountryValidator@validate');
+        \Queue::failing(function (JobFailed $event)
+        {
+            // TODO: implement default action when a job fails, perhaps to notify us in Slack?
+        });
     }
 }

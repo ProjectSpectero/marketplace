@@ -45,9 +45,11 @@ class V1Controller extends Controller
      * @return JsonResponse
      */
 
-    public function respond (Array $data = null, Array $errors = [], String $message = null, int $statusCode = 200, Array $headers = []) : JsonResponse
+    public function respond (Array $data = null, Array $errors = [],
+                             String $message = null, int $statusCode = 200,
+                             Array $headers = [], Array $paginationParams = []) : JsonResponse
     {
-        return Utility::generateResponse($data, $errors, $message, $this->version, $statusCode, $headers);
+        return Utility::generateResponse($data, $errors, $message, $this->version, $statusCode, $headers, $paginationParams);
     }
 
 }

@@ -17,15 +17,23 @@ class Utility
         return md5(uniqid(mt_rand(), true));
     }
 
-    public static function generateResponse (Array $data = null, Array $errors = [], String $message = null, String $version = 'v1', int $statusCode = 200, Array $headers = []) : JsonResponse
+    public static function generateResponse (Array $data = null, Array $errors = [],
+                                             String $message = null, String $version = 'v1',
+                                             int $statusCode = 200, Array $headers = [],
+                                             Array $paginationParams = []) : JsonResponse
     {
+        $response = [
+            'errors' => $errors,
+            'result' => $data,
+            'message' => $message,
+            'version' => $version
+        ];
+
+        if (! empty($paginationParams))
+            $response['pagination'] = $paginationParams;
+
         return response()
-            ->json([
-                'errors' => $errors,
-                'result' => $data,
-                'message' => $message,
-                'version' => $version
-            ], $statusCode, $headers);
+            ->json($response, $statusCode, $headers);
     }
 
     public static function defineResourceRoute (String $slug, String $controller, Router $router, Array $middlewares, Array $rules = []) : void

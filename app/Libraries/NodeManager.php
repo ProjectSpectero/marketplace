@@ -6,6 +6,7 @@ namespace App\Libraries;
 
 use App\Node;
 use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
 
 class NodeManager
 {
@@ -42,11 +43,22 @@ class NodeManager
     public function authenticate ()
     {
         $localEndpoint = $this->getUrl('auth');
-        $this->client->post($localEndpoint, [
-
+        $results = $this->client->post($localEndpoint, [
+            RequestOptions::JSON => $this->processAccessToken(),
+            RequestOptions::HEADERS => $this->headers
         ]);
+
+        dd($results);
     }
 
+    private function processAccessToken ()
+    {
+        list($authKey, $password) = explode(':', $this->accessToken);
+        return [
+            'authKey' => $authKey,
+            'password' => $password
+        ];
+    }
     private function getUrl ($slug)
     {
         return '/' . $this->version . $slug;

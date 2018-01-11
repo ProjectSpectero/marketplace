@@ -24,7 +24,7 @@ class PaginationManager
         $paginated->appends($request->query());
         $paginatedResource = $paginated->toArray();
 
-        if ($requestedPage > $paginatedResource['last_page'])
+        if ($requestedPage > $paginatedResource['last_page'] && $requestedPage != 1)
             throw new UserFriendlyException(Errors::REQUESTED_PAGE_DOES_NOT_EXIST);
 
         $data = $paginatedResource['data'];

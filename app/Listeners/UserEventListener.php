@@ -6,7 +6,7 @@ use App\Constants\Events;
 use App\Events\UserEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class UserEventListener implements ShouldQueue
+class UserEventListener extends BaseListener
 {
     /**
      * Create the event listener.

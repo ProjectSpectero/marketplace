@@ -4,9 +4,8 @@ namespace App\Listeners;
 
 use App\Constants\Events;
 use App\Events\NodeEvent;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class NodeEventListener implements ShouldQueue
+class NodeEventListener extends BaseListener
 {
     /**
      * Create the event listener.

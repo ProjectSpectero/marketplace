@@ -3,6 +3,7 @@
 namespace App\Libraries;
 
 use App\Constants\CRUDActions;
+use App\Constants\ResponseType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Laravel\Lumen\Routing\Router;
@@ -19,7 +20,7 @@ class Utility
 
     public static function generateResponse (Array $data = null, Array $errors = [],
                                              String $message = null, String $version = 'v1',
-                                             int $statusCode = 200, Array $headers = [],
+                                             int $statusCode = ResponseType::OK, Array $headers = [],
                                              Array $paginationParams = []) : JsonResponse
     {
         $response = [

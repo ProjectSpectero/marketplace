@@ -28,7 +28,6 @@ class NodeManager
         $this->accessToken = $node->access_token;
 
         $this->client = new Client([
-            'base_url' => $this->baseUrl,
             'timeout' => env('NODE_REQUEST_TIMEOUT', 5)
         ]);
 
@@ -47,7 +46,7 @@ class NodeManager
 
         try
         {
-            $results = $this->client->post($localEndpoint, [
+            $results = $this->client->post($this->baseUrl. '/' .$localEndpoint, [
                 RequestOptions::JSON => $this->processAccessToken(),
                 RequestOptions::HEADERS => $this->headers
             ]);
@@ -63,6 +62,7 @@ class NodeManager
     private function processAccessToken ()
     {
         list($authKey, $password) = explode(':', $this->accessToken);
+
         return [
             'authKey' => $authKey,
             'password' => $password

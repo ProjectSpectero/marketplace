@@ -3,7 +3,10 @@
 
 namespace App\Libraries;
 
+use App\Constants\Errors;
 use App\Constants\Events;
+use App\Constants\ServiceType;
+use App\Errors\FatalException;
 use App\Events\NodeEvent;
 use App\Node;
 use GuzzleHttp\Client;
@@ -43,6 +46,49 @@ class NodeManager
 
         $this->version = env('NODE_API_VERSION', 'v1');
         $this->authenticate();
+        $this->validateAccessLevel();
+    }
+
+    public function discoverServices ()
+    {
+        // TODO: implement this, needs bearer token auth
+        $localEndpoint = $this->getUrl('service');
+    }
+
+    public function discoverIPAddresses ()
+    {
+        // TODO: implement this, needs bearer token auth
+        $localEndpoint = $this->getUrl('service/ips');
+    }
+
+    public function getServiceConfig (String $serviceName)
+    {
+        $this->validateServiceName($serviceName);
+
+        // TODO: implement this, needs bearer token auth
+        $localEndpoint = $this->getUrl('service/' . $serviceName . '/config');
+    }
+
+    public function getServiceConnectionResources (String $serviceName = '')
+    {
+        if (! empty($serviceName))
+            $this->validateServiceName($serviceName);
+
+        // TODO: implement this, needs bearer token auth
+        $localEndpoint = $this->getUrl('service/' . $serviceName . '/config');
+    }
+
+    private function validateServiceName (String $serviceName)
+    {
+        if (! in_array($serviceName, ServiceType::getConstants()))
+            throw new FatalException(Errors::UNKNOWN_SERVICE);
+    }
+
+    private function validateAccessLevel ()
+    {
+        // TODO: Decode $this->jwtAccessToken, and then check that the user's roles array has either 'SuperAdmin' or 'WebApi'
+        // See https://puu.sh/yZyLv/a25abfde3b.png for the schema
+        // If it doesn't, throw new FatalException(Errors::ACCESS_LEVEL_INSUFFICIENT);
     }
 
     private function authenticate ()
@@ -81,6 +127,9 @@ class NodeManager
             event(new NodeEvent(Events::NODE_VERIFICATION_FAILED, $this->node, [
                 'errors' => $returnedData['errors']
             ]));
+
+        if (! $this->authenticated)
+            throw new FatalException(Errors::COULD_NOT_ACCESS_NODE);
     }
 
     private function processAccessToken ()
@@ -92,6 +141,7 @@ class NodeManager
             'password' => $password
         ];
     }
+
     private function getUrl ($slug)
     {
         return $this->baseUrl . '/' . $this->version . '/' . $slug;

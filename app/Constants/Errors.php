@@ -28,4 +28,6 @@ class Errors extends Holder
 
     // Node related
     const COULD_NOT_ACCESS_NODE = 'COULD_NOT_ACCESS_NODE';
+    const UNKNOWN_SERVICE = 'UNKNOWN_SERVICE';
+    const ACCESS_LEVEL_INSUFFICIENT = 'ACCESS_LEVEL_INSUFFICIENT';
 }

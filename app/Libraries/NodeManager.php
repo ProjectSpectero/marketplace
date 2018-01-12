@@ -16,6 +16,7 @@ use GuzzleHttp\RequestOptions;
 class NodeManager
 {
     private $node;
+    private $user;
     private $accessToken;
     private $baseUrl;
 
@@ -75,7 +76,26 @@ class NodeManager
             $this->validateServiceName($serviceName);
 
         // TODO: implement this, needs bearer token auth
-        $localEndpoint = $this->getUrl('service/' . $serviceName . '/config');
+        $slug = 'user/' . $this->user['id'] . '/service-resources';
+        if (! empty($serviceName))
+            $slug .= '/' . $serviceName;
+
+        $localEndpoint = $this->getUrl($slug);
+    }
+
+    public function manageService (String $serviceName, String $actionName)
+    {
+        $this->validateServiceName($serviceName);
+        $this->validateServiceAction($actionName);
+
+        // TODO: implement this, needs bearer token auth
+        $localEndpoint = $this->getUrl('service/' . $serviceName . '/' . $actionName);
+    }
+
+    private function validateServiceAction (String $actionName)
+    {
+        if (! in_array($actionName, [ 'start', 'stop', 'restart', 'config' ]))
+            throw new FatalException(Errors::UNKNOWN_ACTION);
     }
 
     private function validateServiceName (String $serviceName)
@@ -86,7 +106,8 @@ class NodeManager
 
     private function validateAccessLevel ()
     {
-        // TODO: Decode $this->jwtAccessToken, and then check that the user's roles array has either 'SuperAdmin' or 'WebApi'
+        // TODO: Decode $this->jwtAccessToken, and store the user into $this->>user
+        // Then check that the user's roles array has either 'SuperAdmin' or 'WebApi'
         // See https://puu.sh/yZyLv/a25abfde3b.png for the schema
         // If it doesn't, throw new FatalException(Errors::ACCESS_LEVEL_INSUFFICIENT);
     }

@@ -26,8 +26,9 @@ class Errors extends Holder
     // Pagination
     const REQUESTED_PAGE_DOES_NOT_EXIST = 'REQUESTED_PAGE_DOES_NOT_EXIST';
 
-    // Node related
+    // Node+Service related
     const COULD_NOT_ACCESS_NODE = 'COULD_NOT_ACCESS_NODE';
     const UNKNOWN_SERVICE = 'UNKNOWN_SERVICE';
+    const UNKNOWN_ACTION = 'UNKNOWN_ACTION';
     const ACCESS_LEVEL_INSUFFICIENT = 'ACCESS_LEVEL_INSUFFICIENT';
 }

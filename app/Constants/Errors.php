@@ -25,4 +25,7 @@ class Errors extends Holder
 
     // Pagination
     const REQUESTED_PAGE_DOES_NOT_EXIST = 'REQUESTED_PAGE_DOES_NOT_EXIST';
+
+    // Node related
+    const COULD_NOT_ACCESS_NODE = 'COULD_NOT_ACCESS_NODE';
 }

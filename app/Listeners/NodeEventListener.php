@@ -44,6 +44,8 @@ class NodeEventListener extends BaseListener
                 break;
             case Events::NODE_UNREACHABLE:
                 break;
+            case Events::NODE_VERIFICATION_FAILED:
+                break;
         }
     }
 }

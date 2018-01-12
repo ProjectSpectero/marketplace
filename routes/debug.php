@@ -13,6 +13,5 @@
 $router->group(['prefix' => 'debug', 'namespace' => 'V1' ], function($api)
 {
     /** @var \Laravel\Lumen\Routing\Router $api */
-    $api->get('/test/hello', [ 'middleware' => [ 'auth:api', 'cors' ], 'uses' => 'DebugController@helloWorld' ]);
-    $api->get('/test/test', ['uses' => 'DebugController@testPagination']);
+    $api->get('/test', [ 'middleware' => [ 'auth:api', 'cors' ], 'uses' => 'DebugController@test' ]);
 });

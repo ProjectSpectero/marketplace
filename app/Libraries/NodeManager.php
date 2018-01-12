@@ -3,7 +3,8 @@
 
 namespace App\Libraries;
 
-
+use App\Constants\Events;
+use App\Events\NodeEvent;
 use App\Node;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -11,6 +12,7 @@ use GuzzleHttp\RequestOptions;
 
 class NodeManager
 {
+    private $node;
     private $accessToken;
     private $baseUrl;
 
@@ -24,10 +26,12 @@ class NodeManager
 
     public function __construct (Node $node)
     {
+        $this->node = $node;
         $this->baseUrl = $node->accessor();
         $this->accessToken = $node->access_token;
 
         $this->client = new Client([
+            'base_url' => $this->baseUrl,
             'timeout' => env('NODE_REQUEST_TIMEOUT', 5)
         ]);
 
@@ -38,25 +42,45 @@ class NodeManager
         ];
 
         $this->version = env('NODE_API_VERSION', 'v1');
+        $this->authenticate();
     }
 
-    public function authenticate ()
+    private function authenticate ()
     {
         $localEndpoint = $this->getUrl('auth');
 
         try
         {
-            $results = $this->client->post($this->baseUrl. '/' .$localEndpoint, [
+            $results = $this->client->post($localEndpoint, [
                 RequestOptions::JSON => $this->processAccessToken(),
                 RequestOptions::HEADERS => $this->headers
-            ]);
+            ])
+            ->getBody()
+            ->getContents();
         }
         catch (RequestException $exception)
         {
-            dd($exception);
+            $this->authenticated = false;
+            $this->jwtAccessToken = null;
+            $this->jwtRefreshToken = null;
+            event(new NodeEvent(Events::NODE_VERIFICATION_FAILED, $this->node, [
+                'errors' => $exception
+            ]));
+            return;
         }
 
-        dd($results);
+        $returnedData = json_decode($results, true);
+
+        if (empty($returnedData['errors']))
+        {
+            // No errors, everything went as expected.
+            $this->authenticated = true;
+            $this->jwtAccessToken = $returnedData['result'];
+        }
+        else
+            event(new NodeEvent(Events::NODE_VERIFICATION_FAILED, $this->node, [
+                'errors' => $returnedData['errors']
+            ]));
     }
 
     private function processAccessToken ()
@@ -70,6 +94,6 @@ class NodeManager
     }
     private function getUrl ($slug)
     {
-        return $this->version . '/' . $slug;
+        return $this->baseUrl . '/' . $this->version . '/' . $slug;
     }
 }

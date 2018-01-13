@@ -155,7 +155,7 @@ class NodeManager
 
     private function processAccessToken ()
     {
-        list($authKey, $password) = explode(':', $this->accessToken);
+        list($authKey, $password) = explode(':', $this->accessToken, 2);
 
         return [
             'authKey' => $authKey,

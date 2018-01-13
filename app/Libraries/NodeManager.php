@@ -52,35 +52,39 @@ class NodeManager
 
     public function discoverServices ()
     {
-        // TODO: implement this, needs bearer token auth
         $localEndpoint = $this->getUrl('service');
+
+        return $this->request('get', $localEndpoint);
     }
 
     public function discoverIPAddresses ()
     {
-        // TODO: implement this, needs bearer token auth
         $localEndpoint = $this->getUrl('service/ips');
+
+        return $this->request('get', $localEndpoint);
     }
 
     public function getServiceConfig (String $serviceName)
     {
         $this->validateServiceName($serviceName);
 
-        // TODO: implement this, needs bearer token auth
         $localEndpoint = $this->getUrl('service/' . $serviceName . '/config');
+
+        return $this->request('get', $localEndpoint);
     }
 
     public function getServiceConnectionResources (String $serviceName = '')
     {
         if (! empty($serviceName))
             $this->validateServiceName($serviceName);
-
-        // TODO: implement this, needs bearer token auth
+        
         $slug = 'user/' . $this->user['id'] . '/service-resources';
         if (! empty($serviceName))
             $slug .= '/' . $serviceName;
 
         $localEndpoint = $this->getUrl($slug);
+
+        return $this->request('get', $localEndpoint);
     }
 
     public function manageService (String $serviceName, String $actionName)
@@ -88,8 +92,9 @@ class NodeManager
         $this->validateServiceName($serviceName);
         $this->validateServiceAction($actionName);
 
-        // TODO: implement this, needs bearer token auth
         $localEndpoint = $this->getUrl('service/' . $serviceName . '/' . $actionName);
+
+        return $this->request('get', $localEndpoint);
     }
 
     private function validateServiceAction (String $actionName)
@@ -110,6 +115,15 @@ class NodeManager
         // Then check that the user's roles array has either 'SuperAdmin' or 'WebApi'
         // See https://puu.sh/yZyLv/a25abfde3b.png for the schema
         // If it doesn't, throw new FatalException(Errors::ACCESS_LEVEL_INSUFFICIENT);
+        $localEndpoint = $this->getUrl('/user/self');
+
+        $this->user = $this->request('get', $localEndpoint);
+
+        if (! in_array($this->user['roles'], ['SuperAdmin', 'WebApi']))
+        {
+            throw new FatalException(Errors::ACCESS_LEVEL_INSUFFICIENT);
+        }
+
     }
 
     private function authenticate ()
@@ -166,5 +180,21 @@ class NodeManager
     private function getUrl ($slug)
     {
         return $this->baseUrl . '/' . $this->version . '/' . $slug;
+    }
+
+    private function request($method, $localEndpoint)
+    {
+
+        $this->headers['Authorization'] = 'Bearer ' . $this->jwtAccessToken;
+
+        $results = $this->client->request($method, $localEndpoint, [
+            RequestOptions::HEADERS => $this->headers
+        ])
+            ->getBody()
+            ->getContents();
+
+        $returnedData = json_decode($results, true);
+
+        return $returnedData;
     }
 }

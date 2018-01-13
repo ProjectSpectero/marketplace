@@ -13,7 +13,7 @@ class DebugController
 {
     public function test (Request $request)
     {
-        $node = Node::find(6);
+        $node = Node::find(8);
         $manager = new NodeManager($node);
         dd($manager);
     }

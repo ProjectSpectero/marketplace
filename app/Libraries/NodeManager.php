@@ -78,7 +78,7 @@ class NodeManager
         if (! empty($serviceName))
             $this->validateServiceName($serviceName);
 
-        $slug = 'user/' . $this->user['result']['id'] . '/service-resources';
+        $slug = 'user/' . $this->user['id'] . '/service-resources';
         if (! empty($serviceName))
             $slug .= '/' . $serviceName;
 
@@ -111,22 +111,18 @@ class NodeManager
 
     private function validateAccessLevel ()
     {
-        // TODO: Decode $this->jwtAccessToken, and store the user into $this->>user
-        // Then check that the user's roles array has either 'SuperAdmin' or 'WebApi'
-        // See https://puu.sh/yZyLv/a25abfde3b.png for the schema
-        // If it doesn't, throw new FatalException(Errors::ACCESS_LEVEL_INSUFFICIENT);
         $localEndpoint = $this->getUrl('user/self');
 
-        $this->user = $this->request('get', $localEndpoint);
+        $response = $this->request('get', $localEndpoint);
+        $this->user = $response['result'];
 
-        foreach ($this->user['result']['roles'] as $role)
+        foreach ($this->user['roles'] as $role)
         {
             if (! in_array($role, ['SuperAdmin', 'WebApi']))
             {
                 throw new FatalException(Errors::ACCESS_LEVEL_INSUFFICIENT);
             }
         }
-
     }
 
     private function authenticate ()
@@ -135,12 +131,7 @@ class NodeManager
 
         try
         {
-            $results = $this->client->post($localEndpoint, [
-                RequestOptions::JSON => $this->processAccessToken(),
-                RequestOptions::HEADERS => $this->headers
-            ])
-            ->getBody()
-            ->getContents();
+            $returnedData = $this->request('post', $localEndpoint, $this->processAccessToken());
         }
         catch (RequestException $exception)
         {
@@ -152,8 +143,6 @@ class NodeManager
             ]));
             return;
         }
-
-        $returnedData = json_decode($results, true);
 
         if (empty($returnedData['errors']))
         {
@@ -185,12 +174,13 @@ class NodeManager
         return $this->baseUrl . '/' . $this->version . '/' . $slug;
     }
 
-    private function request($method, $localEndpoint)
+    private function request($method, $localEndpoint, $json = [])
     {
 
         $this->headers['Authorization'] = 'Bearer ' . $this->jwtAccessToken;
 
         $results = $this->client->request($method, $localEndpoint, [
+            RequestOptions::JSON => $json,
             RequestOptions::HEADERS => $this->headers
         ])
             ->getBody()

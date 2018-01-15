@@ -8,6 +8,6 @@ class Order extends Model
 {
     public function lineItems()
     {
-        return $this->hasMany(OrderLineItems::class);
+        return $this->hasOne(OrderLineItems::class);
     }
 }

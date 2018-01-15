@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class OrderLineItems extends Model
+class OrderLineItem extends Model
 {
     public function order()
     {

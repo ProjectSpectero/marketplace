@@ -176,8 +176,8 @@ class NodeManager
 
     private function request($method, $localEndpoint, $json = [])
     {
-
-        $this->headers['Authorization'] = 'Bearer ' . $this->jwtAccessToken;
+        if (! is_null($this->jwtAccessToken))
+            $this->headers['Authorization'] = 'Bearer ' . $this->jwtAccessToken;
 
         $results = $this->client->request($method, $localEndpoint, [
             RequestOptions::JSON => $json,

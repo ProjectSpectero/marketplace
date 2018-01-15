@@ -77,8 +77,8 @@ class NodeManager
     {
         if (! empty($serviceName))
             $this->validateServiceName($serviceName);
-        
-        $slug = 'user/' . $this->user['id'] . '/service-resources';
+
+        $slug = 'user/' . $this->user['result']['id'] . '/service-resources';
         if (! empty($serviceName))
             $slug .= '/' . $serviceName;
 
@@ -115,13 +115,16 @@ class NodeManager
         // Then check that the user's roles array has either 'SuperAdmin' or 'WebApi'
         // See https://puu.sh/yZyLv/a25abfde3b.png for the schema
         // If it doesn't, throw new FatalException(Errors::ACCESS_LEVEL_INSUFFICIENT);
-        $localEndpoint = $this->getUrl('/user/self');
+        $localEndpoint = $this->getUrl('user/self');
 
         $this->user = $this->request('get', $localEndpoint);
 
-        if (! in_array($this->user['roles'], ['SuperAdmin', 'WebApi']))
+        foreach ($this->user['result']['roles'] as $role)
         {
-            throw new FatalException(Errors::ACCESS_LEVEL_INSUFFICIENT);
+            if (! in_array($role, ['SuperAdmin', 'WebApi']))
+            {
+                throw new FatalException(Errors::ACCESS_LEVEL_INSUFFICIENT);
+            }
         }
 
     }

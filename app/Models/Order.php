@@ -8,6 +8,11 @@ class Order extends Model
 {
     public function lineItems()
     {
-        return $this->hasOne(OrderLineItems::class);
+        return $this->hasMany(OrderLineItems::class);
+    }
+
+    public function invoice()
+    {
+        return $this->hasOne(Invoice::class);
     }
 }

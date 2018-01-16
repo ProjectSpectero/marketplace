@@ -23,6 +23,7 @@ class CreateNodesTable extends Migration
             $table->string('status');
             $table->integer('user_id');
             $table->string('market_model'); // Do not set this without the constants array
+            $table->decimal('price', 13, 4);
             $table->timestamps();
             $table->softDeletes();
 

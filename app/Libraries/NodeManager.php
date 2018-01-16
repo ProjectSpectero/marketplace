@@ -5,6 +5,7 @@ namespace App\Libraries;
 
 use App\Constants\Errors;
 use App\Constants\Events;
+use App\Constants\ResponseType;
 use App\Constants\ServiceType;
 use App\Errors\FatalException;
 use App\Events\NodeEvent;
@@ -176,18 +177,29 @@ class NodeManager
 
     private function request($method, $localEndpoint, $json = [])
     {
-        if (! is_null($this->jwtAccessToken))
+        if ($this->authenticated)
             $this->headers['Authorization'] = 'Bearer ' . $this->jwtAccessToken;
 
-        $results = $this->client->request($method, $localEndpoint, [
-            RequestOptions::JSON => $json,
-            RequestOptions::HEADERS => $this->headers
-        ])
-            ->getBody()
-            ->getContents();
+        try
+        {
+            $results = $this->client->request($method, $localEndpoint, [
+                RequestOptions::JSON => $json,
+                RequestOptions::HEADERS => $this->headers
+            ])
+                ->getBody()
+                ->getContents();
+        }
+        catch (RequestException $exception)
+        {
+            if ($exception->getResponse()->getStatusCode() == ResponseType::NOT_AUTHORIZED)
+            {
+                $this->authenticated = false;
+                $this->jwtAccessToken = null;
+            }
+            throw $exception;
+        }
 
         $returnedData = json_decode($results, true);
-
         return $returnedData;
     }
 }

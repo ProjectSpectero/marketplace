@@ -26,6 +26,20 @@ if (!function_exists('app_path'))
     }
 }
 
+if ( ! function_exists('config_path'))
+{
+    /**
+     * Get the configuration path.
+     *
+     * @param  string $path
+     * @return string
+     */
+    function config_path($path = '')
+    {
+        return app()->basePath() . '/config' . ($path ? '/' . $path : $path);
+    }
+}
+
 $app = new Laravel\Lumen\Application(
     realpath(__DIR__.'/../')
 );
@@ -60,6 +74,7 @@ $app->configure('broadcasting');
 $app->configure('resources');
 $app->configure('search');
 $app->configure('pagination');
+$app->configure('paypal');
 
 $app->withFacades();
 
@@ -108,6 +123,7 @@ $app->withEloquent();
     Dusterio\LumenPassport\LumenPassport::routes($app);
     $app->register(Barryvdh\Cors\ServiceProvider::class);
     $app->register(Silber\Bouncer\BouncerServiceProvider::class);
+    $app->register(Srmklive\PayPal\Providers\PayPalServiceProvider::class);
 
 
 
@@ -124,7 +140,12 @@ $app->withEloquent();
 
 if (!class_exists('Bouncer'))
 {
-    class_alias('Silber\Bouncer\BouncerFacade', 'Bouncer');
+    class_alias(Silber\Bouncer\BouncerFacade::class, 'Bouncer');
+}
+
+if (!class_exists('PayPal'))
+{
+    class_alias(Srmklive\PayPal\Facades\PayPal::class, 'PayPal');
 }
 
 /*

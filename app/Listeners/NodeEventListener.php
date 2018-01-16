@@ -33,6 +33,7 @@ class NodeEventListener extends BaseListener
         {
             case Events::NODE_CREATED:
                 // Great, let's actually attempt to discover this node's services
+
                 break;
             case Events::NODE_UPDATED:
                 break;

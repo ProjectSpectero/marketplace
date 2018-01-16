@@ -195,6 +195,9 @@ class NodeManager
             {
                 $this->authenticated = false;
                 $this->jwtAccessToken = null;
+
+                if (isset($this->headers['Authorization']))
+                    unset($this->headers['Authorization']);
             }
             throw $exception;
         }

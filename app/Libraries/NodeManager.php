@@ -51,6 +51,25 @@ class NodeManager
         $this->validateAccessLevel();
     }
 
+    public function firstTimeDiscovery () : array
+    {
+        $ret = [];
+        $services = $this->discoverServices()['result'];
+        foreach ($services as $service => $state)
+        {
+            $this->validateServiceName($service);
+            $config = $this->getServiceConfig($service);
+            $connectionResource = $this->getServiceConnectionResources($service);
+
+            $ret[$service] = [
+                'config' => $config,
+                'connectionResource' => $connectionResource
+            ];
+        }
+
+        return $ret;
+    }
+
     public function discoverServices ()
     {
         $localEndpoint = $this->getUrl('service');

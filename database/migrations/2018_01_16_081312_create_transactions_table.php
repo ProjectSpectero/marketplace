@@ -17,8 +17,13 @@ class CreateTransactionsTable extends Migration
             $table->increments('id');
             $table->integer('invoice_id');
             $table->string('payment_processor');
+            $table->string('reference');
             $table->string('type');
             $table->timestamps();
+
+            $table->unique('reference', 'unique_transaction_reference_index');
+            $table->index('invoice_id', 'invoice_id_index');
+            $table->index('payment_processor', 'payment_processor_index');
         });
     }
 

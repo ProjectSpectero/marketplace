@@ -132,6 +132,23 @@ class PaypalProcessor implements IPaymentProcessor
             'TRIALTOTALBILLINGCYCLES' => 1, // (Optional) Change it accordingly
             'TRIALAMT' => 0, // (Optional) Change it accordingly
         ];
-        $response = $this->provider->createRecurringPaymentsProfile($$this->data, $token);
+        $response = $this->provider->createRecurringPaymentsProfile($data, $token);
+
+        return $response;
+    }
+
+    private function addTransaction(Invoice $invoice)
+    {
+        $transaction = new Transaction();
+
+        $transaction->invoice_id = $invoice->id;
+        $transaction->payment_processor = 'paypal';
+        $transaction->reference = 'test'; // Need example on this
+        $transaction->type = $this->data['type'];
+        $transaction->amount = $invoice->amount;
+        $transaction->currency = $invoice->currency;
+        $transaction->save();
+
+        return $transaction;
     }
 }

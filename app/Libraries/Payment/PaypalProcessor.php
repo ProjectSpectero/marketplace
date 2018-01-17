@@ -13,6 +13,7 @@ use Srmklive\PayPal\Facades\PayPal;
 class PaypalProcessor implements IPaymentProcessor
 {
     private $provider;
+    private $invoice;
     private $data = [];
 
     /**
@@ -25,6 +26,8 @@ class PaypalProcessor implements IPaymentProcessor
 
     function process(Invoice $invoice)
     {
+        $this->invoice = $invoice;
+
         $this->processData($invoice);
         $this->data['type'] = 'payment';
 
@@ -49,21 +52,34 @@ class PaypalProcessor implements IPaymentProcessor
         $response['redirect_url'] = url('/our/success/page');
 
         // TODO: throw exception
-        // also should we make our own constants class of
-        // PayPal express checkout api params?
         if ($response['PAYMENTINFO_0_PAYMENTSTATUS'] != 'Completed')
             return;
+
+        $this->data['transaction_id'] = $response['PAYMENTINFO_0_TRANSACTIONID'];
 
         if ($this->data['type'] == 'subscription')
             $this->createRecurringPaymentsProfile($token);
 
-        return $response;
+        $this->addTransaction($this->invoice->amount);
 
+        return $response;
     }
 
-    function refund(Transaction $transaction)
+    function refund(Transaction $transaction, Float $amount)
     {
-        return $this->provider->refundTransaction($transaction->id);
+        // TODO: throw NO_TRANSACTION_ID_FOUND or something
+        if (! array_key_exists('transaction_id', $this->data))
+            return;
+
+        // TODO: throw exeption
+        if ($amount > $transaction->amount)
+            return;
+
+        $refundResponse =  $this->provider->refundTransaction($this->data['transaction_id'], $amount);
+
+        $this->addTransaction($amount);
+
+        return $refundResponse;
     }
 
     function subscribe(Order $order)
@@ -84,6 +100,7 @@ class PaypalProcessor implements IPaymentProcessor
 
     private function processData(Invoice $invoice)
     {
+        $this->invoice = $invoice;
 
         $this->data['invoice_id'] = $invoice->id;
 
@@ -134,17 +151,17 @@ class PaypalProcessor implements IPaymentProcessor
         return $response;
     }
 
-    private function addTransaction(Invoice $invoice)
+    private function addTransaction(Float $amount)
     {
         $transaction = new Transaction();
 
-        $transaction->invoice_id = $invoice->id;
+        $transaction->invoice_id = $this->invoice->id;
         $transaction->payment_processor = 'paypal';
-        $transaction->reference = 'test'; // Need example on this
+        $transaction->reference = $this->data['transaction_id'];
         $transaction->type = $this->data['type'];
-        $transaction->payment_type = PaymentType::CREDIT;
-        $transaction->amount = $invoice->amount;
-        $transaction->currency = $invoice->currency;
+        $transaction->payment_type = PaymentType::DEBIT;
+        $transaction->amount = $amount;
+        $transaction->currency = $this->invoice->currency;
         $transaction->save();
 
         return $transaction;

@@ -21,6 +21,7 @@ class CreateTransactionsTable extends Migration
             $table->string('type');
             $table->string('payment_type');
             $table->decimal('amount', 13, 4);
+            $table->decimal('fee', 13, 4);
             $table->string('currency');
             $table->timestamps();
 

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\V1;
 
 use App\Constants\Errors;
 use App\Constants\Events;
+use App\Constants\Messages;
 use App\Constants\NodeStatus;
 use App\Constants\Protocols;
 use App\Constants\ResponseType;
@@ -45,7 +46,7 @@ class NodeController extends CRUDController
             'protocol' => [ 'required', Rule::in(Protocols::getConstants())],
             'ip' => 'sometimes|ip',
             'port' => 'required|integer|min:1024|max:65534',
-            'access_token' => 'required|min:5|max:72|regex:/^[a-zA-Z0-9]+:[a-zA-Z0-9-_]+$/',
+            'access_token' => 'required|min:5|max:72|regex:/[a-zA-Z0-9-_]+:.+$/',
             'install_id' => 'required|alpha_dash|size:36'
         ];
 
@@ -59,9 +60,13 @@ class NodeController extends CRUDController
             $node = Node::findByIPOrInstallIdOrFail($input['install_id'], $ipAddress);
             if ($node != null)
             {
+                if ($node->user_id == $request->user()->id)
+                    $message = Messages::RESOURCE_ALREADY_EXISTS_ON_OWN_ACCOUNT;
+                else
+                    $message = Errors::REQUEST_FAILED;
 
+                return $this->respond(null, [ Errors::RESOURCE_ALREADY_EXISTS ], $message, ResponseType::CONFLICT);
             }
-                return $this->respond(null, [ Errors::RESOURCE_ALREADY_EXISTS ], Errors::REQUEST_FAILED, ResponseType::CONFLICT);
         }
         catch (ModelNotFoundException $silenced)
         {

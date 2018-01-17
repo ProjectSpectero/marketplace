@@ -10,4 +10,9 @@ class Service extends Model
     {
         return $this->hasOne(Node::class);
     }
+
+    public function ipAddresses ()
+    {
+        return $this->hasMany(ServiceIPAddress::class);
+    }
 }

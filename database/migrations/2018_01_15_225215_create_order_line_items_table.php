@@ -19,6 +19,7 @@ class CreateOrderLineItemsTable extends Migration
             $table->integer('order_id');
             $table->string('type');
             $table->string('resource');
+            $table->integer('qty');
             $table->decimal('amount', 13, 4);
             $table->timestamps();
         });

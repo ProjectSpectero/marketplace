@@ -12,6 +12,7 @@ use Srmklive\PayPal\Facades\PayPal;
 class PaypalProcessor implements IPaymentProcessor
 {
     private $provider;
+    private $data = [];
 
     /**
      * PaypalProcessor constructor.
@@ -23,48 +24,82 @@ class PaypalProcessor implements IPaymentProcessor
 
     function process(Invoice $invoice)
     {
-        $data = [];
+        $this->processData($invoice);
+        $this->data['type'] = 'payment';
 
-        $data['invoice_id'] = $invoice->id;
-
-        $items = $this->processLineItems($invoice->order->lineItems);
-        $data['items'] = $items;
-
-        $data['invoice_description'] = "Test order";
-        $data['return_url'] = url('/some/sucess/page');
-        $data['cancel_url'] = url('/cart');
-
-        $total = 0;
-        foreach($data['items'] as $item)
-        {
-            $total += $item['price'] * $item['qty'];
-        }
-
-        $data['total'] = $total;
-
-        $response = $this->provider->setExpressCheckout($data);
+        $response = $this->provider->setExpressCheckout($this->data);
 
         return $response['paypal_link'];
     }
 
     function callback(Request $request)
     {
-        // TODO: Implement callback() method.
+        $token = $request->get('token');
+
+        $response = $this->provider->getExpressCheckoutDetails($token);
+
+        // throw exception here
+        if ($response['BILLINGAGREEMENTACCEPTEDSTATUS'] == '0')
+            return;
+
+        $payerId = $response['PAYERID'];
+
+        $response = $this->provider->doExpressCheckoutPayment($this->data, $token, $payerId);
+        $response['redirect_url'] = url('/our/success/page');
+
+        // TODO: throw exception
+        // also should we make our own constants class of
+        // PayPal express checkout api params?
+        if ($response['PAYMENTINFO_0_PAYMENTSTATUS'] != 'Completed')
+            return;
+
+        if ($this->data['type'] == 'subscription')
+            $this->createRecurringPaymentsProfile($token);
+
+        return $response;
+
     }
 
     function refund(Transaction $transaction)
     {
-        // TODO: Implement refund() method.
+        return $this->provider->refundTransaction($transaction->id);
     }
 
     function subscribe(Order $order)
     {
-        // TODO: Implement subscribe() method.
+        $this->processData($order->invoice);
+        $this->data['subscription_desc'] = "Monthly description default";
+        $this->data['type'] = 'subscription';
+
+        $response = $this->provider->setExpressCheckout($this->data);
+
+        return $response['paypal_link'];
     }
 
     function unSubscribe(Order $order)
     {
         // TODO: Implement unSubscribe() method.
+    }
+
+    private function processData(Invoice $invoice)
+    {
+
+        $this->data['invoice_id'] = $invoice->id;
+
+        $items = $this->processLineItems($invoice->order->lineItems);
+        $this->data['items'] = $items;
+
+        $this->data['invoice_description'] = "Default invoice description";
+        $this->data['return_url'] = url('/payments/paypal/callback');
+        $this->data['cancel_url'] = url('/cart');
+
+        $total = 0;
+        foreach($this->data['items'] as $item)
+        {
+            $total += $item['price'] * $item['qty'];
+        }
+
+        $this->data['total'] = $total;
     }
 
     private function processLineItems($lineItems)
@@ -79,5 +114,24 @@ class PaypalProcessor implements IPaymentProcessor
             ];
         }
         return $items;
+    }
+
+    private function createRecurringPaymentsProfile($token)
+    {
+        $startdate = Carbon::now()->toAtomString();
+
+        $data = [
+            'PROFILESTARTDATE' => $startdate,
+            'DESC' => $this->data['invoice_decs'],
+            'BILLINGPERIOD' => 'Month', // Can be 'Day', 'Week', 'SemiMonth', 'Month', 'Year'
+            'BILLINGFREQUENCY' => 1, //
+            'AMT' => 10, // Billing amount for each billing cycle
+            'CURRENCYCODE' => 'USD', // Currency code
+            'TRIALBILLINGPERIOD' => 'Day',  // (Optional) Can be 'Day', 'Week', 'SemiMonth', 'Month', 'Year'
+            'TRIALBILLINGFREQUENCY' => 10, // (Optional) set 12 for monthly, 52 for yearly
+            'TRIALTOTALBILLINGCYCLES' => 1, // (Optional) Change it accordingly
+            'TRIALAMT' => 0, // (Optional) Change it accordingly
+        ];
+        $response = $this->provider->createRecurringPaymentsProfile($$this->data, $token);
     }
 }

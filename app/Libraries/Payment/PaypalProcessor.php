@@ -6,6 +6,7 @@ namespace App\Libraries\Payment;
 use App\Invoice;
 use App\Order;
 use App\Transaction;
+use App\Constants\PaymentType;
 use Illuminate\Http\Request;
 use Srmklive\PayPal\Facades\PayPal;
 
@@ -127,10 +128,6 @@ class PaypalProcessor implements IPaymentProcessor
             'BILLINGFREQUENCY' => 1, //
             'AMT' => 10, // Billing amount for each billing cycle
             'CURRENCYCODE' => 'USD', // Currency code
-            'TRIALBILLINGPERIOD' => 'Day',  // (Optional) Can be 'Day', 'Week', 'SemiMonth', 'Month', 'Year'
-            'TRIALBILLINGFREQUENCY' => 10, // (Optional) set 12 for monthly, 52 for yearly
-            'TRIALTOTALBILLINGCYCLES' => 1, // (Optional) Change it accordingly
-            'TRIALAMT' => 0, // (Optional) Change it accordingly
         ];
         $response = $this->provider->createRecurringPaymentsProfile($data, $token);
 
@@ -145,6 +142,7 @@ class PaypalProcessor implements IPaymentProcessor
         $transaction->payment_processor = 'paypal';
         $transaction->reference = 'test'; // Need example on this
         $transaction->type = $this->data['type'];
+        $transaction->payment_type = PaymentType::CREDIT;
         $transaction->amount = $invoice->amount;
         $transaction->currency = $invoice->currency;
         $transaction->save();

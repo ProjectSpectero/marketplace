@@ -6,6 +6,7 @@ namespace App\Http\Controllers\V1;
 
 use App\Constants\Errors;
 use App\Constants\Events;
+use App\Constants\NodeStatus;
 use App\Constants\Protocols;
 use App\Constants\ResponseType;
 use App\Events\NodeEvent;
@@ -57,6 +58,9 @@ class NodeController extends CRUDController
         {
             $node = Node::findByIPOrInstallIdOrFail($input['install_id'], $ipAddress);
             if ($node != null)
+            {
+
+            }
                 return $this->respond(null, [ Errors::RESOURCE_ALREADY_EXISTS ], Errors::REQUEST_FAILED, ResponseType::CONFLICT);
         }
         catch (ModelNotFoundException $silenced)
@@ -65,6 +69,7 @@ class NodeController extends CRUDController
             // Add back IP (if not provided)
             // TODO: consider storing access_token encrypted
             $input['ip'] = $ipAddress;
+            $input['status'] = NodeStatus::UNCONFIRMED;
             $node = Node::create($input);
         }
 

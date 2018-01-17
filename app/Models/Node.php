@@ -11,7 +11,7 @@ class Node extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'ip', 'port', 'protocol', 'access_token', 'install_id'
+        'ip', 'port', 'protocol', 'access_token', 'install_id', 'status'
     ];
 
     protected $hidden = [
@@ -70,10 +70,13 @@ class Node extends Model
         return sprintf('%s://%s:%d', $this->protocol, $this->ip, $this->port);
     }
 
-
-
     public function user ()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function services ()
+    {
+        return $this->hasMany(Service::class);
     }
 }

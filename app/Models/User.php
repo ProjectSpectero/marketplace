@@ -37,12 +37,12 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'name', 'email'
     ];
 
-    public function userMeta()
+    public function userMeta ()
     {
         return $this->hasMany(UserMeta::class);
     }
 
-    public function backupCodes()
+    public function backupCodes ()
     {
         return $this->hasMany(BackupCode::class);
     }
@@ -50,5 +50,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     public function nodes ()
     {
         return $this->hasMany(Node::class);
+    }
+
+    public function orders ()
+    {
+        return $this->hasMany(Order::class);
     }
 }

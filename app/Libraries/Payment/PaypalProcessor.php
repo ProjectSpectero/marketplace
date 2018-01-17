@@ -29,7 +29,6 @@ class PaypalProcessor implements IPaymentProcessor
 
         $items = $this->processLineItems($invoice->order->lineItems);
         $data['items'] = $items;
-        dd($data);
 
         $data['invoice_description'] = "Test order";
         $data['return_url'] = url('/some/sucess/page');
@@ -44,7 +43,6 @@ class PaypalProcessor implements IPaymentProcessor
         $data['total'] = $total;
 
         $response = $this->provider->setExpressCheckout($data);
-        dd($response);
 
         return $response['paypal_link'];
     }

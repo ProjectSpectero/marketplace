@@ -75,6 +75,8 @@ $app->configure('resources');
 $app->configure('search');
 $app->configure('pagination');
 $app->configure('paypal');
+$app->configure('services');
+$app->configure('mail');
 
 $app->withFacades();
 
@@ -124,6 +126,7 @@ $app->withEloquent();
     $app->register(Barryvdh\Cors\ServiceProvider::class);
     $app->register(Silber\Bouncer\BouncerServiceProvider::class);
     $app->register(Srmklive\PayPal\Providers\PayPalServiceProvider::class);
+    $app->register(\Illuminate\Mail\MailServiceProvider::class);
 
 
 

@@ -36,10 +36,15 @@ class UserEventListener extends BaseListener
         switch ($event->type)
         {
             case Events::USER_CREATED:
-                $welcomeType = $user->status == UserStatus::EMAIL_VERIFICATION_NEEDED ? 'welcomeWithVerify' : 'welcome';
+                $template = $user->status == UserStatus::EMAIL_VERIFICATION_NEEDED ? 'WelcomeWithEmailValidation' : 'Welcome';
                 // TODO: Send the user a welcome email accordingly
                 // Save the verify token in their meta key, and define a route that takes their user_id and this token to verify them in UserController
-                // Clean the token up once done 9
+                // Clean the token up once done (in the controller verification method)
+                /*
+                 * Here's how to send mail
+                 * Mail::to($user->email)
+                 *  ->queue(new Welcome()); <-- or WelcomeWithEmailValidation, these views need to be built, they're blank now.
+                 */
                 break;
             case Events::USER_UPDATED:
 

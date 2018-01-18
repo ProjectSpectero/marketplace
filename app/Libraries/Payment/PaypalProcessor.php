@@ -114,7 +114,7 @@ class PaypalProcessor implements IPaymentProcessor
         $total = 0;
         foreach($this->data['items'] as $item)
         {
-            $total += $item['price'] * $item['qty'];
+            $total += $item['price'] * $item['quantity'];
         }
 
         $this->data['total'] = $total;
@@ -128,7 +128,7 @@ class PaypalProcessor implements IPaymentProcessor
             $items[] = [
                 'name' => $lineItem->description,
                 'price' => $lineItem->amount,
-                'qty' => $lineItem->qty
+                'quantity' => $lineItem->quantity
             ];
         }
         return $items;

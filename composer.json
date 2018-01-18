@@ -14,7 +14,8 @@
         "silber/bouncer": "dev-master",
         "pragmarx/google2fa": "^2.0",
         "illuminate/redis": "^5.5",
-        "srmklive/paypal": "^1.5"
+        "srmklive/paypal": "^1.5",
+        "illuminate/mail": "^5.5"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

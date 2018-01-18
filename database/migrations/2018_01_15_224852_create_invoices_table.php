@@ -18,7 +18,10 @@ class CreateInvoicesTable extends Migration
             $table->increments('id');
             $table->integer('order_id');
             $table->decimal('amount', 13, 4);
-            $table->string('currency');
+
+            $table->string('currency')
+                ->default(\App\Constants\Currency::USD);
+
             $table->string('status');
             $table->timestamps();
         });

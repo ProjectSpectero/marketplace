@@ -23,17 +23,11 @@ class CreateTransactionsTable extends Migration
             $table->integer('invoice_id')
                 ->default(0); // To allow for processing invoiceless payments if ever needed.
 
-            $table->string('payment_processor')
-                ->nullable(false); // Do not set without constants
-
-            $table->string('reference')
-                ->nullable(false);
-
+            $table->string('payment_processor');
+            $table->string('reference');
             $table->string('type');
             $table->string('payment_type');
-
-            $table->decimal('amount', 13, 4)
-                ->nullable(false);
+            $table->decimal('amount', 13, 4);
 
             $table->decimal('fee', 13, 4)
                 ->default(0); // Set to 0 if not given

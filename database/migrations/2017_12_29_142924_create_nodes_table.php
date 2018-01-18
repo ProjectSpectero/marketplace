@@ -13,7 +13,8 @@ class CreateNodesTable extends Migration
      */
     public function up()
     {
-        Schema::create('nodes', function (Blueprint $table) {
+        Schema::create('nodes', function (Blueprint $table)
+        {
             $table->increments('id');
             $table->string('ip');
             $table->integer('port');

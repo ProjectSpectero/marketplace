@@ -13,7 +13,8 @@ class CreateNodeMetasTable extends Migration
      */
     public function up()
     {
-        Schema::create('node_metas', function (Blueprint $table) {
+        Schema::create('node_metas', function (Blueprint $table)
+        {
             $table->increments('id');
             $table->integer('node_id');
             $table->string('meta_key');

@@ -13,13 +13,16 @@ class CreateOrdersTable extends Migration
      */
     public function up()
     {
-        Schema::create('orders', function (Blueprint $table) {
+        Schema::create('orders', function (Blueprint $table)
+        {
             $table->increments('id');
             $table->integer('user_id');
             $table->string('status');
             $table->string('subscription_reference');
-            $table->string('subscription_provider');
+            $table->string('subscription_provider'); // Do not set this without the PaymentProcessor class
             $table->timestamps();
+
+            $table->unique([ 'subscription_reference', 'subscription_provider' ], 'unique_reference_provider_index');
         });
     }
 

@@ -13,7 +13,8 @@ class CreateBackupCodesTable extends Migration
      */
     public function up()
     {
-        Schema::create('backup_codes', function (Blueprint $table) {
+        Schema::create('backup_codes', function (Blueprint $table)
+        {
             $table->increments('id');
             $table->string('user_id');
             $table->string('code');

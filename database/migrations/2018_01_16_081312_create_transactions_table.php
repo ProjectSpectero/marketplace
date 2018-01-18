@@ -13,21 +13,40 @@ class CreateTransactionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('transactions', function (Blueprint $table) {
+        Schema::create('transactions', function (Blueprint $table)
+        {
             $table->increments('id');
-            $table->integer('invoice_id');
-            $table->string('payment_processor');
-            $table->string('reference');
+
+            $table->integer('user_id')
+                ->default(0); // To allow for processing invoiceless payments if ever needed. Use 0 to indicate a payment without an user
+
+            $table->integer('invoice_id')
+                ->default(0); // To allow for processing invoiceless payments if ever needed.
+
+            $table->string('payment_processor')
+                ->nullable(false); // Do not set without constants
+
+            $table->string('reference')
+                ->nullable(false);
+
             $table->string('type');
             $table->string('payment_type');
-            $table->decimal('amount', 13, 4);
-            $table->decimal('fee', 13, 4);
-            $table->string('currency');
+
+            $table->decimal('amount', 13, 4)
+                ->nullable(false);
+
+            $table->decimal('fee', 13, 4)
+                ->default(0); // Set to 0 if not given
+
+            $table->string('currency')
+                ->default(\App\Constants\Currency::USD);
+
             $table->timestamps();
 
-            $table->unique('reference', 'unique_transaction_reference_index');
+            $table->unique([ 'reference', 'payment_processor' ], 'unique_reference_provider_index');
             $table->index('invoice_id', 'invoice_id_index');
             $table->index('payment_processor', 'payment_processor_index');
+            $table->index('user_id', 'user_id_index');
         });
     }
 

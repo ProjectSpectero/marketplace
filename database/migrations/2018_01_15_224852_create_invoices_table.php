@@ -13,7 +13,8 @@ class CreateInvoicesTable extends Migration
      */
     public function up()
     {
-        Schema::create('invoices', function (Blueprint $table) {
+        Schema::create('invoices', function (Blueprint $table)
+        {
             $table->increments('id');
             $table->integer('order_id');
             $table->decimal('amount', 13, 4);

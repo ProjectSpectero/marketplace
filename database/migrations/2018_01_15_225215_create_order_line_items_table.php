@@ -13,13 +13,14 @@ class CreateOrderLineItemsTable extends Migration
      */
     public function up()
     {
-        Schema::create('order_line_items', function (Blueprint $table) {
+        Schema::create('order_line_items', function (Blueprint $table)
+        {
             $table->increments('id');
             $table->string('description', 512);
             $table->integer('order_id');
             $table->string('type');
             $table->string('resource');
-            $table->integer('qty');
+            $table->integer('quantity');
             $table->decimal('amount', 13, 4);
             $table->timestamps();
         });

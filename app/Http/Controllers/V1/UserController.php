@@ -62,6 +62,7 @@ class UserController extends CRUDController
             'status' => UserStatus::EMAIL_VERIFICATION_NEEDED
         ]);
         $user->password = Hash::make($input['password']);
+        $user->status = UserStatus::EMAIL_VERIFICATION_NEEDED;
         $user->saveOrFail();
 
         // Remove the ones that go into the original model
@@ -140,4 +141,6 @@ class UserController extends CRUDController
         event(new UserEvent(Events::USER_DELETED, $user));
         return $this->respond(null, [], Messages::USER_DESTROYED, ResponseType::NO_CONTENT);
     }
+
+
 }

@@ -13,7 +13,8 @@ class CreateTableUserMetas extends Migration
      */
     public function up()
     {
-        Schema::create('user_metas', function (Blueprint $table) {
+        Schema::create('user_metas', function (Blueprint $table)
+        {
             $table->increments('id');
             $table->integer('user_id');
             $table->string('meta_key');

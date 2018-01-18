@@ -4,9 +4,7 @@
 namespace App\Mail;
 
 
-use Illuminate\Mail\Mailable;
-
-class WelcomeWithEmailValidation extends Mailable
+class WelcomeWithEmailValidation extends BaseMail
 {
     public function build()
     {

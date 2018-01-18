@@ -26,7 +26,7 @@ class CreateTransactionsTable extends Migration
             $table->string('payment_processor');
             $table->string('reference');
             $table->string('type');
-            $table->string('payment_type');
+            $table->string('reason');
             $table->decimal('amount', 13, 4);
 
             $table->decimal('fee', 13, 4)

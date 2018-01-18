@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 
 interface IPaymentProcessor
 {
+    function getName ();
     function process (Invoice $invoice);
     function callback (Request $request);
     function refund (Transaction $transaction, Float $amount);

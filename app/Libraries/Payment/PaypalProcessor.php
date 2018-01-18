@@ -3,6 +3,8 @@
 namespace App\Libraries\Payment;
 
 
+use App\Constants\PaymentProcessor;
+use App\Constants\TransactionReasons;
 use App\Invoice;
 use App\Order;
 use App\Transaction;
@@ -10,7 +12,7 @@ use App\Constants\PaymentType;
 use Illuminate\Http\Request;
 use Srmklive\PayPal\Facades\PayPal;
 
-class PaypalProcessor implements IPaymentProcessor
+class PaypalProcessor extends BasePaymentProcessor
 {
     private $provider;
     private $invoice;
@@ -28,8 +30,8 @@ class PaypalProcessor implements IPaymentProcessor
     {
         $this->invoice = $invoice;
 
-        $this->processData($invoice);
-        $this->data['type'] = 'payment';
+        $data = $this->processInvoice($invoice);
+        $data['type'] = 'payment';
 
         $response = $this->provider->setExpressCheckout($this->data);
 
@@ -55,12 +57,13 @@ class PaypalProcessor implements IPaymentProcessor
         if ($response['PAYMENTINFO_0_PAYMENTSTATUS'] != 'Completed')
             return;
 
-        $this->data['transaction_id'] = $response['PAYMENTINFO_0_TRANSACTIONID'];
+        $transactionId = $response['PAYMENTINFO_0_TRANSACTIONID'];
 
         if ($this->data['type'] == 'subscription')
             $this->createRecurringPaymentsProfile($token);
 
-        $this->addTransaction($this->invoice->amount);
+        // TODO: Figure out what you were actually paid, do NOT use invoice->amount for amount. Make this compile
+        $this->addTransaction($this, $transaction->invoice(), $amount, $transactionId, PaymentType::DEBIT, $reason);
 
         return $response;
     }
@@ -77,7 +80,13 @@ class PaypalProcessor implements IPaymentProcessor
 
         $refundResponse =  $this->provider->refundTransaction($this->data['transaction_id'], $amount);
 
-        $this->addTransaction($amount);
+        if ($amount < $transaction->amount)
+            $reason = TransactionReasons::PARTIAL_REFUND;
+        else
+            $reason = TransactionReasons::REFUND;
+
+        // TODO: Only add this if the refund is VERIFIED to have been successful
+        $this->addTransaction($this, $transaction->invoice(), $amount, $transaction->reference, PaymentType::DEBIT, $reason);
 
         return $refundResponse;
     }
@@ -98,26 +107,27 @@ class PaypalProcessor implements IPaymentProcessor
         // TODO: Implement unSubscribe() method.
     }
 
-    private function processData(Invoice $invoice)
+    private function processInvoice (Invoice $invoice)
     {
-        $this->invoice = $invoice;
+        $data = [];
+        $data['invoice_id'] = $invoice->id;
 
-        $this->data['invoice_id'] = $invoice->id;
+        $items = $this->processLineItems($invoice->order()->lineItems);
+        $data['items'] = $items;
 
-        $items = $this->processLineItems($invoice->order->lineItems);
-        $this->data['items'] = $items;
-
-        $this->data['invoice_description'] = "Default invoice description";
-        $this->data['return_url'] = url('/payments/paypal/callback');
-        $this->data['cancel_url'] = url('/cart');
-
-        $total = 0;
-        foreach($this->data['items'] as $item)
+        $total = 0.0;
+        foreach($items as $item)
         {
             $total += $item['price'] * $item['quantity'];
         }
+        $data['total'] = $total;
 
-        $this->data['total'] = $total;
+        $data['invoice_description'] = $this->getInvoiceDescription($invoice);
+
+        $data['return_url'] = url('/payments/paypal/callback');
+        $data['cancel_url'] = url('/cart');
+
+        return $data;
     }
 
     private function processLineItems($lineItems)
@@ -151,19 +161,8 @@ class PaypalProcessor implements IPaymentProcessor
         return $response;
     }
 
-    private function addTransaction(Float $amount)
+    public function getName()
     {
-        $transaction = new Transaction();
-
-        $transaction->invoice_id = $this->invoice->id;
-        $transaction->payment_processor = 'paypal';
-        $transaction->reference = $this->data['transaction_id'];
-        $transaction->type = $this->data['type'];
-        $transaction->payment_type = PaymentType::DEBIT;
-        $transaction->amount = $amount;
-        $transaction->currency = $this->invoice->currency;
-        $transaction->save();
-
-        return $transaction;
+        return PaymentProcessor::PAYPAL;
     }
 }

@@ -89,4 +89,9 @@ class Utility
     {
         return isset($dataBag['previous']) ? $dataBag['previous'] : null;
     }
+
+    public static function getError (Array $databag)
+    {
+        return isset($databag['error']) ? $databag['error'] : null;
+    }
 }

@@ -33,6 +33,9 @@ class NodeEventListener extends BaseListener
     {
         $node = $event->node;
         $oldState = Utility::getPreviousModel($event->dataBag);
+        $error = Utility::getError($event->dataBag);
+
+        \Log::info($node);
 
         switch ($event->type)
         {
@@ -53,6 +56,8 @@ class NodeEventListener extends BaseListener
             case Events::NODE_UNREACHABLE:
                 break;
             case Events::NODE_VERIFICATION_FAILED:
+                // TODO: Send App\Mail\NodeVerificationFailed() to the node's owner
+                \Log::info($error);
                 break;
         }
     }

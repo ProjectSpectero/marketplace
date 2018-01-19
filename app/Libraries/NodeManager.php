@@ -16,6 +16,7 @@ use GuzzleHttp\RequestOptions;
 
 class NodeManager
 {
+    private $implicitConnection;
     private $node;
     private $user;
     private $accessToken;
@@ -29,8 +30,10 @@ class NodeManager
     private $headers;
     private $version;
 
-    public function __construct (Node $node)
+
+    public function __construct (Node $node, bool $implicitConnection = false)
     {
+        $this->implicitConnection = $implicitConnection;
         $this->node = $node;
         $this->baseUrl = $node->accessor();
         $this->accessToken = $node->access_token;
@@ -47,24 +50,45 @@ class NodeManager
         ];
 
         $this->version = env('NODE_API_VERSION', 'v1');
-        $this->authenticate();
-        $this->validateAccessLevel();
+
+        if ($implicitConnection)
+        {
+            $this->authenticate();
+            $this->validateAccessLevel();
+        }
     }
 
-    public function firstTimeDiscovery () : array
+    public function firstTimeDiscovery ()
     {
         $ret = [];
-        $services = $this->discoverServices()['result'];
-        foreach ($services as $service => $state)
-        {
-            $this->validateServiceName($service);
-            $config = $this->getServiceConfig($service);
-            $connectionResource = $this->getServiceConnectionResources($service);
 
-            $ret[$service] = [
-                'config' => $config,
-                'connectionResource' => $connectionResource
-            ];
+        try
+        {
+            if (! $this->implicitConnection)
+            {
+                $this->authenticate();
+                $this->validateAccessLevel();
+            }
+
+            $services = $this->discoverServices()['result'];
+            foreach ($services as $service => $state)
+            {
+                $this->validateServiceName($service);
+                $config = $this->getServiceConfig($service);
+                $connectionResource = $this->getServiceConnectionResources($service);
+
+                $ret[$service] = [
+                    'config' => $config,
+                    'connectionResource' => $connectionResource
+                ];
+            }
+        }
+        catch (RequestException | FatalException $exception)
+        {
+            event(new NodeEvent(Events::NODE_VERIFICATION_FAILED, $this->node, [
+                'error' => $exception->getMessage()
+            ]));
+            return null;
         }
 
         return $ret;
@@ -131,6 +155,9 @@ class NodeManager
 
     private function validateAccessLevel ()
     {
+        if (! $this->authenticated)
+            throw new FatalException(Errors::COULD_NOT_ACCESS_NODE);
+
         $localEndpoint = $this->getUrl('user/self');
 
         $response = $this->request('get', $localEndpoint);
@@ -148,35 +175,11 @@ class NodeManager
     private function authenticate ()
     {
         $localEndpoint = $this->getUrl('auth');
+        $returnedData = $this->request('post', $localEndpoint, $this->processAccessToken());
 
-        try
-        {
-            $returnedData = $this->request('post', $localEndpoint, $this->processAccessToken());
-        }
-        catch (RequestException $exception)
-        {
-            $this->authenticated = false;
-            $this->jwtAccessToken = null;
-            $this->jwtRefreshToken = null;
-            event(new NodeEvent(Events::NODE_VERIFICATION_FAILED, $this->node, [
-                'errors' => $exception
-            ]));
-            return;
-        }
-
-        if (empty($returnedData['errors']))
-        {
-            // No errors, everything went as expected.
-            $this->authenticated = true;
-            $this->jwtAccessToken = $returnedData['result'];
-        }
-        else
-            event(new NodeEvent(Events::NODE_VERIFICATION_FAILED, $this->node, [
-                'errors' => $returnedData['errors']
-            ]));
-
-        if (! $this->authenticated)
-            throw new FatalException(Errors::COULD_NOT_ACCESS_NODE);
+        // No errors, everything went as expected.
+        $this->authenticated = true;
+        $this->jwtAccessToken = $returnedData['result'];
     }
 
     private function processAccessToken ()
@@ -210,7 +213,8 @@ class NodeManager
         }
         catch (RequestException $exception)
         {
-            if ($exception->getResponse()->getStatusCode() == ResponseType::NOT_AUTHORIZED)
+            $response = $exception->getResponse();
+            if ($response != null && $response->getStatusCode() == ResponseType::NOT_AUTHORIZED)
             {
                 $this->authenticated = false;
                 $this->jwtAccessToken = null;

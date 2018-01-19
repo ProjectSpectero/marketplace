@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Constants\Errors;
 use App\Constants\Events;
 use App\Constants\ResponseType;
+use App\Constants\UserMetaKeys;
 use App\Constants\UserStatus;
 use App\Events\UserEvent;
 use App\Libraries\PaginationManager;
@@ -72,7 +74,9 @@ class UserController extends CRUDController
             UserMeta::addOrUpdateMeta($user, $key, $value);
 
         event(new UserEvent(Events::USER_CREATED, $user));
-        return $this->respond($user->toArray(), [], Messages::USER_CREATED, ResponseType::CREATED);
+        $verifyToken = UserMeta::loadMeta($user, UserMetaKeys::VerifyToken);
+
+        return $this->respond([$user->toArray(), 'verifyToken' => $verifyToken], [], Messages::USER_CREATED, ResponseType::CREATED);
     }
 
     public function show(Request $request, int $id): JsonResponse
@@ -142,5 +146,19 @@ class UserController extends CRUDController
         return $this->respond(null, [], Messages::USER_DESTROYED, ResponseType::NO_CONTENT);
     }
 
+    public function verify(Request $request, $id, $token): JsonResponse
+    {
+        $user = User::findOrFail($id);
+        $verifyToken = UserMeta::loadMeta($user, UserMetaKeys::VerifyToken);
+
+        if ($verifyToken != $token)
+            return $this->respond(
+                null, [ Errors::USER_VERIFICATION_FAILED ], null, ResponseType::NOT_AUTHORIZED);
+
+        $user->status = UserStatus::ACTIVE;
+        UserMeta::deleteMeta($user, UserMetaKeys::VerifyToken);
+
+        return $this->respond(null, [], Messages::USER_VERIFIED, ResponseType::OK);
+    }
 
 }

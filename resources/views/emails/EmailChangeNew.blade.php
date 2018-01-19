@@ -1,5 +1,5 @@
 <html>
     <body>
-        <h1>Test Welcome</h1>
+        <h1>Test EmailChangeNew</h1>
     </body>
 </html>

@@ -16,4 +16,5 @@ class UserMetaKeys extends Holder
     const TwoFactorSecretKey = 'tfa.secret';
     const TwoFactorEnabled = 'tfa.enabled';
     const OldEmailAddress = 'old_email_address';
+    const VerifyToken = 'verify_token';
 }

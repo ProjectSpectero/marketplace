@@ -38,6 +38,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1', 'middleware' => [ 'cors' 
         $api->get('auth/multifactor/first-time', [ 'middleware' => 'enforce-tfa', 'uses' => 'TwoFactorController@firstTimeMultiFactor' ]);
         $api->get('auth/multifactor/codes', 'TwoFactorController@showUserBackupCodes');
         $api->get('auth/multifactor/codes/regenerate', 'TwoFactorController@regenerateUserBackupCodes');
+        $api->get('user/verify/{id}/{token}', 'UserController@verify');
 
         // Search/Filtering routes
         $api->post('search', 'SearchController@handleSearch');

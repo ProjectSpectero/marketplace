@@ -3,9 +3,18 @@
 namespace App\Listeners;
 
 use App\Constants\Events;
+use App\Constants\UserMetaKeys;
 use App\Constants\UserStatus;
 use App\Events\UserEvent;
+use App\Libraries\Utility;
+use App\Mail\EmailChangeNew;
+use App\Mail\EmailChangeOld;
+use App\Mail\WelcomeWithEmailValidation;
+use App\Mail\Welcome;
 use App\User;
+use App\UserMeta;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Contracts\Mail\Mailer;
 
 class UserEventListener extends BaseListener
 {
@@ -37,14 +46,15 @@ class UserEventListener extends BaseListener
         {
             case Events::USER_CREATED:
                 $template = $user->status == UserStatus::EMAIL_VERIFICATION_NEEDED ? 'WelcomeWithEmailValidation' : 'Welcome';
-                // TODO: Send the user a welcome email accordingly
-                // Save the verify token in their meta key, and define a route that takes their user_id and this token to verify them in UserController
-                // Clean the token up once done (in the controller verification method)
-                /*
-                 * Here's how to send mail
-                 * Mail::to($user->email)
-                 *  ->queue(new Welcome()); <-- or WelcomeWithEmailValidation, these views need to be built, they're blank now.
-                 */
+                $class = "\App\Mail\\" . $template;
+
+                $verifyToken = Utility::getRandomString();
+
+                UserMeta::addOrUpdateMeta($user, UserMetaKeys::VerifyToken, $verifyToken);
+
+                Mail::to($user->email)
+                    ->queue(new $class());
+
                 break;
             case Events::USER_UPDATED:
 
@@ -54,8 +64,11 @@ class UserEventListener extends BaseListener
                 {
                     $user->status = UserStatus::EMAIL_VERIFICATION_NEEDED;
                     $user->saveOrFail();
-                    // TODO: Send the user a mail at their NEW (user->email) address requesting that it be verified
-                    // TODO: Send the user a mail at their OLD (oldUser->email) address notifying that email has been changed, and that they should contact us if this wasn't them.
+
+                    $oldEmail = UserMeta::loadMeta($user, UserMetaKeys::OldEmailAddress);
+
+                    Mail::to($user->email)->queue(new EmailChangeNew());
+                    Mail::to($oldEmail)->queue(new EmailChangeOld());
 
                     // Keep an audit trail to assist people who had their accounts taken over.
                     \Log::info(sprintf("User id: %d had its email changed from: %s to: %s\n", $user->id, $oldUser->email, $user->email));

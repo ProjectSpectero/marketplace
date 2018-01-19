@@ -35,8 +35,6 @@ class NodeEventListener extends BaseListener
         $oldState = Utility::getPreviousModel($event->dataBag);
         $error = Utility::getError($event->dataBag);
 
-        \Log::info($node);
-
         switch ($event->type)
         {
             case Events::NODE_CREATED:

@@ -94,6 +94,16 @@ class NodeManager
         return $ret;
     }
 
+    public function heartbeat ()
+    {
+        return $this->request('get', $this->getUrl('heartbeat'));
+    }
+
+    public function discoverIdentity ()
+    {
+        return $this->request('get', $this->getUrl('identity'));
+    }
+
     public function discoverServices ()
     {
         $localEndpoint = $this->getUrl('service');

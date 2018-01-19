@@ -17,6 +17,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         'App\Events\NodeEvent' => [
             'App\Listeners\NodeEventListener'
+        ],
+        'App\Events\FraudCheckEvent' => [
+            'App\Listeners\FraudCheckEventListener'
         ]
     ];
 }

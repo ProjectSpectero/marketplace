@@ -53,7 +53,7 @@ class UserEventListener extends BaseListener
                 UserMeta::addOrUpdateMeta($user, UserMetaKeys::VerifyToken, $verifyToken);
 
                 Mail::to($user->email)
-                    ->queue(new $class());
+                    ->queue(new $class($user, $verifyToken));
 
                 break;
             case Events::USER_UPDATED:

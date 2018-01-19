@@ -149,7 +149,7 @@ class UserController extends CRUDController
     public function verify(Request $request, $id, $token): JsonResponse
     {
         $user = User::findOrFail($id);
-        $verifyToken = UserMeta::loadMeta($user, UserMetaKeys::VerifyToken);
+        $verifyToken = UserMeta::loadMeta($user, UserMetaKeys::VerifyToken)->meta_value;
 
         if ($verifyToken != $token)
             return $this->respond(

@@ -151,6 +151,8 @@ if (!class_exists('PayPal'))
     class_alias(Srmklive\PayPal\Facades\PayPal::class, 'PayPal');
 }
 
+$app->alias('mailer', \Illuminate\Contracts\Mail\Mailer::class);
+
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes

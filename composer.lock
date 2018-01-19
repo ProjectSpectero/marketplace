@@ -3255,16 +3255,16 @@
         },
         {
             "name": "srmklive/paypal",
-            "version": "1.5.7",
+            "version": "1.5.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/srmklive/laravel-paypal.git",
-                "reference": "839e839e239f7981a8c746c3f964d2f2bb1ac1e7"
+                "reference": "09624131e74d871f85761008757833549b73cbb9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/srmklive/laravel-paypal/zipball/839e839e239f7981a8c746c3f964d2f2bb1ac1e7",
-                "reference": "839e839e239f7981a8c746c3f964d2f2bb1ac1e7",
+                "url": "https://api.github.com/repos/srmklive/laravel-paypal/zipball/09624131e74d871f85761008757833549b73cbb9",
+                "reference": "09624131e74d871f85761008757833549b73cbb9",
                 "shasum": ""
             },
             "require": {
@@ -3306,7 +3306,7 @@
                 "rest",
                 "web service"
             ],
-            "time": "2017-10-17T10:47:22+00:00"
+            "time": "2018-01-17T11:55:34+00:00"
         },
         {
             "name": "swiftmailer/swiftmailer",

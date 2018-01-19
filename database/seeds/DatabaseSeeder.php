@@ -14,5 +14,6 @@ class DatabaseSeeder extends Seeder
          $this->call(RBACSeeder::class);
          $this->call(UsersTableSeeder::class);
          $this->call(NodesTableSeeder::class);
+         $this->call(BillingSeeder::class);
     }
 }

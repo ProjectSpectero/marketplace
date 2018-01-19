@@ -76,7 +76,7 @@ class UserController extends CRUDController
         event(new UserEvent(Events::USER_CREATED, $user));
         $verifyToken = UserMeta::loadMeta($user, UserMetaKeys::VerifyToken);
 
-        return $this->respond([$user->toArray(), 'verifyToken' => $verifyToken], [], Messages::USER_CREATED, ResponseType::CREATED);
+        return $this->respond($user->toArray(), [], Messages::USER_CREATED, ResponseType::CREATED);
     }
 
     public function show(Request $request, int $id): JsonResponse

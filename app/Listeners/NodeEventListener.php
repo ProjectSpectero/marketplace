@@ -10,6 +10,7 @@ use App\Errors\UserFriendlyException;
 use App\Events\NodeEvent;
 use App\Libraries\NodeManager;
 use App\Libraries\Utility;
+use App\Mail\NodeVerificationFailed;
 
 class NodeEventListener extends BaseListener
 {
@@ -54,7 +55,7 @@ class NodeEventListener extends BaseListener
             case Events::NODE_UNREACHABLE:
                 break;
             case Events::NODE_VERIFICATION_FAILED:
-                // TODO: Send App\Mail\NodeVerificationFailed() to the node's owner
+                Mail::to($node->user()->email)->queue(new NodeVerificationFailed());
                 \Log::info($error);
                 break;
         }

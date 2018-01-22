@@ -84,7 +84,7 @@ class AuthController extends V1Controller
             return $this->respond($twoFactorResponse->toArray(), [], Messages::MULTI_FACTOR_VERIFICATION_NEEDED);
         }
         else
-            return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], null, ResponseType::FORBIDDEN);
+            return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], Errors::REQUEST_FAILED, ResponseType::FORBIDDEN);
     }
 
 
@@ -100,7 +100,7 @@ class AuthController extends V1Controller
         if ($oauthResponse->success)
             return $this->respond($oauthResponse->toArray(), [], Messages::OAUTH_TOKEN_REFRESHED);
 
-        return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], null, ResponseType::FORBIDDEN);
+        return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], Errors::REQUEST_FAILED, ResponseType::FORBIDDEN);
     }
 
     /**

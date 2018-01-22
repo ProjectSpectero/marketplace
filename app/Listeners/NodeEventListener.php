@@ -11,6 +11,7 @@ use App\Events\NodeEvent;
 use App\Libraries\NodeManager;
 use App\Libraries\Utility;
 use App\Mail\NodeVerificationFailed;
+use Illuminate\Support\Facades\Mail;
 
 class NodeEventListener extends BaseListener
 {
@@ -55,7 +56,7 @@ class NodeEventListener extends BaseListener
             case Events::NODE_UNREACHABLE:
                 break;
             case Events::NODE_VERIFICATION_FAILED:
-                Mail::to($node->user()->email)->queue(new NodeVerificationFailed());
+                Mail::to($node->user->email)->queue(new NodeVerificationFailed($error));
                 \Log::info($error);
                 break;
         }

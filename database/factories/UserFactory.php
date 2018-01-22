@@ -5,5 +5,6 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
         'name' => $faker->name,
         'email' => $faker->unique()->safeEmail,
         'password' => \Illuminate\Support\Facades\Hash::make('temppass'),
+        'node_key' => $faker->uuid
     ];
 });

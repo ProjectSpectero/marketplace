@@ -4,6 +4,7 @@ namespace App;
 
 use App\Constants\UserStatus;
 use Illuminate\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Lumen\Auth\Authorizable;
 use Illuminate\Database\Eloquent\Model;
@@ -35,7 +36,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     ];
 
     public $searchAble = [
-        'name', 'email'
+        'name', 'email', 'node_key'
     ];
 
     public function userMeta ()
@@ -60,8 +61,16 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public function findForPassport (String $identifier)
     {
+        /** @var Builder $this */
         return $this->where('email', $identifier)
             ->where('status', '!=', UserStatus::DISABLED)
             ->first();
+    }
+
+    public function findByNodeKey (String $nodeKey, bool $throwsException = false)
+    {
+        /** @var Builder $predicate */
+        $predicate = $this->where('node_key', $nodeKey);
+        return $throwsException ? $predicate->firstOrFail() : $predicate->first();
     }
 }

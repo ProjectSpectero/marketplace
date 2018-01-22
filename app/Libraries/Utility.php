@@ -13,9 +13,15 @@ class Utility
 
     public static $metaDataTypes = ['boolean', 'integer', 'double', 'float', 'string'];
 
-    public static function getRandomString () : String
+    public static function getRandomString (int $count = 1) : String
     {
-        return md5(uniqid(mt_rand(), true));
+        $ret = "";
+        for ($i = 0; $i < $count; $i++)
+        {
+            $ret .= md5(uniqid(mt_rand(), true));
+        }
+
+        return $ret;
     }
 
     public static function generateResponse (Array $data = null, Array $errors = [],

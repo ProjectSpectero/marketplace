@@ -10,6 +10,7 @@ use App\Constants\UserStatus;
 use App\Events\UserEvent;
 use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
+use App\Libraries\Utility;
 use App\User;
 use App\UserMeta;
 use App\Constants\Messages;
@@ -66,6 +67,7 @@ class UserController extends CRUDController
         ]);
         $user->password = Hash::make($input['password']);
         $user->status = UserStatus::EMAIL_VERIFICATION_NEEDED;
+        $user->node_key = Utility::getRandomString(2);
         $user->saveOrFail();
 
         // Remove the ones that go into the original model

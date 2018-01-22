@@ -6,8 +6,8 @@ $factory->define(App\OrderLineItem::class, function (Faker\Generator $faker) use
     return [
         'description' => $faker->paragraph,
         'order_id' => $autoIncrement->current(),
-        'type' => \App\Constants\PaymentType::DEBIT,
-        'resource' => $faker->word,
+        'type' => \App\Constants\OrderResourceType::NODE,
+        'resource' => mt_rand(0, 5),
         'quantity' => $faker->randomDigit,
         'amount' => $faker->randomDigit,
     ];

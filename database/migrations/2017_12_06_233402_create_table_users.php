@@ -25,6 +25,7 @@ class CreateTableUsers extends Migration
             $table->timestamps();
 
             $table->index('node_key', 'node_key_index');
+            $table->index([ 'email', 'status' ], 'email_status_index'); // Passport query
         });
     }
 

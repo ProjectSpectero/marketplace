@@ -8,6 +8,7 @@ use App\Constants\UserStatus;
 use App\Libraries\Utility;
 use App\Models\Opaque\OAuthResponse;
 use App\Models\Opaque\TwoFactorResponse;
+use App\OauthRefreshToken;
 use App\PartialAuth;
 use App\Constants\Errors;
 use App\User;
@@ -46,9 +47,6 @@ class AuthController extends V1Controller
             {
                 case UserStatus::EMAIL_VERIFICATION_NEEDED:
                     $error = Errors::EMAIL_VERIFICATION_NEEDED;
-                    break;
-                case UserStatus::DISABLED:
-                    $error = Errors::ACCOUNT_DISABLED;
                     break;
             }
 
@@ -93,6 +91,8 @@ class AuthController extends V1Controller
 
     public function refreshToken(Request $request)
     {
+        // TODO: Stop disabled users from using refresh tokens to keep the session going
+
         $refreshToken = $request->get('refresh_token');
         $oauthResponse = $this->proxy('refresh_token', [
                 'refresh_token' => $refreshToken
@@ -109,6 +109,7 @@ class AuthController extends V1Controller
      *
      * @param string $grantType - what type of grant should be proxied
      * @param array $data - the data to send to the server
+     * @return OAuthResponse
      */
 
     private function proxy(String $grantType, array $data = []) : OAuthResponse

@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Constants\UserStatus;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Lumen\Auth\Authorizable;
@@ -55,5 +56,12 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     public function orders ()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function findForPassport (String $identifier)
+    {
+        return $this->where('email', $identifier)
+            ->where('status', '!=', UserStatus::DISABLED)
+            ->first();
     }
 }

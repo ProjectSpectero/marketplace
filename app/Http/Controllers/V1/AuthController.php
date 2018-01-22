@@ -4,6 +4,7 @@ namespace App\Http\Controllers\V1;
 
 use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
+use App\Constants\UserStatus;
 use App\Libraries\Utility;
 use App\Models\Opaque\OAuthResponse;
 use App\Models\Opaque\TwoFactorResponse;
@@ -39,7 +40,21 @@ class AuthController extends V1Controller
         {
             // FirstOrFail not needed, oAuth succeeded, this user exists.
             $user = User::where('email', $email)->first();
-            
+
+            $error = null;
+            switch ($user->status)
+            {
+                case UserStatus::EMAIL_VERIFICATION_NEEDED:
+                    $error = Errors::EMAIL_VERIFICATION_NEEDED;
+                    break;
+                case UserStatus::DISABLED:
+                    $error = Errors::ACCOUNT_DISABLED;
+                    break;
+            }
+
+            if ($error != null)
+                return $this->respond(null, [ $error ], Errors::REQUEST_FAILED, ResponseType::FORBIDDEN);
+
             try
             {
                 // Simple existence check, we do not care about the values. That is not our responsibility.

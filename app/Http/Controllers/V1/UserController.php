@@ -13,6 +13,7 @@ use App\Libraries\SearchManager;
 use App\User;
 use App\UserMeta;
 use App\Constants\Messages;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -74,7 +75,6 @@ class UserController extends CRUDController
             UserMeta::addOrUpdateMeta($user, $key, $value);
 
         event(new UserEvent(Events::USER_CREATED, $user));
-        $verifyToken = UserMeta::loadMeta($user, UserMetaKeys::VerifyToken);
 
         return $this->respond($user->toArray(), [], Messages::USER_CREATED, ResponseType::CREATED);
     }
@@ -146,19 +146,45 @@ class UserController extends CRUDController
         return $this->respond(null, [], Messages::USER_DESTROYED, ResponseType::NO_CONTENT);
     }
 
-    public function verify(Request $request, $id, $token): JsonResponse
+    public function verify(Request $request, String $email, String $token): JsonResponse
     {
-        $user = User::findOrFail($id);
-        $verifyToken = UserMeta::loadMeta($user, UserMetaKeys::VerifyToken)->meta_value;
+        $failed = false;
+        try
+        {
+            /** @var User $user */
+            $user = User::where('email', $email)
+                ->firstOrFail();
+        }
+        catch (ModelNotFoundException $silenced)
+        {
+            $failed = true;
+        }
 
-        if ($verifyToken != $token)
-            return $this->respond(
-                null, [ Errors::USER_VERIFICATION_FAILED ], null, ResponseType::NOT_AUTHORIZED);
+        if (! $failed)
+        {
+            if ($user->status == UserStatus::EMAIL_VERIFICATION_NEEDED)
+            {
+                $verifyToken = UserMeta::loadMeta($user, UserMetaKeys::VerifyToken, true)->meta_value;
 
-        $user->status = UserStatus::ACTIVE;
-        UserMeta::deleteMeta($user, UserMetaKeys::VerifyToken);
+                if ($verifyToken !== $token)
+                    return $this->respond(
+                        null, [ Errors::USER_VERIFICATION_FAILED ], null, ResponseType::NOT_AUTHORIZED);
 
-        return $this->respond(null, [], Messages::USER_VERIFIED, ResponseType::OK);
+                $user->status = UserStatus::ACTIVE;
+                $user->saveOrFail();
+
+                UserMeta::deleteMeta($user, UserMetaKeys::VerifyToken);
+
+                return $this->respond(null, [], Messages::USER_VERIFIED, ResponseType::OK);
+            }
+            else
+                return $this->respond(
+                    null, [ Errors::USER_ALREADY_VERIFIED ], Messages::USER_VERIFIED, ResponseType::BAD_REQUEST
+                );
+        }
+
+        return $this->respond(
+            null, [ Errors::USER_VERIFICATION_FAILED ], null, ResponseType::NOT_AUTHORIZED);
     }
 
 }

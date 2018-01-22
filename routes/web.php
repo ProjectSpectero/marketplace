@@ -24,6 +24,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1', 'middleware' => [ 'cors' 
         $api->post('auth/refresh', 'AuthController@refreshToken');
         $api->post('auth/multifactor', 'TwoFactorController@verifyToken');
         $api->post('user', 'UserController@store');
+        $api->get('user/verify/{email}/{token}', 'UserController@verify');
     });
 
     $api->group(['as' => 'AuthRequired', 'middleware' => ['auth:api']], function ($api)
@@ -38,7 +39,6 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1', 'middleware' => [ 'cors' 
         $api->get('auth/multifactor/first-time', [ 'middleware' => 'enforce-tfa', 'uses' => 'TwoFactorController@firstTimeMultiFactor' ]);
         $api->get('auth/multifactor/codes', 'TwoFactorController@showUserBackupCodes');
         $api->get('auth/multifactor/codes/regenerate', 'TwoFactorController@regenerateUserBackupCodes');
-        $api->get('user/verify/{id}/{token}', 'UserController@verify');
 
         // Search/Filtering routes
         $api->post('search', 'SearchController@handleSearch');

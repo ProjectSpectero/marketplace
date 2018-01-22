@@ -1,5 +1,7 @@
-<html>
-    <body>
-         <h1>Test EmailChangeOld</h1>
-    </body>
-</html>
+@extends ('emails.layouts.master')
+
+@section ('content')
+
+
+
+@endsection

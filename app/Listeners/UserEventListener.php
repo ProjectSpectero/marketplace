@@ -14,7 +14,6 @@ use App\Mail\Welcome;
 use App\User;
 use App\UserMeta;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Contracts\Mail\Mailer;
 
 class UserEventListener extends BaseListener
 {

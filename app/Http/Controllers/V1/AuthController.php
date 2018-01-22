@@ -8,7 +8,6 @@ use App\Constants\UserStatus;
 use App\Libraries\Utility;
 use App\Models\Opaque\OAuthResponse;
 use App\Models\Opaque\TwoFactorResponse;
-use App\OauthRefreshToken;
 use App\PartialAuth;
 use App\Constants\Errors;
 use App\User;

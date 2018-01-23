@@ -2,19 +2,16 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Invoice;
 use \PDF;
 
 class InvoiceController
 {
-    public function download()
+    public function show($id, String $action)
     {
-        $pdf = PDF::loadView('invoice');
-        return $pdf->download('invoice.pdf');
-    }
+        $invoice = Invoice::findOrFail($id);
 
-    public function show()
-    {
-        $pdf = PDF::loadView('invoice');
-        return $pdf->stream();
+        $pdf = PDF::loadView('invoice', ['invoice' => $invoice]);
+        return $pdf->$action('invoice.pdf');
     }
 }

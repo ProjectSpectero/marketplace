@@ -276,12 +276,12 @@
                                                     <h1>
                                                         Invoice:
                                                         <span>
-                          2NV6E1xiRXOrPr
+                          {{ $invoice->id }}
                         </span>
                                                     </h1>
                                                     <h2>
                         <span>
-                          05/16/2013
+                          {{ \Carbon\Carbon::now() }}
                         </span>
                                                     </h2>
                                                 </td>
@@ -297,22 +297,11 @@
                                                         <tr>
                                                             <td>
                             <span>
-                              customer@example.com
+                              {{ $invoice->order->user->email }}
                             </span>
                                                             </td>
                                                         </tr>
-                                                        <tr>
-                                                            <th>
-                                                                Plan
-                                                            </th>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>
-                            <span>
-                              Gold Plan
-                            </span>
-                                                            </td>
-                                                        </tr>
+
                                                         <tr>
                                                             <th>
                                                                 Date
@@ -321,7 +310,7 @@
                                                         <tr>
                                                             <td>
                             <span>
-                              04/30/2013
+                              {{ $invoice->created_at }}
                             </span>
                                                             </td>
                                                         </tr>
@@ -336,11 +325,11 @@
                                                                     <tr>
                                                                         <td class="data-table-amount" style="width: 85px;">
                                   <span>
-                                    $49.99
+                                    {{ $invoice->amount }}
                                   </span>
                                                                         </td>
                                                                         <td style="width: 315px;" align="left">
-                                                                            <img width="59" height="22" src="https://www.filepicker.io/api/file/vXIourdhTGSGGKdcdKgr" alt="paid">
+                                                                           Status:  {{ $invoice->status }}
                                                                         </td>
                                                                     </tr>
                                                                 </table>

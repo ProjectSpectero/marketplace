@@ -14,6 +14,5 @@ $router->group(['prefix' => 'debug', 'namespace' => 'V1' ], function($api)
 {
     /** @var \Laravel\Lumen\Routing\Router $api */
     $api->get('/test', [ 'middleware' => [ 'auth:api', 'cors' ], 'uses' => 'DebugController@test' ]);
-    $api->get('/pdf', 'InvoiceController@show');
-    $api->get('/pdf/download', 'InvoiceController@download');
+    $api->get('/pdf/{id}/{action}', 'InvoiceController@show');
 });

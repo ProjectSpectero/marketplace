@@ -5,9 +5,9 @@ namespace App\Http\Controllers\V1;
 use App\Invoice;
 use \PDF;
 
-class InvoiceController
+class InvoiceController extends CRUDController
 {
-    public function show($id, String $action)
+    public function pdf($id, String $action)
     {
         $invoice = Invoice::findOrFail($id);
 

@@ -2723,16 +2723,16 @@
         },
         {
             "name": "paragonie/constant_time_encoding",
-            "version": "v2.2.0",
+            "version": "v2.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/paragonie/constant_time_encoding.git",
-                "reference": "9e7d88e6e4015c2f06a3fa22f06e1d5faa77e6c4"
+                "reference": "7c74c5d08761ead7b5e89d07c854bc28eb0b2186"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paragonie/constant_time_encoding/zipball/9e7d88e6e4015c2f06a3fa22f06e1d5faa77e6c4",
-                "reference": "9e7d88e6e4015c2f06a3fa22f06e1d5faa77e6c4",
+                "url": "https://api.github.com/repos/paragonie/constant_time_encoding/zipball/7c74c5d08761ead7b5e89d07c854bc28eb0b2186",
+                "reference": "7c74c5d08761ead7b5e89d07c854bc28eb0b2186",
                 "shasum": ""
             },
             "require": {
@@ -2781,7 +2781,7 @@
                 "hex2bin",
                 "rfc4648"
             ],
-            "time": "2017-09-22T14:55:37+00:00"
+            "time": "2018-01-23T00:54:57+00:00"
         },
         {
             "name": "paragonie/random_compat",

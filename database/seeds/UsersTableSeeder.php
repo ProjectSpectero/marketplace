@@ -20,9 +20,10 @@ class UsersTableSeeder extends Seeder
       }
 
       \App\User::create([
-        "name" => "Spectero Dev",
-        "email" => "spectero@dev.com",
-        "password" => \Illuminate\Support\Facades\Hash::make('temppass') 
+          'name' => "Spectero Dev",
+          'email' => "spectero@dev.com",
+          'password' => \Illuminate\Support\Facades\Hash::make('temppass') ,
+          'status' => \App\Constants\UserStatus::ACTIVE
       ])->assign(UserRoles::ADMIN);
     }
 }

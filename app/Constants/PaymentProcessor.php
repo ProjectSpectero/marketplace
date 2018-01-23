@@ -4,7 +4,7 @@
 namespace App\Constants;
 
 
-class PaymentProcessor
+class PaymentProcessor extends Holder
 {
     const PAYPAL = 'PAYPAL';
     const STRIPE = 'STRIPE';

@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderLineItem extends Model
 {
-
     protected $casts = ['amount' => 'float'];
 
     public function order()

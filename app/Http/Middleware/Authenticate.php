@@ -36,7 +36,7 @@ class Authenticate
      */
     public function handle($request, Closure $next, $guard = null)
     {
-        if ($this->auth->guard($guard)->guest() && $request->user()->status == UserStatus::DISABLED) {
+        if ($this->auth->guard($guard)->guest() && $request->user()->status !== UserStatus::ACTIVE) {
             return response('Unauthorized.', 401);
         }
 

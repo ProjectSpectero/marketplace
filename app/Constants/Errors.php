@@ -35,4 +35,8 @@ class Errors extends Holder
     const UNKNOWN_SERVICE = 'UNKNOWN_SERVICE';
     const UNKNOWN_ACTION = 'UNKNOWN_ACTION';
     const ACCESS_LEVEL_INSUFFICIENT = 'ACCESS_LEVEL_INSUFFICIENT';
+
+    // Invoice related
+
+    const INVOICE_ALREADY_PAID = 'INVOICE_ALREADY_PAID';
 }

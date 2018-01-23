@@ -2,7 +2,11 @@
 
 
 namespace App\Libraries\Payment;
+use App\Constants\Errors;
+use App\Constants\ResponseType;
+use App\Errors\UserFriendlyException;
 use App\Invoice;
+use App\Libraries\Utility;
 use App\Transaction;
 
 abstract class BasePaymentProcessor implements IPaymentProcessor
@@ -56,5 +60,19 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
     {
         // TODO: build this
         return "";
+    }
+
+    public function getDueAmount (Invoice $invoice)
+    {
+        $amount = $invoice->amount - $invoice->transactions->sum('amount');
+        if ($amount <= 0)
+            throw new UserFriendlyException(Errors::INVOICE_ALREADY_PAID, ResponseType::BAD_REQUEST);
+
+        return $amount;
+    }
+
+    public function getPartialInvoiceId (Invoice $invoice)
+    {
+        return $invoice->id . '-' . Utility::getRandomString(1);
     }
 }

@@ -35,6 +35,8 @@ class CreateTransactionsTable extends Migration
             $table->string('currency')
                 ->default(\App\Constants\Currency::USD);
 
+            $table->mediumText("raw_response"); // Tracks the raw API response sent by the Payment processor
+
             $table->timestamps();
 
             $table->unique([ 'reference', 'payment_processor' ], 'unique_reference_provider_index');

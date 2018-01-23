@@ -5,16 +5,18 @@ namespace App\Libraries\Payment;
 
 
 use App\Invoice;
+use App\Models\Opaque\PaymentProcessorResponse;
 use App\Order;
 use App\Transaction;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 interface IPaymentProcessor
 {
-    function getName ();
-    function process (Invoice $invoice);
-    function callback (Request $request);
-    function refund (Transaction $transaction, Float $amount);
-    function subscribe (Order $order);
-    function unSubscribe (Order $order);
+    function getName () : string;
+    function process (Invoice $invoice) : PaymentProcessorResponse;
+    function callback (Request $request) : JsonResponse;
+    function refund (Transaction $transaction, Float $amount) : PaymentProcessorResponse;
+    function subscribe (Order $order) : PaymentProcessorResponse;
+    function unSubscribe (Order $order) : PaymentProcessorResponse;
 }

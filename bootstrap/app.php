@@ -77,6 +77,7 @@ $app->configure('pagination');
 $app->configure('paypal');
 $app->configure('services');
 $app->configure('mail');
+$app->configure('dompdf');
 
 $app->withFacades();
 
@@ -127,6 +128,7 @@ $app->withEloquent();
     $app->register(Silber\Bouncer\BouncerServiceProvider::class);
     $app->register(Srmklive\PayPal\Providers\PayPalServiceProvider::class);
     $app->register(\Illuminate\Mail\MailServiceProvider::class);
+    $app->register(\Barryvdh\DomPDF\ServiceProvider::class);
 
 
 
@@ -149,6 +151,11 @@ if (!class_exists('Bouncer'))
 if (!class_exists('PayPal'))
 {
     class_alias(Srmklive\PayPal\Facades\PayPal::class, 'PayPal');
+}
+
+if (!class_exists('PDF'))
+{
+    class_alias(Barryvdh\DomPDF\Facade::class, 'PDF');
 }
 
 $app->alias('mailer', \Illuminate\Contracts\Mail\Mailer::class);

@@ -25,6 +25,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1', 'middleware' => [ 'cors' 
         $api->post('auth/multifactor', 'TwoFactorController@verifyToken');
         $api->post('user', 'UserController@store');
         $api->get('user/verify/{email}/{token}', 'UserController@verify');
+        $api->post('payment/{processor}/callback', 'PaymentController@callback');
     });
 
     $api->group(['as' => 'AuthRequired', 'middleware' => ['auth:api']], function ($api)

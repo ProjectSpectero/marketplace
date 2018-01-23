@@ -62,15 +62,30 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
         return "";
     }
 
+    /**
+     * @param Invoice $invoice
+     * @return mixed
+     * @throws UserFriendlyException
+     */
     public function getDueAmount (Invoice $invoice)
     {
+        $lowestAllowedAmount = env('LOWEST_ALLOWED_PAYMENT', 5);
+
         $amount = $invoice->amount - $invoice->transactions->sum('amount');
+
         if ($amount <= 0)
             throw new UserFriendlyException(Errors::INVOICE_ALREADY_PAID, ResponseType::BAD_REQUEST);
+
+        if ($amount < $lowestAllowedAmount)
+            throw new UserFriendlyException(Errors::INVOIDE_DUE_IS_LOWER_THAN_LOWEST_THRESHOLD, ResponseType::BAD_REQUEST);
 
         return $amount;
     }
 
+    /**
+     * @param Invoice $invoice
+     * @return string
+     */
     public function getPartialInvoiceId (Invoice $invoice)
     {
         return $invoice->id . '-' . Utility::getRandomString(1);

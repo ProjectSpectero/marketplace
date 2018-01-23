@@ -100,4 +100,10 @@ class Utility
     {
         return isset($databag['error']) ? $databag['error'] : null;
     }
+
+    public static function generateUrl (String $path, String $deployment = 'backend')
+    {
+        $base = env('APP_URL') . '/';
+        $base .= $deployment == 'backend' ? env('API_VERSION') : '';
+    }
 }

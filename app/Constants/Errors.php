@@ -39,4 +39,5 @@ class Errors extends Holder
     // Invoice related
 
     const INVOICE_ALREADY_PAID = 'INVOICE_ALREADY_PAID';
+    const INVOIDE_DUE_IS_LOWER_THAN_LOWEST_THRESHOLD = 'INVOIDE_DUE_IS_LOWER_THAN_LOWEST_THRESHOLD';
 }

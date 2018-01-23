@@ -20,6 +20,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         'App\Events\FraudCheckEvent' => [
             'App\Listeners\FraudCheckEventListener'
+        ],
+        'App\Events\BillingEvent' => [
+            'App\Listeners\BillingEventListener'
         ]
     ];
 }

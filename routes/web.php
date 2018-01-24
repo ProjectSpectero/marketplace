@@ -42,7 +42,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1', 'middleware' => [ 'cors' 
         $api->get('auth/multifactor/codes/regenerate', 'TwoFactorController@regenerateUserBackupCodes');
 
         // Invoice (PDF) route
-        $api->get('/invoice/{id}/pdf/{action}', 'InvoiceController@show');
+        $api->get('/invoice/{id}/pdf/{action}', 'InvoiceController@pdf');
 
         // Search/Filtering routes
         $api->post('search', 'SearchController@handleSearch');

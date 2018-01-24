@@ -6,6 +6,6 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
         'email' => $faker->unique()->safeEmail,
         'status' => array_random(\App\Constants\UserStatus::getConstants()),
         'password' => \Illuminate\Support\Facades\Hash::make('temppass'),
-        'node_key' => $faker->uuid
+        'node_key' => \App\Libraries\Utility::getRandomString(2)
     ];
 });

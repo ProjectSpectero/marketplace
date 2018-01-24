@@ -23,7 +23,8 @@ class UsersTableSeeder extends Seeder
           'name' => "Spectero Dev",
           'email' => "spectero@dev.com",
           'password' => \Illuminate\Support\Facades\Hash::make('temppass') ,
-          'status' => \App\Constants\UserStatus::ACTIVE
+          'status' => \App\Constants\UserStatus::ACTIVE,
+          'node_key' => \App\Libraries\Utility::getRandomString(2)
       ])->assign(UserRoles::ADMIN);
     }
 }

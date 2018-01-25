@@ -28,7 +28,7 @@
             <p>
                 <strong>{{ env('LEGAL_COMPANY_NAME') }}</strong><br />
                 {{ env('LEGAL_COMPANY_ADDRESS_PARTIAL_1') }}<br />
-                {{ env('LEGAL_COMPANY_ADDRESS_PARTIAL_2') }}<br><br />
+                {{ env('LEGAL_COMPANY_ADDRESS_PARTIAL_2') }}<br /><br />
                 Email: {{ env('COMPANY_EMAIL', 'hello@spectero.com') }} <br />
                 Web: {{ env('COMPANY_SITE', 'https://spectero.com') }}
             </p>
@@ -84,9 +84,10 @@
         </div>
     </div>
 
-    @if(count($transactions) > 0)
+
     <div id="items">
         <h2 style="text-align:center">Transactions</h2> <br />
+        @if(count($transactions) > 0)
         <table >
             <tr>
                 <th>Type</th>
@@ -105,8 +106,10 @@
                 </tr>
             @endforeach
         </table>
+        @else
+        No transactions could be found for this invoice.
+        @endif
     </div>
-    @endif
 
     <div id="footer">
         <p>Footer content</p>

@@ -25,6 +25,7 @@ $factory->define(App\Order::class, function (Faker\Generator $faker) {
 $factory->define(App\Invoice::class, function (Faker\Generator $faker) {
     return [
         'order_id' => mt_rand(1, 5),
+        'user_id' => mt_rand(1, 6),
         'amount' => $faker->numberBetween(5, 100),
         'currency' => \App\Constants\Currency::USD,
         'status' => array_random(\App\Constants\InvoiceStatus::getConstants()),

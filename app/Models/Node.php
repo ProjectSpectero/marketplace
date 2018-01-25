@@ -15,7 +15,11 @@ class Node extends Model
     ];
 
     protected $hidden = [
-        'ip', 'port', 'protocol', 'access_token', 'updated_at'
+        'ip', 'port', 'protocol', 'install_id', 'access_token', 'updated_at'
+    ];
+
+    public $searchAble = [
+        'ip', 'install_id'
     ];
 
     /**

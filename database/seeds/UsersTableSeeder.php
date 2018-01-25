@@ -1,5 +1,6 @@
 <?php
 
+use App\Libraries\PermissionManager;
 use Illuminate\Database\Seeder;
 use App\Constants\UserRoles;
 
@@ -16,15 +17,16 @@ class UsersTableSeeder extends Seeder
 
       foreach(App\User::all() as $user)
       {
-          $user->assign(UserRoles::USER);
+          PermissionManager::assign($user, UserRoles::USER);
       }
 
-      \App\User::create([
+      $admin = \App\User::create([
           'name' => "Spectero Dev",
           'email' => "spectero@dev.com",
           'password' => \Illuminate\Support\Facades\Hash::make('temppass') ,
           'status' => \App\Constants\UserStatus::ACTIVE,
           'node_key' => \App\Libraries\Utility::getRandomString(2)
-      ])->assign(UserRoles::ADMIN);
+      ]);
+      PermissionManager::assign($admin, UserRoles::ADMIN);
     }
 }

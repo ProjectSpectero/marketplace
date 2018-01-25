@@ -19,6 +19,12 @@ class RBACSeeder extends Seeder
     public function run()
     {
         $resources = config('resources');
+        $userResource = $resources['user'];
+        $nodeResource = $resources['node'];
+        $orderResource = $resources['order'];
+        $invoiceResource = $resources['invoice'];
+
+
         foreach ($resources as $resource)
         {
             foreach (CRUDActions::getConstants() as $permission)
@@ -28,22 +34,16 @@ class RBACSeeder extends Seeder
             }
         }
 
-        $userResource = $resources['user'];
-        $nodeResource = $resources['node'];
+        // Add non-CRUD roles to the admin class
+        $this->bouncer->allow(\App\Constants\UserRoles::ADMIN)
+            ->to($invoiceResource . '.' . 'pdf');
 
-        // Allow normal users to create/index nodes
-        $this->bouncer->allow(\App\Constants\UserRoles::USER)->to([
-            $nodeResource . '.' . CRUDActions::STORE,
-            $nodeResource . '.' . CRUDActions::INDEX
-        ]);
+        // Define generic, role-specific permissions here on a per resource basis
 
-        // Allow users to view/update/destroy THEIR OWN nodes
+        // Allow normal users to create nodes
         $this->bouncer->allow(\App\Constants\UserRoles::USER)
-            ->toOwn(\App\Node::class)
             ->to([
-                     $nodeResource . '.' . CRUDActions::SHOW,
-                     $nodeResource . '.' . CRUDActions::UPDATE,
-                     $nodeResource . '.' . CRUDActions::DESTROY
+                  $nodeResource . '.' . CRUDActions::STORE,
              ]);
     }
 }

@@ -6,9 +6,11 @@ use App\Constants\Errors;
 use App\Constants\Events;
 use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
+use App\Constants\UserRoles;
 use App\Constants\UserStatus;
 use App\Events\UserEvent;
 use App\Libraries\PaginationManager;
+use App\Libraries\PermissionManager;
 use App\Libraries\SearchManager;
 use App\Libraries\Utility;
 use App\User;
@@ -75,6 +77,8 @@ class UserController extends CRUDController
 
         foreach ($input as $key => $value)
             UserMeta::addOrUpdateMeta($user, $key, $value);
+
+        PermissionManager::assign($user, UserRoles::USER);
 
         event(new UserEvent(Events::USER_CREATED, $user));
 

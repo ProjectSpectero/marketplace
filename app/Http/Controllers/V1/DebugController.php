@@ -1,16 +1,15 @@
 <?php
 
 namespace App\Http\Controllers\V1;
-use App\Libraries\NodeManager;
-use App\Mail\Welcome;
-use App\Node;
+use App\Invoice;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 
-class DebugController
+class DebugController extends V1Controller
 {
     public function test (Request $request)
     {
-
+        $invoice = Invoice::find(3);
+        $user = $request->user();
+        dd($this->authorize('invoice.pdf', $invoice));
     }
 }

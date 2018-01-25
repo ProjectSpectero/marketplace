@@ -2,5 +2,7 @@
 
 return [
     'user' => 'user',
-    'node' => 'node'
+    'node' => 'node',
+    'order' => 'order',
+    'invoice' => 'invoice'
 ];

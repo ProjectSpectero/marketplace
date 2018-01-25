@@ -81,12 +81,18 @@
         <table >
             <tr>
                 <th>Type</th>
+                <th>Reference</th>
+                <th>Provider</th>
                 <th>Amount</th>
+                <th>Currency</th>
             </tr>
             @foreach ($transactions as $transaction)
                 <tr>
                     <td>{{ $transaction->type }}</td>
+                    <td>{{ $transaction->reference }}</td>
+                    <td>{{ $transaction->provider }}</td>
                     <td>{{ $transaction->amount }}</td>
+                    <td>{{ $transaction->currency }}</td>
                 </tr>
             @endforeach
         </table>

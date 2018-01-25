@@ -76,6 +76,22 @@
         </div>
     </div>
 
+    <div id="items">
+        <h2 style="text-align:center">All Transactions</h2>
+        <table >
+            <tr>
+                <th>Type</th>
+                <th>Amount</th>
+            </tr>
+            @foreach ($transactions as $transaction)
+                <tr>
+                    <td>{{ $transaction->type }}</td>
+                    <td>{{ $transaction->amount }}</td>
+                </tr>
+            @endforeach
+        </table>
+    </div>
+
     <div id="footer">
         <p>Footer content</p>
     </div>

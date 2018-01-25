@@ -44,6 +44,7 @@ class InvoiceController extends CRUDController
             'lineItems' => $invoice->order->lineItems,
             'userAddress' => $userAddress,
             'organization' => $organization,
+            'transactions' => $invoice->transactions,
         ]);
         $fileName = env('COMPANY_NAME', 'Spectero') .' Invoice #' . $invoice->id . '.pdf';
 

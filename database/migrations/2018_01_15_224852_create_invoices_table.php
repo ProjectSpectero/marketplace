@@ -19,6 +19,7 @@ class CreateInvoicesTable extends Migration
             $table->integer('order_id');
             $table->integer('user_id'); // Can be derived from order_id, but this allows for { orderless invoices | authorization based on user }
             $table->decimal('amount', 13, 4);
+            $table->decimal('tax', 13, 4);
 
             $table->string('currency')
                 ->default(\App\Constants\Currency::USD);

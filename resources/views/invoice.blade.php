@@ -14,7 +14,7 @@
 <div id="container">
     <div id="header">
         <div id="logo">
-            <img src="http://placehold.it/230x70&text=logo" alt="">
+            <img src="{{ url('images/logo-dark.png') }}" />
         </div>
         <div id="reference">
             <h3><strong>Facture</strong></h3>
@@ -26,195 +26,59 @@
     <div id="fromto">
         <div id="from">
             <p>
-                <strong>Your company</strong><br>
-                8 avenue des Champs Elysées <br>
-                75000 Paris <br><br>
+                <strong>{{ env('LEGAL_COMPANY_NAME') }}</strong><br>
+                {{ env('LEGAL_COMPANY_ADDRESS_PARTIAL_1') }}, <br>
+                {{ env('LEGAL_COMPANY_ADDRESS_PARTIAL_2') }}<br><br>
                 Tél.: 01 00 00 00 00 <br>
-                Email: contact@website.com <br>
-                Web: www.website.com
+                Email: contact@spectero.com <br>
+                Web: www.spectero.com
             </p>
         </div>
         <div id="to">
             <p>
-                <strong>John Doe</strong><br>
-                10 rue Charles Rouxel<br>
-                77014 Paris
+                <strong>{{ $invoice->order->user->name }}</strong><br>
+                {{ $invoice->order->user->email }}<br>
+                {{ \App\UserMeta::loadMeta($invoice->order->user, \App\Constants\UserMetaKeys::AddressLineOne)->first()}}
             </p>
         </div>
     </div>
 
     <div id="items">
-        <p>Montants exprimés en Euros</p>
+        <p>All values are in {{ $invoice->currency }}</p>
         <table>
             <tr>
-                <th>Désignation</th>
-                <th>TVA</th>
-                <th>P.U. HT</th>
-                <th>Qté</th>
-                <th>Total HT</th>
-            </tr>
-            <tr>
-                <td>Article</td>
-                <td>20%</td>
-                <td>3,99</td>
-                <td>1</td>
-                <td>3,99</td>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Status</th>
+                <th>Amount</th>
             </tr>
             <tr>
                 <td></td>
                 <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td>{{ $invoice->status }}</td>
+                <td>{{ $invoice->amount }}</td>
             </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
+
         </table>
     </div>
 
     <div id="summary">
         <div id="note">
             <h4>Note :</h4>
-            <p>Information complémentaire à ajouter.</p>
+            <p>Additional notes go here</p>
         </div>
         <div id="total">
             <table border="1">
                 <tr>
-                    <td>Total HT</td>
-                    <td>3,99</td>
-                </tr>
-                <tr>
-                    <td>Total TVA 20%</td>
-                    <td>0,80</td>
-                </tr>
-                <tr>
-                    <td>Total TTC</td>
-                    <td>4,79</td>
+                    <td>Total</td>
+                    <td>{{ $invoice->amount }}</td>
                 </tr>
             </table>
         </div>
     </div>
 
     <div id="footer">
-        <p>Société à responsabilité limité (SARL) - Capital de 1 000 000 € - SIRET: 87564738493127 <br>
-            NAF-APE: 6202A - Num. TVA: FR28987856541</p>
+        <p>Footer content</p>
     </div>
 </div>
 

@@ -29,16 +29,16 @@
                 <strong>{{ env('LEGAL_COMPANY_NAME') }}</strong><br>
                 {{ env('LEGAL_COMPANY_ADDRESS_PARTIAL_1') }}, <br>
                 {{ env('LEGAL_COMPANY_ADDRESS_PARTIAL_2') }}<br><br>
-                Tél.: 01 00 00 00 00 <br>
-                Email: contact@spectero.com <br>
-                Web: www.spectero.com
+                Email: {{ env('COMPANY_EMAIL', 'hello@spectero.com') }} <br>
+                Web: {{ env('COMPANY_SITE', 'https://spectero.com') }}
             </p>
         </div>
         <div id="to">
             <p>
                 <strong>{{ $invoice->order->user->name }}</strong><br>
                 {{ $invoice->order->user->email }}<br>
-                {{ \App\UserMeta::loadMeta($invoice->order->user, \App\Constants\UserMetaKeys::AddressLineOne)->first()}}
+                {{ $userAddress }}
+                {{ $organization }}
             </p>
         </div>
     </div>
@@ -49,23 +49,22 @@
             <tr>
                 <th>Description</th>
                 <th>Quantity</th>
-                <th>Status</th>
                 <th>Amount</th>
             </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td>{{ $invoice->status }}</td>
-                <td>{{ $invoice->amount }}</td>
-            </tr>
-
+            @foreach ($lineItems as $item)
+                <tr>
+                    <td>{{ $item->description }}</td>
+                    <td>{{ $item->quantity }}</td>
+                    <td>{{ $item->amount }}</td>
+                </tr>
+            @endforeach
         </table>
     </div>
 
     <div id="summary">
         <div id="note">
             <h4>Note :</h4>
-            <p>Additional notes go here</p>
+            <p>Invoice status is: {{ $invoice->status }}</p>
         </div>
         <div id="total">
             <table border="1">

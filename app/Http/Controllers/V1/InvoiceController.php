@@ -4,8 +4,11 @@ namespace App\Http\Controllers\V1;
 
 use App\Constants\Errors;
 use App\Constants\ResponseType;
+use App\Constants\UserMetaKeys;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
+use App\UserMeta;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use \PDF;
 
@@ -19,8 +22,29 @@ class InvoiceController extends CRUDController
     public function pdf(Request $request, int $id, String $action)
     {
         $invoice = Invoice::findOrFail($id);
-        $this->authorizeResource($invoice, 'invoice.pdf');
-        $pdf = PDF::loadView('invoice', ['invoice' => $invoice]);
+        $user = $invoice->order->user;
+
+        try
+        {
+            $organization = UserMeta::loadMeta($user, UserMetaKeys::Organization, true)->meta_value;
+            $addrLine1 = UserMeta::loadMeta($user, UserMetaKeys::AddressLineOne, true)->meta_value;
+            $addrLine2 = UserMeta::loadMeta($user, UserMetaKeys::AddressLineTwo, true)->meta_value;
+
+            $userAddress = $addrLine1 . ', ' . $addrLine2;
+        }
+        catch (ModelNotFoundException $e)
+        {
+            $userAddress = '';
+            $organization = '';
+        }
+
+//        $this->authorizeResource($invoice, 'invoice.pdf');
+        $pdf = PDF::loadView('invoice', [
+            'invoice' => $invoice,
+            'lineItems' => $invoice->order->lineItems,
+            'userAddress' => $userAddress,
+            'organization' => $organization,
+        ]);
         $fileName = env('COMPANY_NAME', 'Spectero') .' Invoice #' . $invoice->id . '.pdf';
 
         switch ($action)

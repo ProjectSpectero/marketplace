@@ -18,8 +18,9 @@
         </div>
         <div id="reference">
             <h3><strong>Facture</strong></h3>
-            <h4>Réf. : FA1703-00001</h4>
-            <p>Date facturation : 20/03/2017</p>
+            <h4>Réf. : # {{ $invoice->id }}</h4>
+            <p>Created at : {{ $invoice->created_at }}</p>
+            <p>Due on : {{ $invoice->due_date }}</p>
         </div>
     </div>
 
@@ -35,7 +36,15 @@
             <p>
                 <strong>{{ $invoice->order->user->name }}</strong><br />
                 {{ $invoice->order->user->email }} <br />
-                {{ $organization }} <br />
+
+                @if (! empty($organization))
+                    {{ $organization }} <br />
+                @endif
+
+                @if (! empty($taxId))
+                    Tax ID: {{ $taxId }} <br />
+                @endif
+
                 {{ $userAddress }}
             </p>
         </div>
@@ -105,7 +114,7 @@
             @endforeach
         </table>
         @else
-        No transactions could be found for this invoice.
+        No transactions could be found for this invoice. <br />
         @endif
     </div>
 

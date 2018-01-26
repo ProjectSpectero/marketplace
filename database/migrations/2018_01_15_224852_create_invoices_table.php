@@ -25,6 +25,7 @@ class CreateInvoicesTable extends Migration
                 ->default(\App\Constants\Currency::USD);
 
             $table->string('status');
+            $table->date('due_date');
             $table->timestamps();
         });
     }

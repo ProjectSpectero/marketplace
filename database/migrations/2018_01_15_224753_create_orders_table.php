@@ -20,6 +20,8 @@ class CreateOrdersTable extends Migration
             $table->string('status');
             $table->string('subscription_reference');
             $table->string('subscription_provider'); // Do not set this without the PaymentProcessor class
+            $table->integer('term'); // The order renews every n days, 0 means one time
+            $table->date('due_next'); // Take today() + add term to it to calculate this once payment is received
             $table->timestamps();
 
             $table->unique([ 'subscription_reference', 'subscription_provider' ], 'unique_reference_provider_index');

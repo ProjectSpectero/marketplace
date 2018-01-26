@@ -13,6 +13,7 @@ class UserMetaKeys extends Holder
     const Country = 'country';
     const PhoneNumber = 'phone_no';
     const PreferredCurrency = 'preferred_currency';
+    const TaxIdentification = 'tax_identification';
     const TwoFactorSecretKey = 'tfa.secret';
     const TwoFactorEnabled = 'tfa.enabled';
     const OldEmailAddress = 'old_email_address';

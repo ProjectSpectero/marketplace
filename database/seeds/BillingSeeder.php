@@ -14,5 +14,6 @@ class BillingSeeder extends Seeder
         factory(App\OrderLineItem::class, 5)->create();
         factory(App\Order::class, 5)->create();
         factory(App\Invoice::class, 5)->create();
+        factory(App\Transaction::class, 5)->create();
     }
 }

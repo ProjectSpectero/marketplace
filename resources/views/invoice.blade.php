@@ -26,19 +26,19 @@
     <div id="fromto">
         <div id="from">
             <p>
-                <strong>{{ env('LEGAL_COMPANY_NAME') }}</strong><br>
-                {{ env('LEGAL_COMPANY_ADDRESS_PARTIAL_1') }}, <br>
-                {{ env('LEGAL_COMPANY_ADDRESS_PARTIAL_2') }}<br><br>
-                Email: {{ env('COMPANY_EMAIL', 'hello@spectero.com') }} <br>
+                <strong>{{ env('LEGAL_COMPANY_NAME') }}</strong><br />
+                {{ env('LEGAL_COMPANY_ADDRESS_PARTIAL_1') }}<br />
+                {{ env('LEGAL_COMPANY_ADDRESS_PARTIAL_2') }}<br /><br />
+                Email: {{ env('COMPANY_EMAIL', 'hello@spectero.com') }} <br />
                 Web: {{ env('COMPANY_SITE', 'https://spectero.com') }}
             </p>
         </div>
         <div id="to">
             <p>
-                <strong>{{ $invoice->order->user->name }}</strong><br>
-                {{ $invoice->order->user->email }}<br>
+                <strong>{{ $invoice->order->user->name }}</strong><br />
+                {{ $invoice->order->user->email }} <br />
+                {{ $organization }} <br />
                 {{ $userAddress }}
-                {{ $organization }}
             </p>
         </div>
     </div>
@@ -69,6 +69,14 @@
         <div id="total">
             <table border="1">
                 <tr>
+                    <td>Subtotal</td>
+                    <td>{{ $invoice->amount }}</td>
+                </tr>
+                <tr>
+                    <td>Tax ( %)</td>
+                    <td>{{ $invoice->amount }}</td>
+                </tr>
+                <tr>
                     <td>Total</td>
                     <td>{{ $invoice->amount }}</td>
                 </tr>
@@ -76,8 +84,10 @@
         </div>
     </div>
 
+
     <div id="items">
-        <h2 style="text-align:center">All Transactions</h2>
+        <h2 style="text-align:center">Transactions</h2> <br />
+        @if(count($transactions) > 0)
         <table >
             <tr>
                 <th>Type</th>
@@ -96,6 +106,9 @@
                 </tr>
             @endforeach
         </table>
+        @else
+        No transactions could be found for this invoice.
+        @endif
     </div>
 
     <div id="footer">

@@ -48,14 +48,14 @@ class UserController extends CRUDController
         $rules = [
             'name' => 'required',
             'email' => 'required|email|unique:users',
-            'password' => 'sometimes|min:5|max:72',
-            'address_line_1' => 'required|max:255',
-            'address_line_2' => 'required|max:255',
-            'city' => 'required|max:255',
-            'state' => 'required|max:255',
-            'post_code' => 'required|alpha_num|max:255',
-            'country' => 'required|country|max:255',
-            'phone_no' => 'required|max:255'
+            'password' => 'required|min:5|max:72',
+            'address_line_1' => 'sometimes|max:255',
+            'address_line_2' => 'sometimes|max:255',
+            'city' => 'sometimes|max:255',
+            'state' => 'sometimes|max:255',
+            'post_code' => 'sometimes|alpha_num|max:255',
+            'country' => 'sometimes|country|max:255',
+            'phone_no' => 'sometimes|max:255'
         ];
 
         $this->validate($request, $rules);
@@ -110,13 +110,13 @@ class UserController extends CRUDController
             'name' => 'required',
             'email' => 'required|email|unique:users,email,' . $request->get('id'),
             'password' => 'sometimes|min:5|max:72',
-            'address_line_1' => 'required|max:255',
-            'address_line_2' => 'required|max:255',
-            'city' => 'required|max:255',
-            'state' => 'required|max:255',
-            'post_code' => 'required|alpha_num|max:255',
-            'country' => 'required|country|max:255',
-            'phone_no' => 'required|max:255'
+            'address_line_1' => 'sometimes|max:255',
+            'address_line_2' => 'sometimes|max:255',
+            'city' => 'sometimes|max:255',
+            'state' => 'sometimes|max:255',
+            'post_code' => 'sometimes|alpha_num|max:255',
+            'country' => 'sometimes|country|max:255',
+            'phone_no' => 'sometimes|max:255'
         ];
 
         $this->validate($request, $rules);

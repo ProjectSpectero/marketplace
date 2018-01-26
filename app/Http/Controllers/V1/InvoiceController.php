@@ -30,7 +30,7 @@ class InvoiceController extends CRUDController
             $addrLine1 = UserMeta::loadMeta($user, UserMetaKeys::AddressLineOne, true)->meta_value;
             $addrLine2 = UserMeta::loadMeta($user, UserMetaKeys::AddressLineTwo, true)->meta_value;
 
-            $userAddress = $addrLine1 . ', ' . $addrLine2;
+            $userAddress = $addrLine1 . PHP_EOL . $addrLine2;
         }
         catch (ModelNotFoundException $e)
         {

@@ -31,3 +31,17 @@ $factory->define(App\Invoice::class, function (Faker\Generator $faker) {
         'status' => array_random(\App\Constants\InvoiceStatus::getConstants()),
     ];
 });
+
+$factory->define(App\Transaction::class, function (Faker\Generator $faker) {
+    return [
+        'user_id' => mt_rand(1, 6),
+        'invoice_id' => mt_rand(1, 5),
+        'payment_processor' => array_random(\App\Constants\PaymentProcessor::getConstants()),
+        'reference' => mt_rand(1, 5),
+        'type' => \App\Constants\PaymentType::DEBIT,
+        'reason' => $faker->word,
+        'amount' => $faker->numberBetween(5, 100),
+        'fee' => $faker->numberBetween(5, 100),
+        'currency' => \App\Constants\Currency::USD,
+    ];
+});

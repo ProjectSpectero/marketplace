@@ -29,8 +29,6 @@
                 <strong>{{ env('LEGAL_COMPANY_NAME') }}</strong><br />
                 {{ env('LEGAL_COMPANY_ADDRESS_PARTIAL_1') }}<br />
                 {{ env('LEGAL_COMPANY_ADDRESS_PARTIAL_2') }}<br /><br />
-                Email: {{ env('COMPANY_EMAIL', 'hello@spectero.com') }} <br />
-                Web: {{ env('COMPANY_SITE', 'https://spectero.com') }}
             </p>
         </div>
         <div id="to">

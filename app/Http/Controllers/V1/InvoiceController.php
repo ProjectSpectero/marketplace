@@ -10,6 +10,7 @@ use App\Invoice;
 use App\UserMeta;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 use \PDF;
 
 class InvoiceController extends CRUDController
@@ -19,7 +20,7 @@ class InvoiceController extends CRUDController
         $this->resource = 'invoice';
     }
 
-    public function pdf(Request $request, int $id, String $action)
+    public function render (Request $request, int $id)
     {
         $invoice = Invoice::findOrFail($id);
         $user = $invoice->order->user;
@@ -39,23 +40,12 @@ class InvoiceController extends CRUDController
         }
 
 //        $this->authorizeResource($invoice, 'invoice.pdf');
-        $pdf = PDF::loadView('invoice', [
+        return View::make('invoice', [
             'invoice' => $invoice,
             'lineItems' => $invoice->order->lineItems,
             'userAddress' => $userAddress,
             'organization' => $organization,
             'transactions' => $invoice->transactions,
         ]);
-        $fileName = env('COMPANY_NAME', 'Spectero') .' Invoice #' . $invoice->id . '.pdf';
-
-        switch ($action)
-        {
-            case 'view':
-                return $pdf->stream($fileName);
-            case 'download':
-                return $pdf->download($fileName);
-            default:
-                throw new UserFriendlyException(Errors::UNKNOWN_ACTION);
-        }
     }
 }

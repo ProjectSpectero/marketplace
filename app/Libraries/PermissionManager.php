@@ -44,7 +44,7 @@ class PermissionManager
                     ->toOwn(Invoice::class)
                     ->to([
                              $invoiceResource . '.' . CRUDActions::SHOW,
-                             $invoiceResource . '.' . 'pdf'
+                             $invoiceResource . '.' . 'render'
                          ]);
 
                 // Allow users to create/view THEIR OWN orders

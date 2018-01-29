@@ -104,7 +104,7 @@ class Utility
     public static function generateUrl (String $path, String $deployment = 'backend')
     {
         $base = env('APP_URL') . '/';
-        $base .= $deployment == 'backend' ? env('API_VERSION') . '/' : '';
+        $base .= $deployment == 'backend' ? env('API_VERSION') : '';
         return $base . '/' . $path;
     }
 }

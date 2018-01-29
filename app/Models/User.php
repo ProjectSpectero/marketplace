@@ -59,6 +59,11 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return $this->hasMany(Order::class);
     }
 
+    public function passwordResetToken ()
+    {
+        return $this->hasMany(PasswordResetToken::class);
+    }
+
     public function findForPassport (String $identifier)
     {
         /** @var Builder $this */

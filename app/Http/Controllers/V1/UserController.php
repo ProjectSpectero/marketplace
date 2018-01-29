@@ -46,7 +46,7 @@ class UserController extends CRUDController
         // user.create permission not applied, since this is an anonymous registration route
 
         $rules = [
-            'name' => 'required',
+            'name' => 'sometimes|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:5|max:72',
             'address_line_1' => 'sometimes|max:255',

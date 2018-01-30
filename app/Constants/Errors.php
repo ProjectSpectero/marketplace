@@ -46,6 +46,7 @@ class Errors extends Holder
 
     // Validation
     const FIELD_REQUIRED = 'FIELD_REQUIRED';
-    const FIELD_MAXLENGHT = 'FIELD_MAXLENGTH';
-    const FIELD_MINLENGHT = 'FIELD_MINLENGTH';
+    const FIELD_UNIQUE = 'FIELD_UNIQUE';
+    const FIELD_MAXLENGTH = 'FIELD_MAXLENGTH';
+    const FIELD_MINLENGTH = 'FIELD_MINLENGTH';
 }

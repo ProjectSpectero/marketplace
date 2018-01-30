@@ -37,7 +37,7 @@ $factory->define(App\Transaction::class, function (Faker\Generator $faker) {
         'user_id' => mt_rand(1, 6),
         'invoice_id' => mt_rand(1, 5),
         'payment_processor' => array_random(\App\Constants\PaymentProcessor::getConstants()),
-        'reference' => mt_rand(1, 5),
+        'reference' => $faker->unique()->numberBetween(1, 5),
         'type' => \App\Constants\PaymentType::DEBIT,
         'reason' => $faker->word,
         'amount' => $faker->numberBetween(5, 100),

@@ -91,11 +91,12 @@ class Handler extends ExceptionHandler
                 return Utility::generateResponse(null, [ $message => $data ], Errors::REQUEST_FAILED, $version, $returnCode);
                 break;
             case $e instanceof ValidationException:
+                $validator = $e->validator;
                 $parsedErrors = [];
                 foreach ($e->errors() as $field => $messages)
                 {
                     foreach ($messages as $message)
-                        $parsedErrors[] = $message . ':' . $field;
+                        $parsedErrors[] = $message . '|' . $field . '|' . $validator->currentRule;
                 }
 
                 return Utility::generateResponse(null, [ Errors::VALIDATION_FAILED => $parsedErrors ], Errors::REQUEST_FAILED, $version, ResponseType::UNPROCESSABLE_ENTITY);

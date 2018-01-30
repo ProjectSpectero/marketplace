@@ -4,71 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "f9624a37d56cb0b6ba9ee146de1834b7",
+    "content-hash": "04b9320b898d23c8271fd284ae6a16f7",
     "packages": [
-        {
-            "name": "barryvdh/laravel-cors",
-            "version": "v0.10.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/barryvdh/laravel-cors.git",
-                "reference": "b64caccbfc33b9ee2ba7dcce3307590882ede9ad"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/barryvdh/laravel-cors/zipball/b64caccbfc33b9ee2ba7dcce3307590882ede9ad",
-                "reference": "b64caccbfc33b9ee2ba7dcce3307590882ede9ad",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/support": "5.3.x|5.4.x|5.5.x",
-                "php": ">=5.5.9",
-                "symfony/http-foundation": "~3.1",
-                "symfony/http-kernel": "~3.1"
-            },
-            "require-dev": {
-                "orchestra/testbench": "3.x",
-                "phpunit/phpunit": "^4.8|^5.2",
-                "squizlabs/php_codesniffer": "^2.3"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "0.10-dev"
-                },
-                "laravel": {
-                    "providers": [
-                        "Barryvdh\\Cors\\ServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Barryvdh\\Cors\\": "src/"
-                },
-                "classmap": [
-                    "tests"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Barry vd. Heuvel",
-                    "email": "barryvdh@gmail.com"
-                }
-            ],
-            "description": "Adds CORS (Cross-Origin Resource Sharing) headers support in your Laravel application",
-            "keywords": [
-                "api",
-                "cors",
-                "crossdomain",
-                "laravel"
-            ],
-            "time": "2017-12-19T21:08:24+00:00"
-        },
         {
             "name": "classpreloader/classpreloader",
             "version": "3.2.0",
@@ -4365,6 +4302,62 @@
             "time": "2016-09-01T10:05:43+00:00"
         },
         {
+            "name": "vluzrmos/lumen-cors",
+            "version": "v2.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/vluzrmos/lumen-cors.git",
+                "reference": "5f4fd2687db1eea7cbd05bc31e2563b181a0f885"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/vluzrmos/lumen-cors/zipball/5f4fd2687db1eea7cbd05bc31e2563b181a0f885",
+                "reference": "5f4fd2687db1eea7cbd05bc31e2563b181a0f885",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/http": "~5.0",
+                "illuminate/support": "~5.0",
+                "php": ">=5.5.9"
+            },
+            "require-dev": {
+                "fabpot/php-cs-fixer": "~2.0",
+                "laravel/lumen": "~5.0",
+                "phpunit/phpunit": "~4.0"
+            },
+            "type": "package",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.1-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Vluzrmos\\LumenCors\\": "src/"
+                },
+                "files": [
+                    "src/helpers.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Vagner do Carmo",
+                    "email": "vluzrmos@gmail.com"
+                }
+            ],
+            "description": "A Simple Lumen CORS.",
+            "keywords": [
+                "cors",
+                "laravel",
+                "lumen"
+            ],
+            "time": "2017-06-19T19:23:25+00:00"
+        },
+        {
             "name": "zendframework/zend-diactoros",
             "version": "1.7.0",
             "source": {
@@ -4418,6 +4411,69 @@
         }
     ],
     "packages-dev": [
+        {
+            "name": "barryvdh/laravel-cors",
+            "version": "v0.10.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/barryvdh/laravel-cors.git",
+                "reference": "b64caccbfc33b9ee2ba7dcce3307590882ede9ad"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/barryvdh/laravel-cors/zipball/b64caccbfc33b9ee2ba7dcce3307590882ede9ad",
+                "reference": "b64caccbfc33b9ee2ba7dcce3307590882ede9ad",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "5.3.x|5.4.x|5.5.x",
+                "php": ">=5.5.9",
+                "symfony/http-foundation": "~3.1",
+                "symfony/http-kernel": "~3.1"
+            },
+            "require-dev": {
+                "orchestra/testbench": "3.x",
+                "phpunit/phpunit": "^4.8|^5.2",
+                "squizlabs/php_codesniffer": "^2.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.10-dev"
+                },
+                "laravel": {
+                    "providers": [
+                        "Barryvdh\\Cors\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Barryvdh\\Cors\\": "src/"
+                },
+                "classmap": [
+                    "tests"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Barry vd. Heuvel",
+                    "email": "barryvdh@gmail.com"
+                }
+            ],
+            "description": "Adds CORS (Cross-Origin Resource Sharing) headers support in your Laravel application",
+            "keywords": [
+                "api",
+                "cors",
+                "crossdomain",
+                "laravel"
+            ],
+            "time": "2017-12-19T21:08:24+00:00"
+        },
         {
             "name": "barryvdh/laravel-ide-helper",
             "version": "v2.4.1",
@@ -4851,6 +4907,48 @@
                 "object graph"
             ],
             "time": "2017-10-19T19:58:43+00:00"
+        },
+        {
+            "name": "palanik/lumen-cors",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/palanik/lumen-cors.git",
+                "reference": "5cd7a1efff091b6e7247a08e57ab39cc418af466"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/palanik/lumen-cors/zipball/5cd7a1efff091b6e7247a08e57ab39cc418af466",
+                "reference": "5cd7a1efff091b6e7247a08e57ab39cc418af466",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "palanik\\lumen\\Middleware\\": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "palanik"
+                }
+            ],
+            "description": "Cross-origin resource sharing (CORS) middleware for Lumen micro-framework.",
+            "homepage": "https://github.com/palanik/lumen-cors",
+            "keywords": [
+                "cors",
+                "corslumen",
+                "cross-origin",
+                "laravel",
+                "lumen",
+                "lumencors",
+                "preflight"
+            ],
+            "time": "2017-06-24T03:53:36+00:00"
         },
         {
             "name": "phar-io/manifest",

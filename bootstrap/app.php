@@ -66,7 +66,6 @@ $app->singleton(
 );
 
 $app->configure('auth');
-$app->configure('cors');
 $app->configure('database');
 $app->configure('cache');
 $app->configure('queue');
@@ -95,7 +94,7 @@ $app->withEloquent();
 */
 
 $app->middleware([
-    \Barryvdh\Cors\HandleCors::class,
+    'Vluzrmos\LumenCors\CorsMiddleware'
 ]);
 
  $app->routeMiddleware([
@@ -122,7 +121,6 @@ $app->middleware([
     $app->register(Laravel\Passport\PassportServiceProvider::class);
     $app->register(Dusterio\LumenPassport\PassportServiceProvider::class);
     Dusterio\LumenPassport\LumenPassport::routes($app);
-    $app->register(Barryvdh\Cors\ServiceProvider::class);
     $app->register(Silber\Bouncer\BouncerServiceProvider::class);
     $app->register(Srmklive\PayPal\Providers\PayPalServiceProvider::class);
     $app->register(\Illuminate\Mail\MailServiceProvider::class);

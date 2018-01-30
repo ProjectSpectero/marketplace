@@ -91,20 +91,27 @@ class Handler extends ExceptionHandler
                 return Utility::generateResponse(null, [ $message => $data ], Errors::REQUEST_FAILED, $version, $returnCode);
                 break;
             case $e instanceof ValidationException:
-                return Utility::generateResponse(null, [ Errors::VALIDATION_FAILED => $e->errors() ], Errors::REQUEST_FAILED, $version, ResponseType::UNPROCESSABLE_ENTITY);
+                $parsedErrors = [];
+                foreach ($e->errors() as $field => $messages)
+                {
+                    foreach ($messages as $message)
+                        $parsedErrors[] = $message . ':' . $field;
+                }
+
+                return Utility::generateResponse(null, [ Errors::VALIDATION_FAILED => $parsedErrors ], Errors::REQUEST_FAILED, $version, ResponseType::UNPROCESSABLE_ENTITY);
                 break;
             case $e instanceof MethodNotAllowedHttpException:
-                return Utility::generateResponse(null, [ Errors::METHOD_NOT_ALLOWED => '' ], Errors::REQUEST_FAILED, $version, ResponseType::METHOD_NOT_ALLOWED);
+                return Utility::generateResponse(null, [ Errors::METHOD_NOT_ALLOWED ], Errors::REQUEST_FAILED, $version, ResponseType::METHOD_NOT_ALLOWED);
                 break;
             case $e instanceof ModelNotFoundException:
-                return Utility::generateResponse(null, [ Errors::RESOURCE_NOT_FOUND => '' ], Errors::REQUEST_FAILED, $version, ResponseType::NOT_FOUND);
+                return Utility::generateResponse(null, [ Errors::RESOURCE_NOT_FOUND ], Errors::REQUEST_FAILED, $version, ResponseType::NOT_FOUND);
                 break;
             case $e instanceof NotSupportedException:
-                return Utility::generateResponse(null, [ Errors::ACTION_NOT_SUPPORTED => '' ], Errors::REQUEST_FAILED, $version, ResponseType::BAD_REQUEST);
+                return Utility::generateResponse(null, [ Errors::ACTION_NOT_SUPPORTED ], Errors::REQUEST_FAILED, $version, ResponseType::BAD_REQUEST);
                 break;
         }
 
         // For everything else, something grave has gone wrong. The error should NOT be disclosed to the user, but logged as a part of the handle() routine.
-        return Utility::generateResponse(null, [ Errors::REQUEST_FAILED => $message ], Errors::REQUEST_FAILED, $version, ResponseType::INTERNAL_SERVER_ERROR);
+        return Utility::generateResponse(null, [ Errors::REQUEST_FAILED ], Errors::REQUEST_FAILED, $version, ResponseType::INTERNAL_SERVER_ERROR);
     }
 }

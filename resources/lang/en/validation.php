@@ -4,11 +4,11 @@ return [
     'required' => \App\Constants\Errors::FIELD_REQUIRED,
     'unique' => \App\Constants\Errors::FIELD_UNIQUE,
     'min' => [
-        'numeric' => \App\Constants\Errors::FIELD_MINLENGHT,
-        'string' => \App\Constants\Errors::FIELD_MINLENGHT,
+        'numeric' => \App\Constants\Errors::FIELD_MINLENGHT . ' > :min',
+        'string' => \App\Constants\Errors::FIELD_MINLENGHT . ' > :min',
     ],
     'max' => [
-        'numeric' => \App\Constants\Errors::FIELD_MAXLENGHT,
-        'string' => \App\Constants\Errors::FIELD_MAXLENGHT,
+        'numeric' => \App\Constants\Errors::FIELD_MAXLENGHT . ' < :max',
+        'string' => \App\Constants\Errors::FIELD_MAXLENGHT . ' < :max',
     ]
 ];

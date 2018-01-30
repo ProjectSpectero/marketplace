@@ -25,7 +25,7 @@ class AuthController extends V1Controller
     {
         $this->validate($request, [
             'username' => 'required|email',
-            'password' => 'required'
+            'password' => 'required|min:2'
         ]);
 
         $email = $request->get('username');

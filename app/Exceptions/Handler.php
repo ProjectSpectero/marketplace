@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\Validator;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
@@ -91,12 +92,11 @@ class Handler extends ExceptionHandler
                 return Utility::generateResponse(null, [ $message => $data ], Errors::REQUEST_FAILED, $version, $returnCode);
                 break;
             case $e instanceof ValidationException:
-                $validator = $e->validator;
                 $parsedErrors = [];
                 foreach ($e->errors() as $field => $messages)
                 {
                     foreach ($messages as $message)
-                        $parsedErrors[] = $message . '|' . $field . '|' . $validator->currentRule;
+                        $parsedErrors[] = $message;
                 }
 
                 return Utility::generateResponse(null, [ Errors::VALIDATION_FAILED => $parsedErrors ], Errors::REQUEST_FAILED, $version, ResponseType::UNPROCESSABLE_ENTITY);

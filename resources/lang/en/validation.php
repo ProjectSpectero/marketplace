@@ -1,14 +1,15 @@
 <?php
 
 return [
-    'required' => \App\Constants\Errors::FIELD_REQUIRED,
-    'unique' => \App\Constants\Errors::FIELD_UNIQUE,
+    'required' => \App\Constants\Errors::FIELD_REQUIRED . '::attribute:',
+    'email' => \App\Constants\Errors::FIELD_EMAIL . '::attribute:',
+    'unique' => \App\Constants\Errors::FIELD_UNIQUE . '::attribute:',
     'min' => [
-        'numeric' => \App\Constants\Errors::FIELD_MINLENGHT . ' > :min',
-        'string' => \App\Constants\Errors::FIELD_MINLENGHT . ' > :min',
+        'numeric' => \App\Constants\Errors::FIELD_MINLENGTH . '::attribute::min',
+        'string' => \App\Constants\Errors::FIELD_MINLENGTH . '::attribute::min',
     ],
     'max' => [
-        'numeric' => \App\Constants\Errors::FIELD_MAXLENGHT . ' < :max',
-        'string' => \App\Constants\Errors::FIELD_MAXLENGHT . ' < :max',
+        'numeric' => \App\Constants\Errors::FIELD_MAXLENGTH . '::attribute::max',
+        'string' => \App\Constants\Errors::FIELD_MAXLENGTH . '::attribute::max',
     ]
 ];

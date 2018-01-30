@@ -13,7 +13,7 @@
 
 /** @var \Laravel\Lumen\Routing\Router $router */
 
-$router->group(['prefix' => 'v1', 'namespace' => 'V1', 'middleware' => [ 'cors' ]], function($api)
+$router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
 {
     /** @var \Laravel\Lumen\Routing\Router $api */
     $api->group(['as' => 'NoAuthRequired'], function ($api)

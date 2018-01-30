@@ -94,13 +94,12 @@ $app->withEloquent();
 |
 */
 
-// $app->middleware([
-//    App\Http\Middleware\ExampleMiddleware::class
-// ]);
+$app->middleware([
+    \Barryvdh\Cors\HandleCors::class,
+]);
 
  $app->routeMiddleware([
      'auth' => App\Http\Middleware\Authenticate::class,
-     'cors' => \Barryvdh\Cors\HandleCors::class,
      'enforce-tfa' => App\Http\Middleware\EnforceTwoFactorVerification::class,
  ]);
 

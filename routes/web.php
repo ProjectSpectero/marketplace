@@ -44,7 +44,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->get('auth/multifactor/codes/regenerate', 'TwoFactorController@regenerateUserBackupCodes');
 
         // Invoice (PDF) route
-        $api->get('/invoice/{id}/render', 'InvoiceController@render');
+        $api->get('invoice/{id}/render', 'InvoiceController@render');
 
         // Search/Filtering routes
         $api->post('search', 'SearchController@handleSearch');
@@ -52,6 +52,8 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         \App\Libraries\Utility::defineResourceRoute('user', 'UserController', $api, [], [
             'excluded' =>  \App\Constants\CRUDActions::STORE
         ]);
+        $api->get('user/self', 'UserController@self');
+        
         \App\Libraries\Utility::defineResourceRoute('node', 'NodeController', $api, []);
     });
 });

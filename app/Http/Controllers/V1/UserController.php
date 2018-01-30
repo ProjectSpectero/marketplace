@@ -20,12 +20,18 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Phalcon\Config\Adapter\Json;
 
 class UserController extends CRUDController
 {
     public function __construct()
     {
         $this->resource = 'user';
+    }
+
+    public function self (Request $request) : JsonResponse
+    {
+        return $this->respond($request->user()->toArray());
     }
 
     public function index(Request $request) : JsonResponse

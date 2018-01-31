@@ -3,7 +3,7 @@
 @section ('content')
 
     <p>Hi there,</p>
-    <p>Someone (hopefully you) requested earlier that their {{ env('COMPANY_NAME', 'Spectero') }} password be reset from the IP address {{ $requesterIP }}.</p>
+    <p>Someone (hopefully you) requested earlier that their {{ env('COMPANY_NAME', 'Spectero') }} password be reset from the IP address {{ $requestIp }}.</p>
 
     <p>This request has been processed, your password has been successfully reset.</p>
 

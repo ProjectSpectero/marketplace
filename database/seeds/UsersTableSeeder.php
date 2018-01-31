@@ -25,10 +25,21 @@ class UsersTableSeeder extends Seeder
       $admin = \App\User::create([
           'name' => "Spectero Dev",
           'email' => "spectero@dev.com",
-          'password' => \Illuminate\Support\Facades\Hash::make('temppass') ,
+          'password' => \Illuminate\Support\Facades\Hash::make('temppass'),
           'status' => \App\Constants\UserStatus::ACTIVE,
           'node_key' => \App\Libraries\Utility::getRandomString(2)
       ]);
+
+      foreach (\App\Constants\UserStatus::getConstants() as $user)
+      {
+          \App\User::create([
+              'name' => 'Status' . $user,
+              'email' => $user . '@dev.com',
+              'password' => \Illuminate\Support\Facades\Hash::make('temppass'),
+              'status' => $user,
+              'node_key' => \App\Libraries\Utility::getRandomString(2)
+          ]);
+      }
 
       try
       {

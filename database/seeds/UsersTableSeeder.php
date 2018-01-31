@@ -1,6 +1,8 @@
 <?php
 
+use App\Constants\UserMetaKeys;
 use App\Libraries\PermissionManager;
+use App\UserMeta;
 use Illuminate\Database\Seeder;
 use App\Constants\UserRoles;
 
@@ -27,6 +29,21 @@ class UsersTableSeeder extends Seeder
           'status' => \App\Constants\UserStatus::ACTIVE,
           'node_key' => \App\Libraries\Utility::getRandomString(2)
       ]);
+
+      try
+      {
+          UserMeta::addOrUpdateMeta($admin,UserMetaKeys::AddressLineOne, env('LEGAL_COMPANY_ADDRESS_PARTIAL_1'));
+          UserMeta::addOrUpdateMeta($admin,UserMetaKeys::AddressLineTwo, env('LEGAL_COMPANY_ADDRESS_PARTIAL_2'));
+          UserMeta::addOrUpdateMeta($admin,UserMetaKeys::Organization, 'Spectero');
+          UserMeta::addOrUpdateMeta($admin, UserMetaKeys::TaxIdentification, 'taxId');
+          UserMeta::addOrUpdateMeta($admin, UserMetaKeys::PreferredCurrency, 'USD');
+      }
+      catch (\App\Errors\FatalException $e)
+      {
+
+      }
+
+
       PermissionManager::assign($admin, UserRoles::ADMIN);
     }
 }

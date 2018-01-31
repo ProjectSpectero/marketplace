@@ -34,7 +34,7 @@ class UserController extends CRUDController
     {
         $user = $request->user();
         return $this->respond([
-            'user' => array_merge($user->toArray(),UserMeta::getUserPublicMeta($user))
+            array_merge($user->toArray(),UserMeta::getUserPublicMeta($user))
         ]);
     }
 

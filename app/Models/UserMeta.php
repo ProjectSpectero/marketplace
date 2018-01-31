@@ -25,8 +25,8 @@ class UserMeta extends Model
         $userMeta = array();
         foreach (UserMetaKeys::getPublicMetaKeys() as $key)
         {
-            if ($meta = self::loadMeta($user, $key)->first())
-                $userMeta[$key] = $meta->meta_value;
+            $meta = self::loadMeta($user, $key)->first();
+            $userMeta[$key] = $meta != null ? $meta->meta_value : null;
         }
         return $userMeta;
     }

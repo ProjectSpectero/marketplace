@@ -18,4 +18,7 @@ class UserMetaKeys extends Holder
     const TwoFactorEnabled = 'tfa.enabled';
     const OldEmailAddress = 'old_email_address';
     const VerifyToken = 'verify_token';
+
+    // Meta Meta Key :P
+    const lastUpdatedMeta = 'last_updated_meta';
 }

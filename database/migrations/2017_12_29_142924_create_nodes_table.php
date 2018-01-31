@@ -18,6 +18,7 @@ class CreateNodesTable extends Migration
             $table->increments('id');
             $table->string('ip');
             $table->integer('port');
+            $table->string('friendly_name');
             $table->string('protocol');
             $table->string('access_token');
             $table->string('install_id');

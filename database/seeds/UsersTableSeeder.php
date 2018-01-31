@@ -44,6 +44,8 @@ class UsersTableSeeder extends Seeder
       }
 
 
+      // The admin is a normal user too, despite being an admin
       PermissionManager::assign($admin, UserRoles::ADMIN);
+      PermissionManager::assign($admin, UserRoles::USER);
     }
 }

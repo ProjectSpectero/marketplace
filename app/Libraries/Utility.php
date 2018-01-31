@@ -105,6 +105,8 @@ class Utility
     {
         $base = env('APP_URL') . '/';
         $base .= $deployment == 'backend' ? env('API_VERSION') : '';
-        return $base . '/' . $path;
+        $base .= $deployment == 'backend' ? '/' . $path : $path;
+
+        return $base;
     }
 }

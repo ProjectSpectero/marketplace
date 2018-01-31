@@ -2,11 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Constants\Errors;
 use App\Constants\Events;
-use App\Constants\ServiceType;
-use App\Errors\FatalException;
-use App\Errors\UserFriendlyException;
 use App\Events\NodeEvent;
 use App\Libraries\NodeManager;
 use App\Libraries\Utility;
@@ -56,8 +52,7 @@ class NodeEventListener extends BaseListener
             case Events::NODE_UNREACHABLE:
                 break;
             case Events::NODE_VERIFICATION_FAILED:
-                Mail::to($node->user->email)->queue(new NodeVerificationFailed($error));
-                \Log::info($error);
+                Mail::to($node->user->email)->queue(new NodeVerificationFailed($node, $error));
                 break;
         }
     }

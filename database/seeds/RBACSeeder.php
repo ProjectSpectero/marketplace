@@ -38,6 +38,9 @@ class RBACSeeder extends Seeder
         $this->bouncer->allow(\App\Constants\UserRoles::ADMIN)
             ->to($invoiceResource . '.' . 'pdf');
 
+        $this->bouncer->allow(\App\Constants\UserRoles::ADMIN)
+            ->to($nodeResource . '.' . 'verify');
+
         // Define generic, role-specific permissions here on a per resource basis
 
         // Allow normal users to create nodes

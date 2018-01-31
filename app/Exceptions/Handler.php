@@ -87,6 +87,9 @@ class Handler extends ExceptionHandler
         // List of errors we have custom handlers for.
         switch (true)
         {
+            case $e instanceof AuthorizationException:
+                return Utility::generateResponse(null, [ Errors::UNAUTHORIZED ], Errors::REQUEST_FAILED, $version, ResponseType::FORBIDDEN);
+                break;
             case $e instanceof UserFriendlyException:
                 //This is an error we can actually disclose to the user
                 return Utility::generateResponse(null, [ $message => $data ], Errors::REQUEST_FAILED, $version, $returnCode);

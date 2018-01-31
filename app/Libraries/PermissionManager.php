@@ -36,7 +36,8 @@ class PermissionManager
                     ->to([
                              $nodeResource . '.' . CRUDActions::SHOW,
                              $nodeResource . '.' . CRUDActions::UPDATE,
-                             $nodeResource . '.' . CRUDActions::DESTROY
+                             $nodeResource . '.' . CRUDActions::DESTROY,
+                             $nodeResource . '.' . 'verify'
                          ]);
 
                 // Allow users to view THEIR OWN invoices and their PDF representations

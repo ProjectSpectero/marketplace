@@ -49,12 +49,14 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         // Search/Filtering routes
         $api->post('search', 'SearchController@handleSearch');
 
+        // User resource routes, the static "self" route HAS to be before the resource routes
         $api->get('user/self', 'UserController@self');
-
         \App\Libraries\Utility::defineResourceRoute('user', 'UserController', $api, [], [
             'excluded' =>  \App\Constants\CRUDActions::STORE
         ]);
-        
+
+        // Node resource routes, the static "verify" route HAS to be before the resource routes
+        $api->get('node/{id}/verify', 'NodeController@reverify');
         \App\Libraries\Utility::defineResourceRoute('node', 'NodeController', $api, []);
     });
 });

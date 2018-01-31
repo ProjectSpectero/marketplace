@@ -34,7 +34,7 @@ class UserController extends CRUDController
     {
         return $this->respond([
             'user' => $request->user()->toArray(),
-            'user_meta' => \Cache::get(UserMetaKeys::lastUpdatedMeta)
+            'user_meta' => $request->user()->userMeta
         ]);
     }
 
@@ -87,8 +87,6 @@ class UserController extends CRUDController
 
         foreach ($input as $key => $value)
             UserMeta::addOrUpdateMeta($user, $key, $value);
-
-        \Cache::put(UserMetaKeys::lastUpdatedMeta, $input);
 
         PermissionManager::assign($user, UserRoles::USER);
 
@@ -145,8 +143,6 @@ class UserController extends CRUDController
 
         foreach ($input as $key => $value)
             UserMeta::addOrUpdateMeta($user, $key, $value);
-
-        \Cache::put(UserMetaKeys::lastUpdatedMeta, $input);
 
         $user->saveOrFail();
 

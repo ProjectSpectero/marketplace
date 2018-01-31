@@ -34,7 +34,7 @@ class UserController extends CRUDController
     {
         return $this->respond([
             'user' => $request->user()->toArray(),
-            'user_meta' => $request->user()->userMeta
+            'user_meta' => UserMeta::getUserPublicMeta($request->user())
         ]);
     }
 

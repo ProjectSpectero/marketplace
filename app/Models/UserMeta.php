@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Constants\UserMetaKeys;
 use Illuminate\Database\Eloquent\Model;
 use App\Libraries\Utility;
 use App\Traits\MetaTrait;
@@ -17,5 +18,14 @@ class UserMeta extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    static function getUserPublicMeta(User $user)
+    {
+        $userMeta = array();
+        foreach (UserMetaKeys::getPublicMetaKeys() as $key)
+            $userMeta[] = self::loadMeta($user, $key);
+
+        return $userMeta;
     }
 }

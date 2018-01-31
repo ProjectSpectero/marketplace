@@ -94,7 +94,7 @@ $app->withEloquent();
 */
 
 $app->middleware([
-    'Vluzrmos\LumenCors\CorsMiddleware'
+    'Nord\Lumen\Cors\CorsMiddleware',
 ]);
 
  $app->routeMiddleware([
@@ -124,7 +124,7 @@ $app->middleware([
     $app->register(Silber\Bouncer\BouncerServiceProvider::class);
     $app->register(Srmklive\PayPal\Providers\PayPalServiceProvider::class);
     $app->register(\Illuminate\Mail\MailServiceProvider::class);
-
+    $app->register(Nord\Lumen\Cors\CorsServiceProvider::class);
 
 
 /*

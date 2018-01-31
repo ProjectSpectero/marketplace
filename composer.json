@@ -15,7 +15,7 @@
         "illuminate/redis": "^5.5",
         "srmklive/paypal": "^1.5",
         "illuminate/mail": "^5.5",
-        "vluzrmos/lumen-cors": "2.1.*"
+        "nordsoftware/lumen-cors": "^2.2"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

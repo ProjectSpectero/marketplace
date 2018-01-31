@@ -5,10 +5,11 @@ $factory->define(App\Node::class, function (Faker\Generator $faker) {
         'ip' => $faker->ipv4,
         'port' => $faker->randomNumber(4),
         'protocol' => 'HTTP',
-        'access_token' => $faker->sha1,
+        'access_token' => 'cloudUser' . ':' . \App\Libraries\Utility::getRandomString(),
         'install_id' => $faker->sha256,
-        'status' => \App\Constants\NodeStatus::CONFIRMED,
+        'status' => array_random(\App\Constants\NodeStatus::getConstants()),
         'user_id' => $faker->numberBetween(1, 6),
-        'market_model' => \App\Constants\NodeMarketModel::UNLISTED,
+        'price' => $faker->numberBetween(5, 100),
+        'market_model' => array_random(\App\Constants\NodeMarketModel::getConstants()),
     ];
 });

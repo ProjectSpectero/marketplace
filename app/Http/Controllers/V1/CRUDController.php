@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\V1;
 use App\Constants\CRUDActions;
+use App\Constants\UserRoles;
 use App\Errors\FatalException;
 use App\Errors\NotSupportedException;
 use Illuminate\Auth\Access\Response;
@@ -38,9 +39,12 @@ class CRUDController extends V1Controller
         throw new NotSupportedException();
     }
 
-    public function authorizeResource (Model $model = null, String $ability = null) : Response
+    public function authorizeResource (Model $model = null, String $ability = null)
     {
         $abilityName = $ability != null ? $ability : $this->resource . '.' . $this->getCallingMethodName();
+
+        if (\Auth::user()->isAn(UserRoles::ADMIN))
+            return true;
 
         if ($model != null)
             return $this->authorize($abilityName, $model);

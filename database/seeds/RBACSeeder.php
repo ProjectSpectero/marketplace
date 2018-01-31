@@ -30,15 +30,15 @@ class RBACSeeder extends Seeder
             foreach (CRUDActions::getConstants() as $permission)
             {
                 $slug = $resource . '.' . $permission;
-                $this->bouncer->allow(\App\Constants\UserRoles::ADMIN)->to($slug);
+                $this->bouncer->allow(\App\Constants\UserRoles::STAFF)->to($slug);
             }
         }
 
         // Add non-CRUD roles to the admin class
-        $this->bouncer->allow(\App\Constants\UserRoles::ADMIN)
+        $this->bouncer->allow(\App\Constants\UserRoles::STAFF)
             ->to($invoiceResource . '.' . 'pdf');
 
-        $this->bouncer->allow(\App\Constants\UserRoles::ADMIN)
+        $this->bouncer->allow(\App\Constants\UserRoles::STAFF)
             ->to($nodeResource . '.' . 'verify');
 
         // Define generic, role-specific permissions here on a per resource basis

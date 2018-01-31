@@ -25,6 +25,7 @@ class PermissionManager
         switch ($role)
         {
             case UserRoles::ADMIN:
+            case UserRoles::STAFF:
                 $user->assign($role);
                 break;
 

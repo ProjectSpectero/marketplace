@@ -28,7 +28,9 @@ class UserMetaKeys extends Holder
             self::State,
             self::PostCode,
             self::Country,
-            self::PhoneNumber
+            self::PhoneNumber,
+            self::TaxIdentification,
+            self::Organization
         ];
     }
 }

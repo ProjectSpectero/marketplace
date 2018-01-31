@@ -30,8 +30,6 @@ class UsersTableSeeder extends Seeder
           'node_key' => \App\Libraries\Utility::getRandomString(2)
       ]);
 
-      PermissionManager::assign($admin, UserRoles::ADMIN);
-
       foreach (\App\Constants\UserStatus::getConstants() as $user)
       {
           $newUser = \App\User::create([

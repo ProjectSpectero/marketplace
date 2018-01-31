@@ -30,15 +30,19 @@ class UsersTableSeeder extends Seeder
           'node_key' => \App\Libraries\Utility::getRandomString(2)
       ]);
 
+      PermissionManager::assign($admin, UserRoles::ADMIN);
+
       foreach (\App\Constants\UserStatus::getConstants() as $user)
       {
-          \App\User::create([
+          $newUser = \App\User::create([
               'name' => 'Status' . $user,
               'email' => $user . '@dev.com',
               'password' => \Illuminate\Support\Facades\Hash::make('temppass'),
               'status' => $user,
               'node_key' => \App\Libraries\Utility::getRandomString(2)
           ]);
+
+          PermissionManager::assign($newUser, UserRoles::USER);
       }
 
       try

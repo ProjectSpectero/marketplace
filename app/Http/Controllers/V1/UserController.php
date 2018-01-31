@@ -32,9 +32,9 @@ class UserController extends CRUDController
 
     public function self (Request $request) : JsonResponse
     {
+        $user = $request->user();
         return $this->respond([
-            'user' => $request->user()->toArray(),
-            'user_meta' => UserMeta::getUserPublicMeta($request->user())
+            'user' => array_merge($user->toArray(),UserMeta::getUserPublicMeta($user))
         ]);
     }
 

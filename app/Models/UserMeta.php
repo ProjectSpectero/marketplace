@@ -24,8 +24,10 @@ class UserMeta extends Model
     {
         $userMeta = array();
         foreach (UserMetaKeys::getPublicMetaKeys() as $key)
-            $userMeta[] = self::loadMeta($user, $key);
-
+        {
+            if ($meta = self::loadMeta($user, $key))
+                $userMeta[$key] = $meta->meta_value;
+        }
         return $userMeta;
     }
 }

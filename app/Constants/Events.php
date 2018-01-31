@@ -8,6 +8,7 @@ class Events extends Holder
     const USER_CREATED = 'user.created';
     const USER_UPDATED = 'user.updated';
     const USER_DELETED = 'user.deleted';
+    const USER_PASSWORD_UPDATED = 'user.password.updated';
 
     const NODE_CREATED = 'node.created';
     const NODE_UPDATED = 'node.updated';

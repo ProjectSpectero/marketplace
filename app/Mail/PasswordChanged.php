@@ -2,25 +2,22 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Libraries\Utility;
 
-class PasswordChanged extends Mailable
+class PasswordChanged extends BaseMail
 {
-    use Queueable, SerializesModels;
-
     private $password;
+    private $ip;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(String $password)
+    public function __construct(String $password, String $ip)
     {
         $this->password = $password;
+        $this->ip = $ip;
     }
 
     /**
@@ -31,7 +28,9 @@ class PasswordChanged extends Mailable
     public function build()
     {
         return $this->view('emails.PasswordChanged', [
-            'newPassword' => $this->password
+            'newPassword' => $this->password,
+            'requestIp' => $this->ip,
+            'loginUrl' => Utility::generateUrl('login', 'frontend')
         ]);
     }
 }

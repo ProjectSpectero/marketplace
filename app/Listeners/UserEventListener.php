@@ -75,6 +75,9 @@ class UserEventListener extends BaseListener
                 break;
             case Events::USER_DELETED:
                 break;
+
+            case Events::USER_PASSWORD_UPDATED:
+                break;
         }
     }
 }

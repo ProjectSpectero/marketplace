@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PasswordResetToken extends Model
 {
 
-    protected $fillable = ['token', 'user_id', 'expires'];
+    protected $fillable = ['token', 'user_id', 'ip', 'expires'];
 
     public function user ()
     {

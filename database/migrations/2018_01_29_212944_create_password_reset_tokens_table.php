@@ -18,6 +18,7 @@ class CreatePasswordResetTokensTable extends Migration
             $table->increments('id');
             $table->string('token');
             $table->integer('user_id');
+            $table->string('ip');
             $table->timestamp('expires');
 
             $table->unique('token', 'unique_token_index');

@@ -50,4 +50,5 @@ class Errors extends Holder
     const FIELD_MAXLENGTH = 'FIELD_MAXLENGTH';
     const FIELD_MINLENGTH = 'FIELD_MINLENGTH';
     const FIELD_EMAIL = 'FIELD_EMAIL';
+    const FIELD_ALPHANUM = 'FIELD_ALPHANUM';
 }

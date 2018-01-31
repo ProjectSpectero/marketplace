@@ -17,4 +17,5 @@ class Events extends Holder
     const NODE_REACHABLE = 'node.reachable';
     const NODE_CONFIG_INVALID = 'node.config.invalid';
     const NODE_VERIFICATION_FAILED = 'node.verification.failed';
+    const NODE_REVERIFY = 'node.verification.retry';
 }

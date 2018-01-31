@@ -43,6 +43,8 @@ class NodeEventListener extends BaseListener
                 break;
             case Events::NODE_UPDATED:
                 break;
+            case Events::NODE_REVERIFY:
+                break;
             case Events::NODE_DELETED:
                 break;
             case Events::NODE_CONFIG_INVALID:

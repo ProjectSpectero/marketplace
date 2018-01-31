@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Psy\Util\Json;
 
 class NodeController extends CRUDController
 {
@@ -34,7 +33,7 @@ class NodeController extends CRUDController
         if ($node->status != NodeStatus::UNCONFIRMED)
             $this->respond(null, [ Errors::NODE_ALREADY_VERIFIED ], Errors::REQUEST_FAILED, ResponseType::CONFLICT);
 
-        event(new NodeEvent(Events::NODE_UPDATED, $node));
+        event(new NodeEvent(Events::NODE_REVERIFY, $node));
         return $this->respond(null, [], Messages::NODE_VERIFICATION_QUEUED);
     }
 

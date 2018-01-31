@@ -13,7 +13,9 @@ class PasswordReset extends BaseMail
     private $ip;
 
     /**
-     * NodeVerificationFailed constructor.
+     * PasswordReset constructor.
+     * @param PasswordResetToken $token
+     * @param String $ip
      */
     public function __construct(PasswordResetToken $token, String $ip)
     {

@@ -4,6 +4,7 @@ return [
     'required' => \App\Constants\Errors::FIELD_REQUIRED . '::attribute:',
     'email' => \App\Constants\Errors::FIELD_EMAIL . '::attribute:',
     'unique' => \App\Constants\Errors::FIELD_UNIQUE . '::attribute:',
+    'alphanum' => \App\Constants\Errors::FIELD_ALPHANUM . '::attribute:',
     'min' => [
         'numeric' => \App\Constants\Errors::FIELD_MINLENGTH . '::attribute::min',
         'string' => \App\Constants\Errors::FIELD_MINLENGTH . '::attribute::min',

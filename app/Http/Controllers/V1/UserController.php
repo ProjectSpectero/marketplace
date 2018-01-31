@@ -55,13 +55,15 @@ class UserController extends CRUDController
             'name' => 'sometimes|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:5|max:72',
-            'address_line_1' => 'sometimes|max:255',
-            'address_line_2' => 'sometimes|max:255',
-            'city' => 'sometimes|max:255',
-            'state' => 'sometimes|max:255',
-            'post_code' => 'sometimes|alpha_num|max:255',
-            'country' => 'sometimes|country|max:255',
-            'phone_no' => 'sometimes|max:255'
+            UserMetaKeys::AddressLineOne => 'sometimes|max:255',
+            UserMetaKeys::AddressLineTwo => 'sometimes|max:255',
+            UserMetaKeys::City => 'sometimes|max:255',
+            UserMetaKeys::State => 'sometimes|max:255',
+            UserMetaKeys::PostCode => 'sometimes|alpha_num|max:255',
+            UserMetaKeys::Country => 'sometimes|country|max:255',
+            UserMetaKeys::PhoneNumber => 'sometimes|max:255',
+            UserMetaKeys::Organization => 'sometimes|max:255',
+            UserMetaKeys::TaxIdentification => 'sometimes|max:255'
         ];
 
         $this->validate($request, $rules);
@@ -116,13 +118,15 @@ class UserController extends CRUDController
             'name' => 'required',
             'email' => 'required|email|unique:users,email,' . $request->get('id'),
             'password' => 'sometimes|min:5|max:72',
-            'address_line_1' => 'sometimes|max:255',
-            'address_line_2' => 'sometimes|max:255',
-            'city' => 'sometimes|max:255',
-            'state' => 'sometimes|max:255',
-            'post_code' => 'sometimes|alpha_num|max:255',
-            'country' => 'sometimes|country|max:255',
-            'phone_no' => 'sometimes|max:255'
+            UserMetaKeys::AddressLineOne => 'sometimes|max:255',
+            UserMetaKeys::AddressLineTwo => 'sometimes|max:255',
+            UserMetaKeys::City => 'sometimes|max:255',
+            UserMetaKeys::State => 'sometimes|max:255',
+            UserMetaKeys::PostCode => 'sometimes|alpha_num|max:255',
+            UserMetaKeys::Country => 'sometimes|country|max:255',
+            UserMetaKeys::PhoneNumber => 'sometimes|max:255',
+            UserMetaKeys::Organization => 'sometimes|max:255',
+            UserMetaKeys::TaxIdentification => 'sometimes|max:255'
         ];
 
         $this->validate($request, $rules);

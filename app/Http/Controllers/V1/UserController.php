@@ -75,7 +75,7 @@ class UserController extends CRUDController
 
         /** @var User $user */
         $user = User::create([
-            'name' => $input['name'],
+            'name' => isset($input['name']) ? $input['name'] : '',
             'email' => $input['email'],
             'status' => UserStatus::EMAIL_VERIFICATION_NEEDED
         ]);

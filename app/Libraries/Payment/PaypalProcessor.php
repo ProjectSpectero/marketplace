@@ -3,10 +3,13 @@
 namespace App\Libraries\Payment;
 
 
+use App\Constants\Messages;
 use App\Constants\PaymentProcessor;
 use App\Constants\PaymentProcessorResponseType;
+use App\Constants\ResponseType;
 use App\Constants\TransactionReasons;
 use App\Invoice;
+use App\Libraries\Utility;
 use App\Models\Opaque\PaymentProcessorResponse;
 use App\Order;
 use App\Transaction;
@@ -71,12 +74,19 @@ class PaypalProcessor extends BasePaymentProcessor
 
         $mode = $request->get('mode');
         if ($mode == 'recurring')
+        {
             $this->createRecurringPaymentsProfile($token);
+            $reason = TransactionReasons::SUBSCRIPTION;
+        }
+        else
+            $reason = TransactionReasons::PAYMENT;
+
+        $amount = $response['PAYMENTINFO_0_AMT'];
 
         // TODO: Figure out what you were actually paid, do NOT use invoice->amount for amount. Make this compile
-        //$this->addTransaction($this, $transaction->invoice(), $amount, $transactionId, PaymentType::DEBIT, $reason);
+        $this->addTransaction($this, $invoice, $amount, $transactionId, PaymentType::DEBIT, $reason);
 
-        return response()->json($response);
+        return Utility::generateResponse($response, [], Messages::PAYMENT_PROCESSED);
     }
 
     function refund(Transaction $transaction, Float $amount) : PaymentProcessorResponse
@@ -104,12 +114,17 @@ class PaypalProcessor extends BasePaymentProcessor
 
     function subscribe(Order $order) : PaymentProcessorResponse
     {
-        $this->processInvoice($order->invoice, 'mode=recurring');
-        $this->data['subscription_desc'] = "Monthly description default";
+        $data = $this->processInvoice($order->invoice, 'recurring');
+        $data['subscription_desc'] = "Monthly description default";
 
-        $response = $this->provider->setExpressCheckout($this->data);
+        $response = $this->provider->setExpressCheckout($data);
 
-        return $response['paypal_link'];
+        $wrappedResponse = new PaymentProcessorResponse();
+        $wrappedResponse->type = PaymentProcessorResponseType::REDIRECT;
+        $wrappedResponse->redirectUrl = $response['paypal_link'];
+        $wrappedResponse->raw = $response;
+
+        return $wrappedResponse;
     }
 
     function unSubscribe(Order $order) : PaymentProcessorResponse

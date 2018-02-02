@@ -58,5 +58,8 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         // Node resource routes, the static "verify" route HAS to be before the resource routes
         $api->get('node/{id}/verify', 'NodeController@reverify');
         \App\Libraries\Utility::defineResourceRoute('node', 'NodeController', $api, []);
+
+        $api->post('payment/{processor}/process/{invoiceId}', 'PaymentController@process');
+        $api->post('payment/{processor}/subscribe/{invoiceId}', 'PaymentController@subscribe');
     });
 });

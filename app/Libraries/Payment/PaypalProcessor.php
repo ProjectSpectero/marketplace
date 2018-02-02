@@ -19,7 +19,6 @@ class PaypalProcessor extends BasePaymentProcessor
 {
     private $provider;
     private $invoice;
-    private $data = [];
 
     /**
      * PaypalProcessor constructor.
@@ -33,8 +32,7 @@ class PaypalProcessor extends BasePaymentProcessor
     {
         $this->invoice = $invoice;
 
-        $data = $this->processInvoice($invoice);
-        $data['type'] = 'payment';
+        $data = $this->processInvoice($invoice, 'payment');
 
         $response = $this->provider->setExpressCheckout($data);
 
@@ -49,16 +47,20 @@ class PaypalProcessor extends BasePaymentProcessor
     function callback(Request $request) : JsonResponse
     {
         $token = $request->get('token');
-
+        $mode = $request->get('mode');
         $response = $this->provider->getExpressCheckoutDetails($token);
 
         // throw exception here
         if ($response['BILLINGAGREEMENTACCEPTEDSTATUS'] == '0')
             return null;
 
-        $payerId = $response['PAYERID'];
+        $checkoutData = $this->provider->getExpressCheckoutDetails($token);
+        $invoice = Invoice::find($checkoutData['INVNUM']);
 
-        $response = $this->provider->doExpressCheckoutPayment($this->data, $token, $payerId);
+        $data = $this->processInvoice($invoice, $mode);
+
+        $payerId = $response['PAYERID'];
+        $response = $this->provider->doExpressCheckoutPayment($data, $token, $payerId);
         $response['redirect_url'] = url('/our/success/page');
 
         // TODO: throw exception
@@ -67,13 +69,14 @@ class PaypalProcessor extends BasePaymentProcessor
 
         $transactionId = $response['PAYMENTINFO_0_TRANSACTIONID'];
 
-        if ($this->data['type'] == 'subscription')
+        $mode = $request->get('mode');
+        if ($mode == 'recurring')
             $this->createRecurringPaymentsProfile($token);
 
         // TODO: Figure out what you were actually paid, do NOT use invoice->amount for amount. Make this compile
         //$this->addTransaction($this, $transaction->invoice(), $amount, $transactionId, PaymentType::DEBIT, $reason);
 
-        return $response;
+        return response()->json($response);
     }
 
     function refund(Transaction $transaction, Float $amount) : PaymentProcessorResponse
@@ -101,9 +104,8 @@ class PaypalProcessor extends BasePaymentProcessor
 
     function subscribe(Order $order) : PaymentProcessorResponse
     {
-        $this->processData($order->invoice);
+        $this->processInvoice($order->invoice, 'mode=recurring');
         $this->data['subscription_desc'] = "Monthly description default";
-        $this->data['type'] = 'subscription';
 
         $response = $this->provider->setExpressCheckout($this->data);
 
@@ -115,7 +117,7 @@ class PaypalProcessor extends BasePaymentProcessor
         // TODO: Implement unSubscribe() method.
     }
 
-    private function processInvoice (Invoice $invoice) : array
+    private function processInvoice (Invoice $invoice, String $mode) : array
     {
         $data = [];
         // Figure out how much is due on the invoice
@@ -142,7 +144,7 @@ class PaypalProcessor extends BasePaymentProcessor
 
         $data['invoice_description'] = $this->getInvoiceDescription($invoice);
 
-        $data['return_url'] = url('/payments/paypal/callback');
+        $data['return_url'] = url('/v1/payment/paypal/callback?mode='.$mode);
         $data['cancel_url'] = url('/cart');
 
         return $data;

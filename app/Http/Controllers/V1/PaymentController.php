@@ -4,11 +4,22 @@
 namespace App\Http\Controllers\V1;
 
 
+use App\Libraries\Payment\PaypalProcessor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PaymentController extends V1Controller
 {
+
+    private $paypalProcessor;
+
+    /**
+     * PaymentController constructor.
+     */
+    public function __construct()
+    {
+        $this->paypalProcessor = new PaypalProcessor();
+    }
 
     public function process (Request $request, String $processor, int $invoiceId) : JsonResponse
     {
@@ -22,7 +33,10 @@ class PaymentController extends V1Controller
      */
     public function callback (Request $request, String $processor)
     {
+        if ($processor == 'paypal')
+            $this->paypalProcessor->callback($request);
 
+        // Else we call the stripe processor
     }
 
     /**

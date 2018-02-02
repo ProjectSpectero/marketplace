@@ -6,6 +6,7 @@ namespace App\Http\Controllers\V1;
 
 use App\Constants\Errors;
 use App\Constants\Messages;
+use App\Constants\PaymentProcessor;
 use App\Constants\ResponseType;
 use App\Invoice;
 use App\Libraries\Payment\PaypalProcessor;
@@ -82,10 +83,6 @@ class PaymentController extends V1Controller
 
     private function getProcessorType(String $processor)
     {
-        if ($processor == 'paypal')
-            return new PaypalProcessor();
-
-        // else return a StripeProcessor()
-        return null;
+        return $processor == PaymentProcessor::PAYPAL ? new PaypalProcessor() : null; // else return a stripe processor
     }
 }

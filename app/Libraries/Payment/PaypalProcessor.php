@@ -3,11 +3,13 @@
 namespace App\Libraries\Payment;
 
 
+use App\Constants\Errors;
 use App\Constants\Messages;
 use App\Constants\PaymentProcessor;
 use App\Constants\PaymentProcessorResponseType;
 use App\Constants\ResponseType;
 use App\Constants\TransactionReasons;
+use App\Errors\UserFriendlyException;
 use App\Invoice;
 use App\Libraries\Utility;
 use App\Models\Opaque\PaymentProcessorResponse;
@@ -53,9 +55,8 @@ class PaypalProcessor extends BasePaymentProcessor
         $mode = $request->get('mode');
         $response = $this->provider->getExpressCheckoutDetails($token);
 
-        // throw exception here
         if ($response['BILLINGAGREEMENTACCEPTEDSTATUS'] == '0')
-            return null;
+            return Utility::generateResponse(null, [Errors::BILLING_AGREEMENT_NOT_ACCEPTED], null, ResponseType::FORBIDDEN);
 
         $checkoutData = $this->provider->getExpressCheckoutDetails($token);
         $invoice = Invoice::find($checkoutData['INVNUM']);
@@ -66,9 +67,8 @@ class PaypalProcessor extends BasePaymentProcessor
         $response = $this->provider->doExpressCheckoutPayment($data, $token, $payerId);
         $response['redirect_url'] = url('/our/success/page');
 
-        // TODO: throw exception
         if ($response['PAYMENTINFO_0_PAYMENTSTATUS'] != 'Completed')
-            return null;
+            return Utility::generateResponse(null, [Errors::INCOMPLETE_PAYMENT],  null, ResponseType::FORBIDDEN);
 
         $transactionId = $response['PAYMENTINFO_0_TRANSACTIONID'];
 
@@ -83,7 +83,6 @@ class PaypalProcessor extends BasePaymentProcessor
 
         $amount = $response['PAYMENTINFO_0_AMT'];
 
-        // TODO: Figure out what you were actually paid, do NOT use invoice->amount for amount. Make this compile
         $this->addTransaction($this, $invoice, $amount, $transactionId, PaymentType::DEBIT, $reason);
 
         return Utility::generateResponse($response, [], Messages::PAYMENT_PROCESSED);

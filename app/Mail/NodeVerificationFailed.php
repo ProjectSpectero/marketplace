@@ -25,7 +25,7 @@ class NodeVerificationFailed extends BaseMail
     public function build()
     {
         return $this->subject('Node verification failed')
-            ->markdown('emails.NodeVerificationFailed', [
+            ->view('emails.NodeVerificationFailed', [
                 'node' => $this->node,
                 'error' => $this->error,
                 'retryUrl' => Utility::generateUrl('node/' . $this->node->id . '/verify', 'frontend')

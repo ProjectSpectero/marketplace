@@ -26,7 +26,7 @@ class PasswordReset extends BaseMail
     public function build()
     {
         return $this->subject('Your password has been reset')
-            ->markdown('emails.PasswordReset', [
+            ->view('emails.PasswordReset', [
                 'requesterIP' => $this->ip,
                 'resetUrl' => Utility::generateUrl('password-reset/' . $this->token->token),
                 'expires' => $this->token->expires

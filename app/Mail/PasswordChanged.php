@@ -28,7 +28,7 @@ class PasswordChanged extends BaseMail
     public function build()
     {
         return $this->subject('Your password has been changed')
-            ->markdown('emails.PasswordChanged', [
+            ->view('emails.PasswordChanged', [
                 'newPassword' => $this->password,
                 'requestIp' => $this->ip,
                 'loginUrl' => Utility::generateUrl('login', 'frontend')

@@ -8,6 +8,7 @@ use App\Constants\Errors;
 use App\Constants\Messages;
 use App\Constants\PaymentProcessor;
 use App\Constants\ResponseType;
+use App\Errors\NotSupportedException;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
 use App\Libraries\Payment\PaypalProcessor;
@@ -72,7 +73,7 @@ class PaymentController extends V1Controller
 
     public function unsubscribe (Request $request, int $orderId) : JsonResponse
     {
-
+        throw new NotSupportedException();
     }
 
     private function getProcessorType(String $processor)

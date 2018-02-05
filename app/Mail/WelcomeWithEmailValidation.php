@@ -21,7 +21,8 @@ class WelcomeWithEmailValidation extends BaseMail
 
         $verifyUrl = env('APP_URL') . '/' . env('API_VERSION') . '/' . $this->user->email . '/' . $this->verifyToken;
 
-        return $this->view('emails.WelcomeWithEmailValidation', [
+        return $this->subject('Welcome')
+            ->markdown('emails.WelcomeWithEmailValidation', [
             'verifyUrl' => $verifyUrl,
         ]);
     }

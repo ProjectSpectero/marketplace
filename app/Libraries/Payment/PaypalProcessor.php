@@ -126,7 +126,7 @@ class PaypalProcessor extends BasePaymentProcessor
         // TODO: Implement unSubscribe() method.
     }
 
-    private function processInvoice (Invoice $invoice, String $mode) : array
+    private function processInvoice (Invoice $invoice, String $mode = '') : array
     {
         $data = [];
         // Figure out how much is due on the invoice

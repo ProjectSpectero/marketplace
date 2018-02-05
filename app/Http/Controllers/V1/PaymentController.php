@@ -8,6 +8,7 @@ use App\Constants\Errors;
 use App\Constants\Messages;
 use App\Constants\PaymentProcessor;
 use App\Constants\ResponseType;
+use App\Errors\UserFriendlyException;
 use App\Invoice;
 use App\Libraries\Payment\PaypalProcessor;
 use App\Order;
@@ -21,14 +22,8 @@ class PaymentController extends V1Controller
 
     public function process (Request $request, String $processor, int $invoiceId) : JsonResponse
     {
-        try
-        {
-            $invoice = Invoice::findOrFail($invoiceId);
-        }
-        catch (ModelNotFoundException $silenced)
-        {
-           return $this->respond(null, [Errors::RESOURCE_NOT_FOUND], null, ResponseType::NOT_FOUND);
-        }
+        $invoice = Invoice::findOrFail($invoiceId);
+
         $paymentProcessor = $this->getProcessorType($processor);
         $response = $paymentProcessor->process($invoice);
 
@@ -43,7 +38,6 @@ class PaymentController extends V1Controller
     public function callback (Request $request, String $processor)
     {
         $paymentProcessor = $this->getProcessorType($processor);
-
         $response = $paymentProcessor->callback($request);
         // Else we call the stripe processor
         return $response;
@@ -51,13 +45,19 @@ class PaymentController extends V1Controller
 
     /**
      * @param Request $request
-     * @param String $type (either 'transaction' or 'invoice'), worth noting that only credit type transactions may be refunded
-     * @param int $reference (the transaction or invoice ID)
+     * @param String $processor
+     * @param int $reference (the transaction ID)
      * @return JsonResponse
      */
-    public function refund (Request $request, String $type, int $reference) : JsonResponse
+    public function refund (Request $request, String $processor, int $reference) : JsonResponse
     {
+        $amount = $request->get('amount');
+        $transaction = Transaction::findOrFail($reference);
 
+        $paymentProcessor = $this->getProcessorType($processor);
+        $response = $paymentProcessor->refund($transaction, $amount);
+
+        return $this->respond($response->toArray(), [], Messages::REFUND_ISSUED);
     }
 
     public function subscribe (Request $request, String $processor, int $orderId) : JsonResponse
@@ -83,6 +83,6 @@ class PaymentController extends V1Controller
 
     private function getProcessorType(String $processor)
     {
-        return $processor == PaymentProcessor::PAYPAL ? new PaypalProcessor() : null; // else return a stripe processor
+        return $processor == strtolower(PaymentProcessor::PAYPAL) ? new PaypalProcessor() : null; // else return a stripe processor
     }
 }

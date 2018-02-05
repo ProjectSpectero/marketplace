@@ -35,9 +35,6 @@ class UserEventListener extends BaseListener
      */
     public function handle(UserEvent $event)
     {
-        // TODO: actually take care of all this.
-        // TODO: Created/Updated should take care of email verification
-
         $user = $event->user;
         $dataBag = $event->dataBag;
 

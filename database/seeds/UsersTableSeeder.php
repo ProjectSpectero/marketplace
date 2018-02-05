@@ -33,7 +33,7 @@ class UsersTableSeeder extends Seeder
       foreach (\App\Constants\UserStatus::getConstants() as $user)
       {
           $newUser = \App\User::create([
-              'name' => 'Status' . $user,
+              'name' => 'Status ' . $user,
               'email' => $user . '@dev.com',
               'password' => \Illuminate\Support\Facades\Hash::make('temppass'),
               'status' => $user,

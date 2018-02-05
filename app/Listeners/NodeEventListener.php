@@ -40,6 +40,8 @@ class NodeEventListener extends BaseListener
                 $manager = new NodeManager($node);
                 $data = $manager->firstTimeDiscovery();
 
+
+
                 break;
             case Events::NODE_UPDATED:
                 break;

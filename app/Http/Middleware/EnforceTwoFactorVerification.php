@@ -17,7 +17,6 @@ class EnforceTwoFactorVerification
      * This middleware NEEDS TO execute after the auth middleware, multifactor-less auth is available in the Auth | TwoFactor controllers
      * i.e: This middleware may only protect pages, but it cannot be used to log people in the first time if they have multifactor on
      *
-     * TODO: This needs to handle cases of first-time TFA enablement.
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
      * @return mixed
@@ -30,20 +29,24 @@ class EnforceTwoFactorVerification
         if ($request->has('generatedToken'))
             $token = $request->get('generatedToken');
         elseif ($request->hasHeader('X-MULTIFACTOR-TOKEN'))
-            $token = $request->headers('X-MULTIFACTOR-TOKEN');
+            $token = $request->header('X-MULTIFACTOR-TOKEN');
         else
             $token = null;
 
         if ($user == null || $token == null)
         {
             // BANISH HIM!
-            return Utility::generateResponse(null, [ Errors::MULTI_FACTOR_PARAMETERS_MISSING => '' ], Errors::REQUEST_FAILED, $this->version, ResponseType::UNPROCESSABLE_ENTITY);
+            return Utility::generateResponse(null, [ Errors::MULTI_FACTOR_PARAMETERS_MISSING ], Errors::REQUEST_FAILED, $this->version, ResponseType::UNPROCESSABLE_ENTITY);
         }
+
+        // Because there may be more than one header, we only care about the first.
+        if (is_array($token))
+            $token = $token[0];
 
         if (! MultifactorVerifier::verify($user, $token))
         {
             // Guy failed multifactor verification
-            return Utility::generateResponse(null, [ Errors::MULTI_FACTOR_VERIFICATION_FAILED => '' ], Errors::REQUEST_FAILED, $this->version, ResponseType::FORBIDDEN);
+            return Utility::generateResponse(null, [ Errors::MULTI_FACTOR_VERIFICATION_FAILED ], Errors::REQUEST_FAILED, $this->version, ResponseType::FORBIDDEN);
         }
 
         // Forward the request on, since the guy either didn't have TFA turned on, or passed it

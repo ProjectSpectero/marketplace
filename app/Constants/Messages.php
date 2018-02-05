@@ -30,4 +30,5 @@ class Messages extends Holder
 
     const INVOICE_PROCESSED = 'INVOICE_PROCESSED';
     const PAYMENT_PROCESSED = 'PAYMENT_PROCESSED';
+    const REFUND_ISSUED = 'REFUND_ISSUED';
 }

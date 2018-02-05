@@ -9,6 +9,7 @@ use App\Constants\PaymentProcessor;
 use App\Constants\PaymentProcessorResponseType;
 use App\Constants\ResponseType;
 use App\Constants\TransactionReasons;
+use App\Errors\FatalException;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
 use App\Libraries\Utility;
@@ -90,23 +91,18 @@ class PaypalProcessor extends BasePaymentProcessor
 
     function refund(Transaction $transaction, Float $amount) : PaymentProcessorResponse
     {
-        // TODO: throw NO_TRANSACTION_ID_FOUND or something
-        if (! array_key_exists('transaction_id', $this->data))
-            return null;
-
-        // TODO: throw exeption
         if ($amount > $transaction->amount)
-            return null;
+            throw new UserFriendlyException(Errors::REFUND_AMMOUNT_IS_BIGGER_THAN_TRANSACTION);
 
-        $refundResponse =  $this->provider->refundTransaction($this->data['transaction_id'], $amount);
+        $refundResponse =  $this->provider->refundTransaction($transaction->id, $amount);
 
         if ($amount < $transaction->amount)
             $reason = TransactionReasons::PARTIAL_REFUND;
         else
             $reason = TransactionReasons::REFUND;
 
-        // TODO: Only add this if the refund is VERIFIED to have been successful
-        $this->addTransaction($this, $transaction->invoice(), $amount, $transaction->reference, PaymentType::DEBIT, $reason);
+        if ($refundResponse['ACK'] == 'Success')
+            $this->addTransaction($this, $transaction->invoice, $amount, $transaction->reference, PaymentType::DEBIT, $reason);
 
         return $refundResponse;
     }

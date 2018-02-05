@@ -1,0 +1,16 @@
+[Unit]
+Description=Spectero Queue Runner
+
+[Service]
+User=marketplace
+Group=marketplace
+Restart=always
+WorkingDirectory=/opt/spectero/cloud/deploy
+ExecStart=/usr/bin/php /opt/spectero/cloud/deploy/artisan queue:work --env=Production
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=SCLOUOD
+
+
+[Install]
+WantedBy=multi-user.target

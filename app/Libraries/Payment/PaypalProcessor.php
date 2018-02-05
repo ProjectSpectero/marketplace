@@ -18,6 +18,7 @@ use App\Transaction;
 use App\Constants\PaymentType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Srmklive\PayPal\Facades\PayPal;
 
 class PaypalProcessor extends BasePaymentProcessor
@@ -51,6 +52,16 @@ class PaypalProcessor extends BasePaymentProcessor
 
     function callback(Request $request) : JsonResponse
     {
+        $rules = [
+            'token' => 'required',
+            'mode' => 'required'
+        ];
+
+        $validator = \Validator::make($request->all(), $rules);
+
+        if ($validator->fails())
+            throw new UserFriendlyException($validator->errors);
+
         $token = $request->get('token');
         $mode = $request->get('mode');
         $response = $this->provider->getExpressCheckoutDetails($token);

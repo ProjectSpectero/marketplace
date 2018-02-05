@@ -52,6 +52,12 @@ class PaymentController extends V1Controller
      */
     public function refund (Request $request, String $processor, int $reference) : JsonResponse
     {
+        $rules = [
+            'amount' => 'required'
+        ];
+
+        $this->validate($request, $rules);
+
         $amount = $request->get('amount');
         $transaction = Transaction::findOrFail($reference);
 

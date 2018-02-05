@@ -57,7 +57,7 @@ class PaypalProcessor extends BasePaymentProcessor
         $response = $this->provider->getExpressCheckoutDetails($token);
 
         if ($response['BILLINGAGREEMENTACCEPTEDSTATUS'] == '0')
-            return Utility::generateResponse(null, [Errors::BILLING_AGREEMENT_NOT_ACCEPTED], null, ResponseType::FORBIDDEN);
+            throw new UserFriendlyException(Errors::BILLING_AGREEMENT_NOT_ACCEPTED, ResponseType::FORBIDDEN);
 
         $checkoutData = $this->provider->getExpressCheckoutDetails($token);
         $invoice = Invoice::find($checkoutData['INVNUM']);
@@ -69,7 +69,7 @@ class PaypalProcessor extends BasePaymentProcessor
         $response['redirect_url'] = url('/our/success/page');
 
         if ($response['PAYMENTINFO_0_PAYMENTSTATUS'] != 'Completed')
-            return Utility::generateResponse(null, [Errors::INCOMPLETE_PAYMENT],  null, ResponseType::FORBIDDEN);
+            throw new UserFriendlyException(Errors::INCOMPLETE_PAYMENT, ResponseType::FORBIDDEN);
 
         $transactionId = $response['PAYMENTINFO_0_TRANSACTIONID'];
 

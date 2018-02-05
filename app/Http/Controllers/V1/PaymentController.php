@@ -62,14 +62,8 @@ class PaymentController extends V1Controller
 
     public function subscribe (Request $request, String $processor, int $orderId) : JsonResponse
     {
-        try
-        {
-            $order = Order::findOrFail($orderId);
-        }
-        catch (ModelNotFoundException $silenced)
-        {
-            return $this->respond(null, [Errors::RESOURCE_NOT_FOUND], null, ResponseType::NOT_FOUND);
-        }
+        $order = Order::findOrFail($orderId);
+
         $paymentProcessor = $this->getProcessorType($processor);
         $response = $paymentProcessor->subscribe($order);
 

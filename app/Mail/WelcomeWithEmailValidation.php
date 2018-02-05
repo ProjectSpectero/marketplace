@@ -4,6 +4,9 @@
 namespace App\Mail;
 
 
+
+use App\Libraries\Utility;
+
 class WelcomeWithEmailValidation extends BaseMail
 {
 

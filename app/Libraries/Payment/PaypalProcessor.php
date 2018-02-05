@@ -9,7 +9,6 @@ use App\Constants\PaymentProcessor;
 use App\Constants\PaymentProcessorResponseType;
 use App\Constants\ResponseType;
 use App\Constants\TransactionReasons;
-use App\Errors\FatalException;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
 use App\Libraries\Utility;
@@ -76,7 +75,7 @@ class PaypalProcessor extends BasePaymentProcessor
         $mode = $request->get('mode');
         if ($mode == 'recurring')
         {
-            $this->createRecurringPaymentsProfile($token);
+            $this->createRecurringPaymentsProfile($invoice, $token);
             $reason = TransactionReasons::SUBSCRIPTION;
         }
         else
@@ -127,7 +126,7 @@ class PaypalProcessor extends BasePaymentProcessor
         // TODO: Implement unSubscribe() method.
     }
 
-    private function processInvoice (Invoice $invoice, String $mode) : array
+    private function processInvoice (Invoice $invoice, String $mode = '') : array
     {
         $data = [];
         // Figure out how much is due on the invoice
@@ -174,17 +173,19 @@ class PaypalProcessor extends BasePaymentProcessor
         return $items;
     }
 
-    private function createRecurringPaymentsProfile($token)
+    private function createRecurringPaymentsProfile(Invoice $invoice, String $token)
     {
         $startdate = Carbon::now()->toAtomString();
 
+        $data = $this->processInvoice($invoice);
+
         $data = [
             'PROFILESTARTDATE' => $startdate,
-            'DESC' => $this->data['invoice_decs'],
+            'DESC' => $data['invoice_decs'],
             'BILLINGPERIOD' => 'Month', // Can be 'Day', 'Week', 'SemiMonth', 'Month', 'Year'
             'BILLINGFREQUENCY' => 1, //
-            'AMT' => 10, // Billing amount for each billing cycle
-            'CURRENCYCODE' => 'USD', // Currency code
+            'AMT' => $invoice->amount, // Billing amount for each billing cycle
+            'CURRENCYCODE' => $invoice->currency, // Currency code
         ];
         $response = $this->provider->createRecurringPaymentsProfile($data, $token);
 

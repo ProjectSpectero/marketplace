@@ -4,6 +4,7 @@
 namespace App\Mail;
 
 
+
 use App\Libraries\Utility;
 
 class WelcomeWithEmailValidation extends BaseMail
@@ -20,10 +21,12 @@ class WelcomeWithEmailValidation extends BaseMail
 
     public function build()
     {
+
         $url = Utility::generateUrl('verify/' . $this->user->email . '/' . $this->verifyToken, 'frontend');
 
-        return $this->view('emails.WelcomeWithEmailValidation', [
-            'verifyUrl' => $url,
-        ]);
+        return $this->subject('Welcome')
+            ->view('emails.WelcomeWithEmailValidation', [
+                'verifyUrl' => $url,
+            ]);
     }
 }

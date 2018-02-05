@@ -8,6 +8,7 @@ use App\Constants\Errors;
 use App\Constants\Messages;
 use App\Constants\PaymentProcessor;
 use App\Constants\ResponseType;
+use App\Errors\NotSupportedException;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
 use App\Libraries\Payment\PaypalProcessor;
@@ -62,14 +63,8 @@ class PaymentController extends V1Controller
 
     public function subscribe (Request $request, String $processor, int $orderId) : JsonResponse
     {
-        try
-        {
-            $order = Order::findOrFail($orderId);
-        }
-        catch (ModelNotFoundException $silenced)
-        {
-            return $this->respond(null, [Errors::RESOURCE_NOT_FOUND], null, ResponseType::NOT_FOUND);
-        }
+        $order = Order::findOrFail($orderId);
+
         $paymentProcessor = $this->getProcessorType($processor);
         $response = $paymentProcessor->subscribe($order);
 
@@ -78,7 +73,7 @@ class PaymentController extends V1Controller
 
     public function unsubscribe (Request $request, int $orderId) : JsonResponse
     {
-
+        throw new NotSupportedException();
     }
 
     private function getProcessorType(String $processor)

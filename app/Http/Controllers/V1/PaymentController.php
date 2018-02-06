@@ -41,6 +41,9 @@ class PaymentController extends V1Controller
     public function callback (Request $request, String $processor)
     {
         $paymentProcessor = $this->getProcessorType($processor);
+        $rules = $paymentProcessor->getCallbackRules();
+
+        $this->validate($request, $rules);
         $response = $paymentProcessor->callback($request);
         // Else we call the stripe processor
         return $response;

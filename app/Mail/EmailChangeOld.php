@@ -13,6 +13,7 @@ class EmailChangeOld extends BaseMail
 {
     public function build()
     {
-        return $this->view('emails.EmailChangeOld');
+        return $this->subject('Your email has been changed')
+            ->view('emails.EmailChangeOld');
     }
 }

@@ -39,7 +39,6 @@ class CreateTransactionsTable extends Migration
             $table->unique([ 'reference', 'payment_processor' ], 'unique_reference_provider_index');
             $table->index('invoice_id', 'invoice_id_index');
             $table->index('payment_processor', 'payment_processor_index');
-            $table->index('user_id', 'user_id_index');
         });
     }
 

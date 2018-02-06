@@ -58,7 +58,7 @@ class InvoiceController extends CRUDController
     {
         $invoice = Invoice::findOrFail($id);
 
-        foreach ($request as $key => $value)
+        foreach ($request->all() as $key => $value)
             $invoice->$key = $value;
 
         $invoice->saveOrFail();

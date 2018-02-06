@@ -56,18 +56,22 @@ class UserEventListener extends BaseListener
 
                 break;
             case Events::USER_UPDATED:
-                $oldEmail = UserMeta::loadMeta($user, UserMetaKeys::OldEmailAddress);
+                $oldEmail = UserMeta::loadMeta($user, UserMetaKeys::OldEmailAddress)->meta_value;
                 if ($oldEmail != null && $oldEmail !== $user->email)
                 {
                     $user->status = UserStatus::EMAIL_VERIFICATION_NEEDED;
                     $user->saveOrFail();
                     Mail::to($oldEmail)->queue(new EmailChangeOld());
 
+                    $verifyToken = Utility::getRandomString();
+
+                    UserMeta::addOrUpdateMeta($user, UserMetaKeys::VerifyToken, $verifyToken);
+
                     // Keep an audit trail to assist people who had their accounts taken over.
                     \Log::info(sprintf("User id: %d had its email changed from: %s to: %s\n", $user->id, $oldEmail, $user->email));
 
                     // Do this regardless, have them verify the new email
-                    Mail::to($user->email)->queue(new EmailChangeNew());
+                    Mail::to($user->email)->queue(new EmailChangeNew($user, $verifyToken));
                 }
 
                 break;

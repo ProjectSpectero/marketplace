@@ -36,7 +36,10 @@ class UserEventListener extends BaseListener
     public function handle(UserEvent $event)
     {
         $user = $event->user;
-        $dataBag = $event->dataBag;
+
+        /** @var User $oldUser */
+        $oldUser = Utility::getPreviousModel($event->dataBag);
+        $error = Utility::getError($event->dataBag);
 
         switch ($event->type)
         {
@@ -53,22 +56,18 @@ class UserEventListener extends BaseListener
 
                 break;
             case Events::USER_UPDATED:
-
-                /** @var User $oldUser */
-                $oldUser = isset($dataBag['previous']) ? $dataBag['previous'] : null;
-                if ($oldUser != null && $oldUser->email != $user->email)
+                $oldEmail = UserMeta::loadMeta($user, UserMetaKeys::OldEmailAddress);
+                if ($oldEmail != null && $oldEmail !== $user->email)
                 {
                     $user->status = UserStatus::EMAIL_VERIFICATION_NEEDED;
                     $user->saveOrFail();
-
-                    $oldEmail = UserMeta::loadMeta($user, UserMetaKeys::OldEmailAddress);
-
-                    Mail::to($user->email)->queue(new EmailChangeNew());
                     Mail::to($oldEmail)->queue(new EmailChangeOld());
 
                     // Keep an audit trail to assist people who had their accounts taken over.
-                    \Log::info(sprintf("User id: %d had its email changed from: %s to: %s\n", $user->id, $oldUser->email, $user->email));
+                    \Log::info(sprintf("User id: %d had its email changed from: %s to: %s\n", $user->id, $oldEmail, $user->email));
                 }
+                // Do this regardless, have them verify the new email
+                Mail::to($user->email)->queue(new EmailChangeNew());
                 break;
             case Events::USER_DELETED:
                 break;

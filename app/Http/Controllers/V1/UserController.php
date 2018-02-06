@@ -119,7 +119,7 @@ class UserController extends CRUDController
             $this->authorizeResource();
 
         $rules = [
-            'name' => 'required',
+            'name' => 'sometimes|max:255',
             'email' => 'required|email|unique:users,email,' . $request->get('id'),
             'password' => 'sometimes|min:5|max:72',
             UserMetaKeys::AddressLineOne => 'sometimes|max:255',
@@ -136,8 +136,15 @@ class UserController extends CRUDController
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
-        $user->name = $input['name'];
-        $user->email = $input['email'];
+        if (isset($input['name']))
+            $user->name = $input['name'];
+
+        if ($user->email != $input['email'])
+        {
+            // User is attempting to change his email address
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::OldEmailAddress, $user->email);
+            $user->email = $input['email'];
+        }
 
         if (isset($input['password']))
             $user->password = Hash::make($input['password']);

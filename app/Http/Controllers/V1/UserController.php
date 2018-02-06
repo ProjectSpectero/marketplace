@@ -189,6 +189,8 @@ class UserController extends CRUDController
             /** @var User $user */
             $user = User::where('email', $email)
                 ->firstOrFail();
+
+            $verifyToken = UserMeta::loadMeta($user, UserMetaKeys::VerifyToken, true)->meta_value;
         }
         catch (ModelNotFoundException $silenced)
         {
@@ -199,8 +201,6 @@ class UserController extends CRUDController
         {
             if ($user->status == UserStatus::EMAIL_VERIFICATION_NEEDED)
             {
-                $verifyToken = UserMeta::loadMeta($user, UserMetaKeys::VerifyToken, true)->meta_value;
-
                 if ($verifyToken !== $token)
                     return $this->respond(
                         null, [ Errors::USER_VERIFICATION_FAILED ], null, ResponseType::NOT_AUTHORIZED);

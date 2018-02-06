@@ -65,9 +65,11 @@ class UserEventListener extends BaseListener
 
                     // Keep an audit trail to assist people who had their accounts taken over.
                     \Log::info(sprintf("User id: %d had its email changed from: %s to: %s\n", $user->id, $oldEmail, $user->email));
+
+                    // Do this regardless, have them verify the new email
+                    Mail::to($user->email)->queue(new EmailChangeNew());
                 }
-                // Do this regardless, have them verify the new email
-                Mail::to($user->email)->queue(new EmailChangeNew());
+
                 break;
             case Events::USER_DELETED:
                 break;

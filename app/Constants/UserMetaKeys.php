@@ -30,7 +30,8 @@ class UserMetaKeys extends Holder
             self::Country,
             self::PhoneNumber,
             self::TaxIdentification,
-            self::Organization
+            self::Organization,
+            self::TwoFactorEnabled
         ];
     }
 }

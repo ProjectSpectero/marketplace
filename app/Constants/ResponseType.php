@@ -15,4 +15,5 @@ class ResponseType extends Holder
     const CONFLICT = 409;
     const UNPROCESSABLE_ENTITY = 422;
     const INTERNAL_SERVER_ERROR = 500;
+    const SERVICE_UNAVAILABLE = 503;
 }

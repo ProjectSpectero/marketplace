@@ -92,7 +92,7 @@ class Handler extends ExceptionHandler
                 break;
             case $e instanceof UserFriendlyException:
                 //This is an error we can actually disclose to the user
-                return Utility::generateResponse(null, [ $message => $data ], Errors::REQUEST_FAILED, $version, $returnCode);
+                return Utility::generateResponse(null, [ $message ], Errors::REQUEST_FAILED, $version, $returnCode);
                 break;
             case $e instanceof ValidationException:
                 $parsedErrors = [];

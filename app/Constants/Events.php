@@ -18,4 +18,7 @@ class Events extends Holder
     const NODE_CONFIG_INVALID = 'node.config.invalid';
     const NODE_VERIFICATION_FAILED = 'node.verification.failed';
     const NODE_REVERIFY = 'node.verification.retry';
+
+
+    const BILLING_TRANSACTION_ADDED = 'billing.txn.added';
 }

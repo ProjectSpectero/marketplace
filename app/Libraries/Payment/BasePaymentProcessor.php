@@ -3,8 +3,10 @@
 
 namespace App\Libraries\Payment;
 use App\Constants\Errors;
+use App\Constants\Events;
 use App\Constants\ResponseType;
 use App\Errors\UserFriendlyException;
+use App\Events\BillingEvent;
 use App\Invoice;
 use App\Libraries\Utility;
 use App\Transaction;
@@ -15,15 +17,18 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
      * @param IPaymentProcessor $processor
      * @param Invoice $invoice
      * @param Float $amount
+     * @param Float $fee
      * @param String $transactionId
      * @param String $transactionType
      * @param String $reason
+     * @param String $rawData
      * @return Transaction
      * @throws \Throwable
      */
     public function addTransaction (IPaymentProcessor $processor, Invoice $invoice,
-                                    Float $amount, String $transactionId,
-                                    String $transactionType, String $reason) : Transaction
+                                    Float $amount, Float $fee,
+                                    String $transactionId, String $transactionType,
+                                    String $reason, String $rawData) : Transaction
     {
         $transaction = new Transaction();
         $transaction->invoice_id = $invoice->id;
@@ -32,10 +37,13 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
         $transaction->type = $transactionType;
         $transaction->reason = $reason;
         $transaction->amount = $amount;
+        $transaction->fee = $fee;
         $transaction->currency = $invoice->currency;
+        $transaction->raw_response = $rawData;
 
         $transaction->saveOrFail();
 
+        event(new BillingEvent(Events::BILLING_TRANSACTION_ADDED, $transaction));
         return $transaction;
     }
 
@@ -77,7 +85,7 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
             throw new UserFriendlyException(Errors::INVOICE_ALREADY_PAID, ResponseType::BAD_REQUEST);
 
         if ($amount < $lowestAllowedAmount)
-            throw new UserFriendlyException(Errors::INVOIDE_DUE_IS_LOWER_THAN_LOWEST_THRESHOLD, ResponseType::BAD_REQUEST);
+            throw new UserFriendlyException(Errors::INVOICE_DUE_IS_LOWER_THAN_LOWEST_THRESHOLD, ResponseType::BAD_REQUEST);
 
         return $amount;
     }
@@ -89,5 +97,15 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
     public function getPartialInvoiceId (Invoice $invoice)
     {
         return $invoice->id . '-' . Utility::getRandomString(1);
+    }
+
+    public function getMajorInvoiceIdFromPartialId (String $id)
+    {
+        if (is_numeric($id))
+            return $id;
+
+        list ($major, $minor) = explode('-', $id);
+
+        return $major;
     }
 }

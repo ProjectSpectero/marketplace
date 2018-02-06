@@ -17,9 +17,6 @@ class CreateTransactionsTable extends Migration
         {
             $table->increments('id');
 
-            $table->integer('user_id')
-                ->default(0); // To allow for processing invoiceless payments if ever needed. Use 0 to indicate a payment without an user
-
             $table->integer('invoice_id')
                 ->default(0); // To allow for processing invoiceless payments if ever needed.
 

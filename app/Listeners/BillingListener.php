@@ -4,7 +4,9 @@
 namespace App\Listeners;
 
 
+use App\Constants\Events;
 use App\Events\BillingEvent;
+use App\Libraries\Utility;
 
 class BillingListener extends BaseListener
 {
@@ -26,6 +28,17 @@ class BillingListener extends BaseListener
      */
     public function handle(BillingEvent $event)
     {
-        //
+        $object = $event->data;
+        $oldState = Utility::getPreviousModel($event->dataBag);
+        $error = Utility::getError($event->dataBag);
+
+        switch ($event->type)
+        {
+            case Events::BILLING_TRANSACTION_ADDED:
+                // The object is a transaction in this case
+                // Figure out what type it is, and:
+                // Update status + communicate with 3rd party accounting
+
+        }
     }
 }

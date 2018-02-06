@@ -18,7 +18,7 @@ use App\Transaction;
 use App\Constants\PaymentType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use Srmklive\PayPal\Facades\PayPal;
 
 class PaypalProcessor extends BasePaymentProcessor
@@ -31,6 +31,9 @@ class PaypalProcessor extends BasePaymentProcessor
      */
     public function __construct()
     {
+        if (env('PAYPAL_ENABLED', false) != true)
+            throw new UserFriendlyException(Messages::PAYMENT_PROCESSOR_NOT_ENABLED, ResponseType::BAD_REQUEST);
+
         $this->provider = PayPal::setProvider('express_checkout');
     }
 
@@ -41,6 +44,8 @@ class PaypalProcessor extends BasePaymentProcessor
         $data = $this->processInvoice($invoice, 'payment');
 
         $response = $this->provider->setExpressCheckout($data);
+
+        $this->ensureSuccess($response, $data);
 
         $wrappedResponse = new PaymentProcessorResponse();
         $wrappedResponse->type = PaymentProcessorResponseType::REDIRECT;
@@ -54,39 +59,73 @@ class PaypalProcessor extends BasePaymentProcessor
     {
         $token = $request->get('token');
         $mode = $request->get('mode');
-        $response = $this->provider->getExpressCheckoutDetails($token);
 
-        if ($response['BILLINGAGREEMENTACCEPTEDSTATUS'] == '0')
-            throw new UserFriendlyException(Errors::BILLING_AGREEMENT_NOT_ACCEPTED, ResponseType::FORBIDDEN);
-
-        $checkoutData = $this->provider->getExpressCheckoutDetails($token);
-        $invoice = Invoice::find($checkoutData['INVNUM']);
-
-        $data = $this->processInvoice($invoice, $mode);
-
-        $payerId = $response['PAYERID'];
-        $response = $this->provider->doExpressCheckoutPayment($data, $token, $payerId);
-        $response['redirect_url'] = url('/our/success/page');
-
-        if ($response['PAYMENTINFO_0_PAYMENTSTATUS'] != 'Completed')
-            throw new UserFriendlyException(Errors::INCOMPLETE_PAYMENT, ResponseType::FORBIDDEN);
-
-        $transactionId = $response['PAYMENTINFO_0_TRANSACTIONID'];
-
-        $mode = $request->get('mode');
-        if ($mode == 'recurring')
+        switch ($mode)
         {
-            $this->createRecurringPaymentsProfile($invoice, $token);
-            $reason = TransactionReasons::SUBSCRIPTION;
+            case "payment":
+            case "recurring":
+
+            $response = $this->provider->getExpressCheckoutDetails($token);
+
+            $this->ensureSuccess($response);
+
+            if ($response['BILLINGAGREEMENTACCEPTEDSTATUS'] == '0')
+                throw new UserFriendlyException(Errors::BILLING_AGREEMENT_NOT_ACCEPTED, ResponseType::FORBIDDEN);
+
+            $checkoutData = $this->provider->getExpressCheckoutDetails($token);
+
+            // Extract the real invoice ID if it was partial, no changes if it wasn't.
+            $invoiceId = $this->getMajorInvoiceIdFromPartialId($checkoutData['INVNUM']);
+
+            // We cannot account for a payment without the relevant invoice
+            $invoice = Invoice::findOrFail($invoiceId);
+
+            $data = $this->processInvoice($invoice, $mode);
+
+            $payerId = $response['PAYERID'];
+            $secondResponse = $this->provider->doExpressCheckoutPayment($data, $token, $payerId);
+
+            if ($secondResponse['PAYMENTINFO_0_PAYMENTSTATUS'] !== 'Completed' || $secondResponse['PAYMENTINFO_0_ACK'] !== 'Success')
+                throw new UserFriendlyException(Errors::INCOMPLETE_PAYMENT, ResponseType::FORBIDDEN);
+
+            $transactionId = $secondResponse['PAYMENTINFO_0_TRANSACTIONID'];
+            $amount = $secondResponse['PAYMENTINFO_0_AMT'];
+            $currency = $secondResponse['PAYMENTINFO_0_CURRENCYCODE'];
+            $fee = $secondResponse['PAYMENTINFO_0_FEEAMT'];
+            $tax = $secondResponse['PAYMENTINFO_0_TAXAMT'];
+
+            $rawData = [
+                'tokenLookup' => $response,
+                'txnConfirmation' => $secondResponse
+            ];
+
+            $raw = json_encode($rawData);
+
+            if ($currency !== $invoice->currency)
+                throw new UserFriendlyException(Errors::INVOICE_CURRENCY_MISMATCH, ResponseType::FORBIDDEN);
+
+            if ($mode == 'recurring')
+            {
+                $this->createRecurringPaymentsProfile($invoice, $token);
+                $reason = TransactionReasons::SUBSCRIPTION;
+            }
+            else
+                $reason = TransactionReasons::PAYMENT;
+
+            $this->addTransaction($this, $invoice, $amount, $fee, $transactionId, PaymentType::CREDIT, $reason, $raw);
+            break;
+
+            case "ipn":
+                $request->merge(['cmd' => '_notify-validate']);
+                $post = $request->all();
+
+                $response = $this->provider->verifyIPN($post);
+
+                dd($response);
+                break;
         }
-        else
-            $reason = TransactionReasons::PAYMENT;
 
-        $amount = $response['PAYMENTINFO_0_AMT'];
-
-        $this->addTransaction($this, $invoice, $amount, $transactionId, PaymentType::DEBIT, $reason);
-
-        return Utility::generateResponse($response, [], Messages::PAYMENT_PROCESSED);
+        return Utility::generateResponse([], Messages::PAYMENT_PROCESSED);
     }
 
     function refund(Transaction $transaction, Float $amount) : PaymentProcessorResponse
@@ -174,6 +213,14 @@ class PaypalProcessor extends BasePaymentProcessor
         return $items;
     }
 
+    private function ensureSuccess (Array $response, Array $data = [])
+    {
+        if (! isset($response['ACK']) || $response['ACK'] != 'Success')
+        {
+            Log::error("Unexpected response from Paypal API: " . http_build_query($response) . "\n for data: " . http_build_query($data));
+            throw new UserFriendlyException(Errors::PAYPAL_API_ERROR, ResponseType::SERVICE_UNAVAILABLE);
+        }
+    }
     private function createRecurringPaymentsProfile(Invoice $invoice, String $token)
     {
         $startdate = Carbon::now()->toAtomString();

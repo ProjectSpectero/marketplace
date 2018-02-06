@@ -11,9 +11,22 @@ namespace App\Mail;
 
 class EmailChangeOld extends BaseMail
 {
+
+    private $newEmail;
+
+    /**
+     * EmailChangeOld constructor.
+     */
+    public function __construct(String $email)
+    {
+        $this->newEmail = $email;
+    }
+
     public function build()
     {
         return $this->subject('Your email has been changed')
-            ->view('emails.EmailChangeOld');
+            ->view('emails.EmailChangeOld', [
+                'newEmail' => $this->newEmail
+            ]);
     }
 }

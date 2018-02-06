@@ -61,7 +61,7 @@ class UserEventListener extends BaseListener
                 {
                     $user->status = UserStatus::EMAIL_VERIFICATION_NEEDED;
                     $user->saveOrFail();
-                    Mail::to($oldEmail)->queue(new EmailChangeOld());
+                    Mail::to($oldEmail)->queue(new EmailChangeOld($user->email));
 
                     $verifyToken = Utility::getRandomString();
 

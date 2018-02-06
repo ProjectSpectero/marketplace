@@ -35,6 +35,8 @@ class PaymentController extends V1Controller
      * @param Request $request
      * @param String $processor
      * TODO: think about how to make this generic
+     * @return JsonResponse
+     * @throws UserFriendlyException
      */
     public function callback (Request $request, String $processor)
     {
@@ -52,6 +54,7 @@ class PaymentController extends V1Controller
      * @param String $processor
      * @param int $reference (the transaction ID)
      * @return JsonResponse
+     * @throws UserFriendlyException
      */
     public function refund (Request $request, String $processor, int $reference) : JsonResponse
     {
@@ -85,7 +88,7 @@ class PaymentController extends V1Controller
         throw new NotSupportedException();
     }
 
-    private function getProcessorType(String $processor)
+    private function getProcessorType (String $processor)
     {
         return $processor == strtolower(PaymentProcessor::PAYPAL) ? new PaypalProcessor() : null; // else return a stripe processor
     }

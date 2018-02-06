@@ -12,5 +12,6 @@ return [
     'max' => [
         'numeric' => \App\Constants\Errors::FIELD_MAXLENGTH . '::attribute::max',
         'string' => \App\Constants\Errors::FIELD_MAXLENGTH . '::attribute::max',
-    ]
+    ],
+    'country' => \App\Constants\Errors::FIELD_COUNTRY . '::attribute:',
 ];

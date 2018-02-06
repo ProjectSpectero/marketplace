@@ -9,10 +9,32 @@
 namespace App\Mail;
 
 
+use App\Libraries\Utility;
+use App\User;
+
 class EmailChangeNew extends BaseMail
 {
+
+
+    private $user;
+    private $verifyToken;
+
+    /**
+     * EmailChangeNew constructor.
+     */
+    public function __construct(User $user, String $verifyToken)
+    {
+        $this->user = $user;
+        $this->verifyToken = $verifyToken;
+    }
+
     public function build()
     {
-        return $this->view('emails.EmailChangeNew');
+        $url = Utility::generateUrl('v1/user/verify/' . $this->user->email . '/' . $this->verifyToken, 'frontend');
+
+        return $this->subject("Email successfully changed")
+            ->view('emails.EmailChangeNew', [
+                'verifyUrl' => $url,
+            ]);
     }
 }

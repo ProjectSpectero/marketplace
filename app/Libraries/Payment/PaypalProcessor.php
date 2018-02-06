@@ -52,16 +52,6 @@ class PaypalProcessor extends BasePaymentProcessor
 
     function callback(Request $request) : JsonResponse
     {
-        $rules = [
-            'token' => 'required',
-            'mode' => 'required'
-        ];
-
-        $validator = \Validator::make($request->all(), $rules);
-
-        if ($validator->fails())
-            throw new UserFriendlyException($validator->errors);
-
         $token = $request->get('token');
         $mode = $request->get('mode');
         $response = $this->provider->getExpressCheckoutDetails($token);
@@ -206,5 +196,13 @@ class PaypalProcessor extends BasePaymentProcessor
     public function getName() : string
     {
         return PaymentProcessor::PAYPAL;
+    }
+
+    public function getCallbackRules()
+    {
+        return [
+            'token' => 'required',
+            'mode' => 'required'
+        ];
     }
 }

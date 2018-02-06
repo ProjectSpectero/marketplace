@@ -37,16 +37,17 @@ class InvoiceController extends CRUDController
         ];
 
         $this->validate($request, $rules);
+        $input = $this->cherryPick($request, $rules);
 
         $invoice = new Invoice();
-        $invoice->order_id = $request->get('order_id');
-        $invoice->user_id = $request->get('user_id');
-        $invoice->amount = $request->get('amount');
-        $invoice->tax = $request->get('tax');
-        $invoice->status = $request->get('status');
-        $invoice->due_date = $request->get('due_date');
+        $invoice->order_id = $input['order_id'];
+        $invoice->user_id = $input['user_id'];
+        $invoice->amount = $input['amount'];
+        $invoice->tax = $input['tax'];
+        $invoice->status = $input['status'];
+        $invoice->due_date = $input['due_date'];
 
-        $currency = $request->get('currency');
+        $currency = $input['currency'];
         $invoice->currency = isset($currency) ? $currency : $invoice->currency;
 
         $invoice->saveOrFail();
@@ -56,9 +57,22 @@ class InvoiceController extends CRUDController
 
     public function update(Request $request, int $id): JsonResponse
     {
+        $rules = [
+            'order_id' => 'required',
+            'user_id' => 'required',
+            'amount' => 'required',
+            'tax' => 'required',
+            'currency' => 'sometimes',
+            'status' => 'required',
+            'due_date' => 'required'
+        ];
+
+        $this->validate($request, $rules);
+        $input = $this->cherryPick($request, $rules);
+
         $invoice = Invoice::findOrFail($id);
 
-        foreach ($request->all() as $key => $value)
+        foreach ($input as $key => $value)
             $invoice->$key = $value;
 
         $invoice->saveOrFail();
@@ -66,6 +80,13 @@ class InvoiceController extends CRUDController
         $this->validate($request, $id);
 
         return $this->respond($invoice->toArray(), [], Messages::INVOICE_UPDATED);
+    }
+
+    public function self(Request $request)
+    {
+        $user = $request->user();
+
+        return Invoice::where('user_id', '=', $user->id)->get();
     }
 
     public function destroy(Request $request, int $id): JsonResponse

@@ -21,14 +21,15 @@ class OrderController extends CRUDController
         ];
 
         $this->validate($request, $rules);
+        $input = $this->cherryPick($request, $rules);
 
         $order = new Order();
-        $order->user_id = $request->get('user_id');
-        $order->status = $request->get('status');
-        $order->subscription_reference = $request->get('subscription_reference');
-        $order->subscription_provider = $request->get('subscription_provider');
-        $order->term = $request->get('term');
-        $order->due_next = $request->get('due_next');
+        $order->user_id = $input['user_id'];
+        $order->status = $input['status'];
+        $order->subscription_reference = $input['subscription_reference'];
+        $order->subscription_provider = $input['subscription_provider'];
+        $order->term = $input['term'];
+        $order->due_next = $input['due_next'];
 
         $order->saveOrFail();
 
@@ -37,9 +38,21 @@ class OrderController extends CRUDController
 
     public function update(Request $request, int $id): JsonResponse
     {
+        $rules = [
+            'user_id' => 'required',
+            'status' => 'required',
+            'subscription_reference' => 'required',
+            'subscription_provider' => 'required',
+            'term' => 'required',
+            'due_next' => 'required'
+        ];
+
+        $this->validate($request, $rules);
+        $input = $this->cherryPick($request, $rules);
+
         $order = Order::findOrFail($id);
 
-        foreach ($request->all() as $key => $value)
+        foreach ($input as $key => $value)
             $order->$key = $value;
 
         $order->saveOrFail();
@@ -61,6 +74,13 @@ class OrderController extends CRUDController
         $order = Order::findOrFail($id);
 
         return $this->respond($order->toArray());
+    }
+
+    public function self(Request $request)
+    {
+        $user = $request->user();
+
+        return Order::where('user_id', '=', $user->id)->get();
     }
 
 }

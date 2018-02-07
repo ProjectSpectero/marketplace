@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V1;
 
 use App\Constants\Messages;
+use App\Constants\ResponseType;
 use App\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

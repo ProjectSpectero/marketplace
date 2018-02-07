@@ -47,8 +47,11 @@ class InvoiceController extends CRUDController
         $invoice->status = $input['status'];
         $invoice->due_date = $input['due_date'];
 
-        $currency = $input['currency'];
-        $invoice->currency = isset($currency) ? $currency : $invoice->currency;
+        if (isset($input['currency']))
+        {
+            $currency = $input['currency'];
+            $invoice->currency = isset($currency) ? $currency : $invoice->currency;
+        }
 
         $invoice->saveOrFail();
 
@@ -77,8 +80,6 @@ class InvoiceController extends CRUDController
 
         $invoice->saveOrFail();
 
-        $this->validate($request, $id);
-
         return $this->respond($invoice->toArray(), [], Messages::INVOICE_UPDATED);
     }
 
@@ -95,7 +96,7 @@ class InvoiceController extends CRUDController
 
         $invoice->delete();
 
-        $this->respond(null, [], Messages::INVOICE_DELETED, ResponseType::NO_CONTENT);
+        return $this->respond(null, [], Messages::INVOICE_DELETED, ResponseType::NO_CONTENT);
     }
 
     public function show(Request $request, int $id): JsonResponse

@@ -24,6 +24,8 @@ use Illuminate\Http\Request;
 class PaymentController extends V1Controller
 {
 
+    // TODO: add authorization rules to ALL these methods
+
     public function process (Request $request, String $processor, int $invoiceId) : JsonResponse
     {
         $invoice = Invoice::findOrFail($invoiceId);
@@ -37,7 +39,6 @@ class PaymentController extends V1Controller
     /**
      * @param Request $request
      * @param String $processor
-     * TODO: think about how to make this generic
      * @return JsonResponse
      * @throws FatalException
      */
@@ -56,6 +57,7 @@ class PaymentController extends V1Controller
      * @param int $transactionId (the transaction ID, this is NOT the provider reference)
      * @return JsonResponse
      * @throws UserFriendlyException
+     * @throws FatalException
      */
     public function refund (Request $request, int $transactionId) : JsonResponse
     {

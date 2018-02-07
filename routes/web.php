@@ -59,6 +59,16 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->get('node/{id}/verify', 'NodeController@reverify');
         \App\Libraries\Utility::defineResourceRoute('node', 'NodeController', $api, []);
 
+        // Invoice resource routes
+        $api->get('invoice/self', 'InvoiceController@self');
+        \App\Libraries\Utility::defineResourceRoute('invoice', 'InvoiceController', $api, []);
+
+        // Order resource routes
+        $api->get('order/self', 'OrderController@self');
+        \App\Libraries\Utility::defineResourceRoute('order', 'OrderController', $api, []);
+
+
+        // Payment processing routes
         $api->post('payment/{processor}/process/{invoiceId}', 'PaymentController@process');
         $api->post('payment/{processor}/subscribe/{invoiceId}', 'PaymentController@subscribe');
         $api->post('payment/refund/{transactionId}', 'PaymentController@refund');

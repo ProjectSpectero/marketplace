@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Constants\UserMetaKeys;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use App\Libraries\Utility;
 use App\Traits\MetaTrait;
@@ -20,13 +21,19 @@ class UserMeta extends Model
         return $this->belongsTo(User::class);
     }
 
-    static function getUserPublicMeta(User $user)
+    public static function getUserPublicMeta(User $user)
     {
         $userMeta = array();
         foreach (UserMetaKeys::getPublicMetaKeys() as $key)
         {
-            $meta = self::loadMeta($user, $key)->first();
-            $userMeta[$key] = $meta != null ? $meta->meta_value : null;
+            $meta = static::loadMeta($user, $key);
+
+            if ($meta instanceof static)
+                $value = $meta->meta_value;
+            else
+                $value = null;
+
+            $userMeta[$key] = $value;
         }
         return $userMeta;
     }

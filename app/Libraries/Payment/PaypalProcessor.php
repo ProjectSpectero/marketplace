@@ -9,6 +9,7 @@ use App\Constants\PaymentProcessor;
 use App\Constants\PaymentProcessorResponseType;
 use App\Constants\ResponseType;
 use App\Constants\TransactionReasons;
+use App\Errors\NotSupportedException;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
 use App\Libraries\Utility;
@@ -57,6 +58,7 @@ class PaypalProcessor extends BasePaymentProcessor
 
     function callback(Request $request) : JsonResponse
     {
+        $ret = null;
         $token = $request->get('token');
         $mode = $request->get('mode');
 
@@ -66,7 +68,6 @@ class PaypalProcessor extends BasePaymentProcessor
             case "recurring":
 
             $response = $this->provider->getExpressCheckoutDetails($token);
-
             $this->ensureSuccess($response);
 
             if ($response['BILLINGAGREEMENTACCEPTEDSTATUS'] == '0')
@@ -83,7 +84,44 @@ class PaypalProcessor extends BasePaymentProcessor
             $data = $this->processInvoice($invoice, $mode);
 
             $payerId = $response['PAYERID'];
+
+            /*
+             * On first-call, this is what it looks like:
+             * array:27 [
+                  "TOKEN" => "EC-2RK44818WA308130X"
+                  "BILLINGAGREEMENTID" => "B-6PK409170G5413528"
+                  "SUCCESSPAGEREDIRECTREQUESTED" => "false"
+                  "TIMESTAMP" => "2018-02-07T06:40:03Z"
+                  "CORRELATIONID" => "6a0178c88d96b"
+                  "ACK" => "Success"
+                  "VERSION" => "123"
+                  "BUILD" => "43477490"
+                  "INSURANCEOPTIONSELECTED" => "false"
+                  "SHIPPINGOPTIONISDEFAULT" => "false"
+                  "PAYMENTINFO_0_TRANSACTIONID" => "11G11434ST9328303"
+                  "PAYMENTINFO_0_TRANSACTIONTYPE" => "cart"
+                  "PAYMENTINFO_0_PAYMENTTYPE" => "instant"
+                  "PAYMENTINFO_0_ORDERTIME" => "2018-02-07T06:40:02Z"
+                  "PAYMENTINFO_0_AMT" => "22.00"
+                  "PAYMENTINFO_0_FEEAMT" => "0.94"
+                  "PAYMENTINFO_0_TAXAMT" => "0.00"
+                  "PAYMENTINFO_0_CURRENCYCODE" => "USD"
+                  "PAYMENTINFO_0_PAYMENTSTATUS" => "Completed"
+                  "PAYMENTINFO_0_PENDINGREASON" => "None"
+                  "PAYMENTINFO_0_REASONCODE" => "None"
+                  "PAYMENTINFO_0_PROTECTIONELIGIBILITY" => "Eligible"
+                  "PAYMENTINFO_0_PROTECTIONELIGIBILITYTYPE" => "ItemNotReceivedEligible,UnauthorizedPaymentEligible"
+                  "PAYMENTINFO_0_SELLERPAYPALACCOUNTID" => "billing-facilitator@spectero.com"
+                  "PAYMENTINFO_0_SECUREMERCHANTACCOUNTID" => "FZX5DCUHMTH4Q"
+                  "PAYMENTINFO_0_ERRORCODE" => "0"
+                  "PAYMENTINFO_0_ACK" => "Success"
+                ]
+
+                * It's a bit different on subsequent requests (once payment has been claimed already).
+             */
             $secondResponse = $this->provider->doExpressCheckoutPayment($data, $token, $payerId);
+            $this->ensureSuccess($secondResponse);
+
 
             if ($secondResponse['PAYMENTINFO_0_PAYMENTSTATUS'] !== 'Completed' || $secondResponse['PAYMENTINFO_0_ACK'] !== 'Success')
                 throw new UserFriendlyException(Errors::INCOMPLETE_PAYMENT, ResponseType::FORBIDDEN);
@@ -112,7 +150,7 @@ class PaypalProcessor extends BasePaymentProcessor
             else
                 $reason = TransactionReasons::PAYMENT;
 
-            $this->addTransaction($this, $invoice, $amount, $fee, $transactionId, PaymentType::CREDIT, $reason, $raw);
+            $ret = $this->addTransaction($this, $invoice, $amount, $fee, $transactionId, PaymentType::CREDIT, $reason, $raw);
             break;
 
             case "ipn":
@@ -125,14 +163,11 @@ class PaypalProcessor extends BasePaymentProcessor
                 break;
         }
 
-        return Utility::generateResponse([], Messages::PAYMENT_PROCESSED);
+        return Utility::generateResponse($ret->toArray(), Messages::PAYMENT_PROCESSED);
     }
 
-    function refund(Transaction $transaction, Float $amount) : PaymentProcessorResponse
+    public function refund(Transaction $transaction, Float $amount) : PaymentProcessorResponse
     {
-        if ($amount > $transaction->amount)
-            throw new UserFriendlyException(Errors::REFUND_AMMOUNT_IS_BIGGER_THAN_TRANSACTION);
-
         $refundResponse =  $this->provider->refundTransaction($transaction->id, $amount);
 
         if ($amount < $transaction->amount)
@@ -146,10 +181,10 @@ class PaypalProcessor extends BasePaymentProcessor
         return $refundResponse;
     }
 
-    function subscribe(Order $order) : PaymentProcessorResponse
+    public function subscribe(Order $order) : PaymentProcessorResponse
     {
         $data = $this->processInvoice($order->invoice, 'recurring');
-        $data['subscription_desc'] = "Monthly description default";
+        $data['subscription_desc'] = env('COMPANY_NAME', 'Spectero') . ' Order # ' . $order->id;
 
         $response = $this->provider->setExpressCheckout($data);
 
@@ -163,7 +198,7 @@ class PaypalProcessor extends BasePaymentProcessor
 
     function unSubscribe(Order $order) : PaymentProcessorResponse
     {
-        // TODO: Implement unSubscribe() method.
+        throw new NotSupportedException();
     }
 
     private function processInvoice (Invoice $invoice, String $mode = '') : array
@@ -193,7 +228,7 @@ class PaypalProcessor extends BasePaymentProcessor
 
         $data['invoice_description'] = $this->getInvoiceDescription($invoice);
 
-        $data['return_url'] = url('/v1/payment/paypal/callback?mode='.$mode);
+        $data['return_url'] = url('/payment/paypal/callback?mode='.$mode);
         $data['cancel_url'] = url('/cart');
 
         return $data;

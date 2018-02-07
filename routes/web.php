@@ -61,6 +61,6 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
 
         $api->post('payment/{processor}/process/{invoiceId}', 'PaymentController@process');
         $api->post('payment/{processor}/subscribe/{invoiceId}', 'PaymentController@subscribe');
-        $api->post('payment/{processor}/refund/{reference}', 'PaymentController@refund');
+        $api->post('payment/refund/{transactionId}', 'PaymentController@refund');
     });
 });

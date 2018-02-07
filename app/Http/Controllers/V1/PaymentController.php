@@ -7,10 +7,13 @@ namespace App\Http\Controllers\V1;
 use App\Constants\Errors;
 use App\Constants\Messages;
 use App\Constants\PaymentProcessor;
+use App\Constants\PaymentType;
 use App\Constants\ResponseType;
+use App\Errors\FatalException;
 use App\Errors\NotSupportedException;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
+use App\Libraries\Payment\IPaymentProcessor;
 use App\Libraries\Payment\PaypalProcessor;
 use App\Order;
 use App\Transaction;
@@ -25,7 +28,7 @@ class PaymentController extends V1Controller
     {
         $invoice = Invoice::findOrFail($invoiceId);
 
-        $paymentProcessor = $this->getProcessorType($processor);
+        $paymentProcessor = $this->resolveProcessor($processor);
         $response = $paymentProcessor->process($invoice);
 
         return $this->respond($response->toArray(), [], Messages::INVOICE_PROCESSED);
@@ -36,11 +39,11 @@ class PaymentController extends V1Controller
      * @param String $processor
      * TODO: think about how to make this generic
      * @return JsonResponse
-     * @throws UserFriendlyException
+     * @throws FatalException
      */
     public function callback (Request $request, String $processor)
     {
-        $paymentProcessor = $this->getProcessorType($processor);
+        $paymentProcessor = $this->resolveProcessor($processor);
         $rules = $paymentProcessor->getCallbackRules();
 
         $this->validate($request, $rules);
@@ -51,12 +54,11 @@ class PaymentController extends V1Controller
 
     /**
      * @param Request $request
-     * @param String $processor
-     * @param int $reference (the transaction ID)
+     * @param int $transactionId (the transaction ID, this is NOT the provider reference)
      * @return JsonResponse
      * @throws UserFriendlyException
      */
-    public function refund (Request $request, String $processor, int $reference) : JsonResponse
+    public function refund (Request $request, int $transactionId) : JsonResponse
     {
         $rules = [
             'amount' => 'required'
@@ -64,10 +66,16 @@ class PaymentController extends V1Controller
 
         $this->validate($request, $rules);
 
-        $amount = $request->get('amount');
-        $transaction = Transaction::findOrFail($reference);
+        $transaction = Transaction::findOrFail($transactionId);
+        $amount = $request->has('amount') ? $request->get('amount') : $transaction->amount;
 
-        $paymentProcessor = $this->getProcessorType($processor);
+        if ($amount > $transaction->amount)
+            throw new UserFriendlyException(Errors::REFUND_AMOUNT_IS_BIGGER_THAN_TRANSACTION);
+
+        if ($transaction->type !== PaymentType::CREDIT)
+            throw new UserFriendlyException(Errors::COULD_NOT_REFUND_NON_CREDIT_TXN);
+
+        $paymentProcessor = $this->resolveProcessor($transaction->payment_processor);
         $response = $paymentProcessor->refund($transaction, $amount);
 
         return $this->respond($response->toArray(), [], Messages::REFUND_ISSUED);
@@ -77,7 +85,7 @@ class PaymentController extends V1Controller
     {
         $order = Order::findOrFail($orderId);
 
-        $paymentProcessor = $this->getProcessorType($processor);
+        $paymentProcessor = $this->resolveProcessor($processor);
         $response = $paymentProcessor->subscribe($order);
 
         return $this->respond($response->toArray(), [], Messages::INVOICE_PROCESSED);
@@ -88,8 +96,18 @@ class PaymentController extends V1Controller
         throw new NotSupportedException();
     }
 
-    private function getProcessorType (String $processor)
+    private function resolveProcessor (String $processor) : IPaymentProcessor
     {
-        return $processor == strtolower(PaymentProcessor::PAYPAL) ? new PaypalProcessor() : null; // else return a stripe processor
+        switch ($processor)
+        {
+            case strtolower(PaymentProcessor::PAYPAL):
+                return new PaypalProcessor();
+
+            case strtolower(PaymentProcessor::STRIPE):
+                return null;
+
+            default:
+                throw new FatalException(Errors::COULD_NOT_RESOLVE_PAYMENT_PROCESSOR);
+        }
     }
 }

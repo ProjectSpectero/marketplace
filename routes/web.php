@@ -55,6 +55,16 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
             'excluded' =>  \App\Constants\CRUDActions::STORE
         ]);
 
+        $api->get('invoice/self', 'InvoiceController@self');
+        \App\Libraries\Utility::defineResourceRoute('invoice', 'InvoiceController', $api, [], [
+            'excluded' => \App\Constants\CRUDActions::INDEX
+        ]);
+
+        $api->get('order/self', 'OrderController@self');
+        \App\Libraries\Utility::defineResourceRoute('order', 'OrderController', $api, [], [
+            'excluded' => \App\Constants\CRUDActions::INDEX
+        ]);
+
         // Node resource routes, the static "verify" route HAS to be before the resource routes
         $api->get('node/{id}/verify', 'NodeController@reverify');
         \App\Libraries\Utility::defineResourceRoute('node', 'NodeController', $api, []);

@@ -30,6 +30,8 @@ class UsersTableSeeder extends Seeder
           'node_key' => \App\Libraries\Utility::getRandomString(2)
       ]);
 
+      $this->addMeta($admin);
+
       foreach (\App\Constants\UserStatus::getConstants() as $user)
       {
           $newUser = \App\User::create([
@@ -43,21 +45,30 @@ class UsersTableSeeder extends Seeder
           PermissionManager::assign($newUser, UserRoles::USER);
       }
 
-      try
-      {
-          UserMeta::addOrUpdateMeta($admin,UserMetaKeys::AddressLineOne, env('LEGAL_COMPANY_ADDRESS_PARTIAL_1'));
-          UserMeta::addOrUpdateMeta($admin,UserMetaKeys::AddressLineTwo, env('LEGAL_COMPANY_ADDRESS_PARTIAL_2'));
-          UserMeta::addOrUpdateMeta($admin,UserMetaKeys::Organization, 'Spectero');
-          UserMeta::addOrUpdateMeta($admin, UserMetaKeys::TaxIdentification, 'taxId');
-          UserMeta::addOrUpdateMeta($admin, UserMetaKeys::PreferredCurrency, 'USD');
-      }
-      catch (\App\Errors\FatalException $e)
-      {
-
-      }
-
+      $activeUser = \App\User::where('email', '=', 'active@dev.com')->first();
+      $this->addMeta($activeUser);
 
       // The admin is a normal user too, despite being an admin
       PermissionManager::assign($admin, UserRoles::ADMIN);
+    }
+
+    private function addMeta(\App\User $user)
+    {
+        try
+        {
+            UserMeta::addOrUpdateMeta($user,UserMetaKeys::AddressLineOne, env('LEGAL_COMPANY_ADDRESS_PARTIAL_1'));
+            UserMeta::addOrUpdateMeta($user,UserMetaKeys::AddressLineTwo, env('LEGAL_COMPANY_ADDRESS_PARTIAL_2'));
+            UserMeta::addOrUpdateMeta($user,UserMetaKeys::Organization, 'Spectero');
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::TaxIdentification, 'taxId');
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::PreferredCurrency, 'USD');
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::City, 'Example City');
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::State, 'Example State');
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::Country, 'Example Country');
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::PostCode, 1234);
+        }
+        catch (\App\Errors\FatalException $e)
+        {
+
+        }
     }
 }

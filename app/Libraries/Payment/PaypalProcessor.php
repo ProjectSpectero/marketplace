@@ -56,7 +56,7 @@ class PaypalProcessor extends BasePaymentProcessor
         return $wrappedResponse;
     }
 
-    function callback(Request $request) : JsonResponse
+    public function callback(Request $request) : JsonResponse
     {
         $ret = null;
         $token = $request->get('token');
@@ -122,8 +122,8 @@ class PaypalProcessor extends BasePaymentProcessor
             $secondResponse = $this->provider->doExpressCheckoutPayment($data, $token, $payerId);
             $this->ensureSuccess($secondResponse);
 
-
-            if ($secondResponse['PAYMENTINFO_0_PAYMENTSTATUS'] !== 'Completed' || $secondResponse['PAYMENTINFO_0_ACK'] !== 'Success')
+            if ( (! isset($secondResponse['PAYMENTINFO_0_PAYMENTSTATUS']) && $secondResponse['PAYMENTINFO_0_PAYMENTSTATUS'] !== 'Completed')
+                || (! isset($secondResponse['PAYMENTINFO_0_ACK']) && $secondResponse['PAYMENTINFO_0_ACK'] !== 'Success'))
                 throw new UserFriendlyException(Errors::INCOMPLETE_PAYMENT, ResponseType::FORBIDDEN);
 
             $transactionId = $secondResponse['PAYMENTINFO_0_TRANSACTIONID'];
@@ -163,7 +163,10 @@ class PaypalProcessor extends BasePaymentProcessor
                 break;
         }
 
-        return Utility::generateResponse($ret->toArray(), Messages::PAYMENT_PROCESSED);
+        // There is no need to disclose the raw API response to the client, hide it.
+        $ret->raw_response = null;
+
+        return Utility::generateResponse($ret->toArray(), [], Messages::PAYMENT_PROCESSED);
     }
 
     public function refund(Transaction $transaction, Float $amount) : PaymentProcessorResponse
@@ -250,11 +253,14 @@ class PaypalProcessor extends BasePaymentProcessor
 
     private function ensureSuccess (Array $response, Array $data = [])
     {
-        if (! isset($response['ACK']) || $response['ACK'] != 'Success')
+        if (isset($response['ACK']))
         {
-            Log::error("Unexpected response from Paypal API: " . http_build_query($response) . "\n for data: " . http_build_query($data));
-            throw new UserFriendlyException(Errors::PAYPAL_API_ERROR, ResponseType::SERVICE_UNAVAILABLE);
+            if ($response['ACK'] == 'Success' || $response['ACK'] == 'SuccessWithWarning')
+                return true;
         }
+
+        Log::error("Unexpected response from Paypal API: " . http_build_query($response) . "\n for data: " . http_build_query($data));
+        throw new UserFriendlyException(Errors::PAYPAL_API_ERROR, ResponseType::SERVICE_UNAVAILABLE);
     }
     private function createRecurringPaymentsProfile(Invoice $invoice, String $token)
     {

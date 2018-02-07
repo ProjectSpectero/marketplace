@@ -8,7 +8,7 @@ use App\Constants\Events;
 use App\Events\BillingEvent;
 use App\Libraries\Utility;
 
-class BillingListener extends BaseListener
+class BillingEventListener extends BaseListener
 {
     /**
      * Create the event listener.

@@ -5,7 +5,7 @@ namespace App\Listeners;
 
 use App\Events\FraudCheckEvent;
 
-class FraudCheckListener extends BaseListener
+class FraudCheckEventListener extends BaseListener
 {
     /**
      * Create the event listener.

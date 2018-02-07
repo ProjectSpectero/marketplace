@@ -44,12 +44,11 @@ class PaymentController extends V1Controller
     public function callback (Request $request, String $processor)
     {
         $paymentProcessor = $this->resolveProcessor($processor);
-        $rules = $paymentProcessor->getCallbackRules();
 
+        $rules = $paymentProcessor->getCallbackRules();
         $this->validate($request, $rules);
-        $response = $paymentProcessor->callback($request);
-        // Else we call the stripe processor
-        return $response;
+
+        return $paymentProcessor->callback($request);
     }
 
     /**
@@ -84,6 +83,9 @@ class PaymentController extends V1Controller
     public function subscribe (Request $request, String $processor, int $orderId) : JsonResponse
     {
         $order = Order::findOrFail($orderId);
+
+        if ($order->due_next->isPast())
+            throw new UserFriendlyException(Errors::SERVICE_OVERDUE);
 
         $paymentProcessor = $this->resolveProcessor($processor);
         $response = $paymentProcessor->subscribe($order);

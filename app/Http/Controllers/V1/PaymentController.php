@@ -30,6 +30,10 @@ class PaymentController extends V1Controller
     {
         $invoice = Invoice::findOrFail($invoiceId);
 
+        // TODO: before proceeding further, check that if the invoice has an order associated with it
+        // All the desired items of that order are still available to be purchased
+        // If not, invoice and order should both be cancelled, with an explanation sent to the user.
+
         $paymentProcessor = $this->resolveProcessor($processor);
         $response = $paymentProcessor->process($invoice);
 

@@ -26,6 +26,10 @@ class CreateInvoicesTable extends Migration
 
             $table->string('status');
             $table->date('due_date');
+
+            $table->mediumText('notes')
+                ->nullable();
+
             $table->timestamps();
         });
     }

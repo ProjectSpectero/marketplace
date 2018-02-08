@@ -30,7 +30,7 @@ class EmailChangeNew extends BaseMail
 
     public function build()
     {
-        $url = Utility::generateUrl('v1/user/verify/' . $this->user->email . '/' . $this->verifyToken, 'frontend');
+        $url = Utility::generateUrl('verify/' . $this->user->email . '/' . $this->verifyToken, 'frontend');
 
         return $this->subject("Email successfully changed")
             ->view('emails.EmailChangeNew', [

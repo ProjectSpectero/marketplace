@@ -59,12 +59,12 @@ class UsersTableSeeder extends Seeder
             UserMeta::addOrUpdateMeta($user,UserMetaKeys::AddressLineOne, env('LEGAL_COMPANY_ADDRESS_PARTIAL_1'));
             UserMeta::addOrUpdateMeta($user,UserMetaKeys::AddressLineTwo, env('LEGAL_COMPANY_ADDRESS_PARTIAL_2'));
             UserMeta::addOrUpdateMeta($user,UserMetaKeys::Organization, 'Spectero');
-            UserMeta::addOrUpdateMeta($user, UserMetaKeys::TaxIdentification, 'taxId');
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::TaxIdentification, 'FRC-3-612A1521');
             UserMeta::addOrUpdateMeta($user, UserMetaKeys::PreferredCurrency, 'USD');
-            UserMeta::addOrUpdateMeta($user, UserMetaKeys::City, 'Example City');
-            UserMeta::addOrUpdateMeta($user, UserMetaKeys::State, 'Example State');
-            UserMeta::addOrUpdateMeta($user, UserMetaKeys::Country, 'Example Country');
-            UserMeta::addOrUpdateMeta($user, UserMetaKeys::PostCode, 1234);
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::City, 'Shinagawa-ku');
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::State, 'Tokyo');
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::Country, 'JP');
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::PostCode, 68005);
         }
         catch (\App\Errors\FatalException $e)
         {

@@ -122,10 +122,8 @@ class InvoiceController extends CRUDController
         return $this->respond($invoice->toArray());
     }
 
-
-    public function render (Request $request, int $id)
+    public function renderInvoice (Invoice $invoice) : string
     {
-        $invoice = Invoice::findOrFail($id);
         $user = $invoice->order->user;
 
         try
@@ -156,7 +154,6 @@ class InvoiceController extends CRUDController
         $formattedUserAddress .= PHP_EOL . $city . ', ' . $state . ', ' . $postCode;
         $formattedUserAddress .= PHP_EOL . $country;
 
-//        $this->authorizeResource($invoice, 'invoice.pdf');
         return View::make('invoice', [
             'invoice' => $invoice,
             'lineItems' => $invoice->order->lineItems,
@@ -165,6 +162,15 @@ class InvoiceController extends CRUDController
             'organization' => $organization,
             'transactions' => $invoice->transactions,
         ]);
+    }
+
+    public function render (Request $request, int $id)
+    {
+        $invoice = Invoice::findOrFail($id);
+
+        //$this->authorizeResource($invoice, 'invoice.pdf');
+
+        return $this->renderInvoice($invoice);
     }
 
     private function getMetaValueIfNotNull (Model $model)

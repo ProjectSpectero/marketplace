@@ -125,6 +125,7 @@ $app->middleware([
     $app->register(Srmklive\PayPal\Providers\PayPalServiceProvider::class);
     $app->register(\Illuminate\Mail\MailServiceProvider::class);
     $app->register(Nord\Lumen\Cors\CorsServiceProvider::class);
+    $app->register(Cartalyst\Stripe\Laravel\StripeServiceProvider::class);
 
 
 /*
@@ -149,6 +150,7 @@ if (!class_exists('PayPal'))
 }
 
 $app->alias('mailer', \Illuminate\Contracts\Mail\Mailer::class);
+$app->alias('Stripe', Cartalyst\Stripe\Laravel\Facades\Stripe::class);
 
 /*
 |--------------------------------------------------------------------------

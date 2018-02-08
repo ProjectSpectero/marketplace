@@ -8,6 +8,8 @@ use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
+use App\Libraries\PaginationManager;
+use App\Libraries\SearchManager;
 use App\UserMeta;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -23,6 +25,20 @@ class InvoiceController extends CRUDController
     {
         $this->resource = 'invoice';
     }
+
+    public function index(Request $request): JsonResponse
+    {
+        $rules = [
+            'searchId' => 'sometimes|alphanum'
+        ];
+
+        $this->validate($request, $rules);
+
+        $queryBuilder = SearchManager::process($request, 'invoice');
+
+        return PaginationManager::paginate($request, $queryBuilder);
+    }
+
 
     public function store(Request $request): JsonResponse
     {

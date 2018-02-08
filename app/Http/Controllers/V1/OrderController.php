@@ -4,12 +4,27 @@ namespace App\Http\Controllers\V1;
 
 use App\Constants\Messages;
 use App\Constants\ResponseType;
+use App\Libraries\PaginationManager;
+use App\Libraries\SearchManager;
 use App\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class OrderController extends CRUDController
 {
+    public function index(Request $request): JsonResponse
+    {
+        $rules = [
+            'searchId' => 'sometimes|alphanum'
+        ];
+
+        $this->validate($request, $rules);
+
+        $queryBuilder = SearchManager::process($request, 'order');
+
+        return PaginationManager::paginate($request, $queryBuilder);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $rules = [

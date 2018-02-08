@@ -17,7 +17,7 @@ $factory->define(App\Order::class, function (Faker\Generator $faker) {
     return [
         'user_id' => mt_rand(1, 6),
         'status' => \App\Constants\OrderStatus::ACTIVE,
-        'subscription_reference' => $faker->unique()->word,
+        'subscription_reference' => \App\Libraries\Utility::getRandomString(),
         'subscription_provider' => array_random(\App\Constants\PaymentProcessor::getConstants()),
     ];
 });

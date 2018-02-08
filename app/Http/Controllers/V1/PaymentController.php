@@ -15,6 +15,7 @@ use App\Errors\UserFriendlyException;
 use App\Invoice;
 use App\Libraries\Payment\IPaymentProcessor;
 use App\Libraries\Payment\PaypalProcessor;
+use App\Libraries\Payment\StripeProcessor;
 use App\Order;
 use App\Transaction;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -112,7 +113,7 @@ class PaymentController extends V1Controller
                 return new PaypalProcessor();
 
             case strtolower(PaymentProcessor::STRIPE):
-                return null;
+                return new StripeProcessor();
 
             default:
                 throw new FatalException(Errors::COULD_NOT_RESOLVE_PAYMENT_PROCESSOR);

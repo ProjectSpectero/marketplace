@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
+
+    protected $with = ['lineItems'];
+
     public function lineItems()
     {
         return $this->hasMany(OrderLineItem::class);

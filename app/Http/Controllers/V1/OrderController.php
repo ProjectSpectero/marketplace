@@ -96,7 +96,8 @@ class OrderController extends CRUDController
     {
         $user = $request->user();
 
-        return Order::where('user_id', '=', $user->id)->get();
+        return Order::where('user_id', '=', $user->id)
+            ->get();
     }
 
 }

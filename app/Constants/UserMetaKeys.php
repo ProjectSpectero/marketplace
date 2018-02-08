@@ -18,6 +18,7 @@ class UserMetaKeys extends Holder
     const TwoFactorEnabled = 'tfa.enabled';
     const OldEmailAddress = 'old_email_address';
     const VerifyToken = 'verify_token';
+    const StripeCustomerIdentifier = 'stripe_custom_identifier';
 
     static function getPublicMetaKeys()
     {

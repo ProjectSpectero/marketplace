@@ -41,21 +41,9 @@ class AuthController extends V1Controller
             // FirstOrFail not needed, oAuth succeeded, this user exists.
             $user = User::where('email', $email)->first();
 
-            if ($user->status != UserStatus::ACTIVE)
-            {
-                switch ($user->status)
-                {
-                    case UserStatus::EMAIL_VERIFICATION_NEEDED:
-                        $error = Errors::EMAIL_VERIFICATION_NEEDED;
-                        break;
-                    default:
-                        // Yeah -_-
-                        $error = Errors::AUTHENTICATION_NOT_ALLOWED;
-                        break;
-                }
-
+            $error = Utility::resolveStatusError($user);
+            if (! empty($error))
                 return $this->respond(null, [ $error ], Errors::REQUEST_FAILED, ResponseType::FORBIDDEN);
-            }
 
             try
             {

@@ -3,7 +3,10 @@
 namespace App\Libraries;
 
 use App\Constants\CRUDActions;
+use App\Constants\Errors;
 use App\Constants\ResponseType;
+use App\Constants\UserStatus;
+use App\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Laravel\Lumen\Routing\Router;
@@ -101,7 +104,7 @@ class Utility
         return isset($databag['error']) ? $databag['error'] : null;
     }
 
-    public static function generateUrl (String $path, String $deployment = 'backend')
+    public static function generateUrl (String $path, String $deployment = 'backend') : string
     {
         $base = env('APP_URL') . '/';
         $base .= $deployment == 'backend' ? env('API_VERSION') : '';
@@ -109,4 +112,20 @@ class Utility
 
         return $base;
     }
+
+    public static function resolveStatusError (User $user) : string
+    {
+        switch ($user->status)
+        {
+            case UserStatus::EMAIL_VERIFICATION_NEEDED:
+                return Errors::EMAIL_VERIFICATION_NEEDED;
+            case UserStatus::ACTIVE:
+                return "";
+            default:
+                // Yeah -_-
+                return Errors::AUTHENTICATION_NOT_ALLOWED;
+                break;
+        }
+    }
+
 }

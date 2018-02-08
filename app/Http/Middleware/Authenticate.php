@@ -42,9 +42,10 @@ class Authenticate
         if ($this->auth->guard($guard)->guest())
             return Utility::generateResponse(null, [ Errors::UNAUTHORIZED ], null, 'v1', ResponseType::NOT_AUTHORIZED);
 
-        if ($request->user()->status !== UserStatus::ACTIVE)
-            return Utility::generateResponse(null, [ Errors::AUTHENTICATION_NOT_ALLOWED . ':' . $request->user()->status ],
-                                             null, 'v1', ResponseType::FORBIDDEN);
+        $error = Utility::resolveStatusError($request->user());
+        if (! empty($error))
+            return Utility::generateResponse(null, [ $error ], Errors::REQUEST_FAILED, 'v1',
+                                                    ResponseType::FORBIDDEN);
 
         return $next($request);
     }

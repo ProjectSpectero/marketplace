@@ -3,9 +3,7 @@
 namespace App;
 
 use App\Constants\UserMetaKeys;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use App\Libraries\Utility;
 use App\Traits\MetaTrait;
 
 class UserMeta extends Model

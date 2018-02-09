@@ -23,4 +23,9 @@ class Order extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public static function findForUser (int $id)
+    {
+        return static::where('user_id', $id);
+    }
 }

@@ -17,4 +17,9 @@ class Invoice extends Model
     {
         return $this->hasMany(Transaction::class);
     }
+
+    public static function findForUser (int $id)
+    {
+        return static::where('user_id', $id);
+    }
 }

@@ -95,9 +95,6 @@ class OrderController extends CRUDController
     public function self(Request $request)
     {
         $user = $request->user();
-
-        return Order::where('user_id', '=', $user->id)
-            ->get();
+        return PaginationManager::paginate($request, Order::findForUser($user->id));
     }
-
 }

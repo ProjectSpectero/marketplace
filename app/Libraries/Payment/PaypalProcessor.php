@@ -175,7 +175,7 @@ class PaypalProcessor extends BasePaymentProcessor
 
     public function refund(Transaction $transaction, Float $amount) : PaymentProcessorResponse
     {
-        $refundResponse =  $this->provider->refundTransaction($transaction->id, $amount);
+        $refundResponse =  $this->provider->refundTransaction($transaction->reference, $amount);
 
         if ($amount < $transaction->amount)
             $reason = TransactionReasons::PARTIAL_REFUND;
@@ -187,7 +187,7 @@ class PaypalProcessor extends BasePaymentProcessor
         // TODO: transaction->reference is WRONG, the refund has its own ID. Figure it out
         if ($refundResponse['ACK'] == 'Success')
         {
-            $transactionId = 'refundTxnId';
+            $transactionId = $refundResponse['REFUNDTRANSACTIONID'];
             $raw = json_encode($refundResponse);
 
             $ret = $this->addTransaction($this, $transaction->invoice,

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\V1;
 
 
 use App\Constants\Errors;
+use App\Constants\InvoiceStatus;
 use App\Constants\Messages;
 use App\Constants\PaymentProcessor;
 use App\Constants\PaymentType;
@@ -31,11 +32,17 @@ class PaymentController extends V1Controller
     {
         $invoice = Invoice::findOrFail($invoiceId);
 
+        if ($invoice->status !== InvoiceStatus::UNPAID)
+            throw new UserFriendlyException(Errors::INVOICE_ALREADY_PAID, ResponseType::BAD_REQUEST);
+
         // TODO: before proceeding further, check that if the invoice has an order associated with it
         // All the desired items of that order are still available to be purchased
         // If not, invoice and order should both be cancelled, with an explanation sent to the user.
 
-        $paymentProcessor = $this->resolveProcessor($processor);
+        $paymentProcessor = $this->resolveProcessor($processor, $request);
+        $rules = $paymentProcessor->getValidationRules('process');
+        $this->validate($request, $rules);
+
         $response = $paymentProcessor->process($invoice);
 
         return $this->respond($response->toArray(), [], Messages::INVOICE_PROCESSED);
@@ -49,9 +56,9 @@ class PaymentController extends V1Controller
      */
     public function callback (Request $request, String $processor)
     {
-        $paymentProcessor = $this->resolveProcessor($processor);
+        $paymentProcessor = $this->resolveProcessor($processor, $request);
 
-        $rules = $paymentProcessor->getCallbackRules();
+        $rules = $paymentProcessor->getValidationRules('callback');
         $this->validate($request, $rules);
 
         return $paymentProcessor->callback($request);
@@ -81,7 +88,7 @@ class PaymentController extends V1Controller
         if ($transaction->type !== PaymentType::CREDIT)
             throw new UserFriendlyException(Errors::COULD_NOT_REFUND_NON_CREDIT_TXN);
 
-        $paymentProcessor = $this->resolveProcessor($transaction->payment_processor);
+        $paymentProcessor = $this->resolveProcessor($transaction->payment_processor, $request);
         $response = $paymentProcessor->refund($transaction, $amount);
 
         return $this->respond($response->toArray(), [], Messages::REFUND_ISSUED);
@@ -105,15 +112,15 @@ class PaymentController extends V1Controller
         throw new NotSupportedException();
     }
 
-    private function resolveProcessor (String $processor) : IPaymentProcessor
+    private function resolveProcessor (String $processor, Request $request) : IPaymentProcessor
     {
-        switch ($processor)
+        switch (strtolower($processor))
         {
             case strtolower(PaymentProcessor::PAYPAL):
-                return new PaypalProcessor();
+                return new PaypalProcessor($request);
 
             case strtolower(PaymentProcessor::STRIPE):
-                return new StripeProcessor();
+                return new StripeProcessor($request);
 
             default:
                 throw new FatalException(Errors::COULD_NOT_RESOLVE_PAYMENT_PROCESSOR);

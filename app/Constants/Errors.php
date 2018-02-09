@@ -54,7 +54,10 @@ class Errors extends Holder
 
     // Paypal related
 
-    const PAYPAL_API_ERROR = 'PAYPAL_API_ERROR';
+    // Stripe related
+
+    const INVALID_STRIPE_TOKEN = 'INVALID_STRIPE_TOKEN';
+    const PAYMENT_FAILED = 'PAYMENT_FAILED';
 
     // Validation
     const FIELD_REQUIRED = 'FIELD_REQUIRED';

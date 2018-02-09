@@ -4,6 +4,7 @@
 namespace App\Libraries\Payment;
 use App\Constants\Errors;
 use App\Constants\Events;
+use App\Constants\PaymentType;
 use App\Constants\ResponseType;
 use App\Errors\UserFriendlyException;
 use App\Events\BillingEvent;
@@ -28,7 +29,8 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
     public function addTransaction (IPaymentProcessor $processor, Invoice $invoice,
                                     Float $amount, Float $fee,
                                     String $transactionId, String $transactionType,
-                                    String $reason, String $rawData) : Transaction
+                                    String $reason, String $rawData,
+                                    int $originalTransactionId = -1) : Transaction
     {
         $transaction = new Transaction();
         $transaction->invoice_id = $invoice->id;
@@ -40,6 +42,9 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
         $transaction->fee = $fee;
         $transaction->currency = $invoice->currency;
         $transaction->raw_response = $rawData;
+
+        if ($originalTransactionId != -1)
+            $transaction->original_transaction_id = $originalTransactionId;
 
         $transaction->saveOrFail();
 
@@ -79,7 +84,9 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
     {
         $lowestAllowedAmount = env('LOWEST_ALLOWED_PAYMENT', 5);
 
-        $amount = $invoice->amount - $invoice->transactions->sum('amount');
+        $amount = $invoice->amount - $invoice->transactions
+                    ->where('type', PaymentType::CREDIT)
+                    ->sum('amount');
 
         if ($amount <= 0)
             throw new UserFriendlyException(Errors::INVOICE_ALREADY_PAID, ResponseType::BAD_REQUEST);

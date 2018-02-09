@@ -19,4 +19,5 @@ interface IPaymentProcessor
     function refund (Transaction $transaction, Float $amount) : PaymentProcessorResponse;
     function subscribe (Order $order) : PaymentProcessorResponse;
     function unSubscribe (Order $order) : PaymentProcessorResponse;
+    function getValidationRules(String $method): array;
 }

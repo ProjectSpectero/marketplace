@@ -7,6 +7,7 @@ use App\Constants\Errors;
 use App\Constants\Messages;
 use App\Constants\PaymentProcessor;
 use App\Constants\PaymentProcessorResponseType;
+use App\Constants\RedirectType;
 use App\Constants\ResponseType;
 use App\Constants\TransactionReasons;
 use App\Errors\NotSupportedException;
@@ -26,16 +27,18 @@ class PaypalProcessor extends BasePaymentProcessor
 {
     private $provider;
     private $invoice;
+    private $request;
 
     /**
      * PaypalProcessor constructor.
      */
-    public function __construct()
+    public function __construct(Request $request)
     {
         if (env('PAYPAL_ENABLED', false) != true)
             throw new UserFriendlyException(Messages::PAYMENT_PROCESSOR_NOT_ENABLED, ResponseType::BAD_REQUEST);
 
         $this->provider = PayPal::setProvider('express_checkout');
+        $this->request = $request;
     }
 
     function process(Invoice $invoice) : PaymentProcessorResponse
@@ -50,8 +53,9 @@ class PaypalProcessor extends BasePaymentProcessor
 
         $wrappedResponse = new PaymentProcessorResponse();
         $wrappedResponse->type = PaymentProcessorResponseType::REDIRECT;
+        $wrappedResponse->subtype = RedirectType::EXTERNAL;
+        $wrappedResponse->method = 'GET';
         $wrappedResponse->redirectUrl = $response['paypal_link'];
-        $wrappedResponse->raw = $response;
 
         return $wrappedResponse;
     }
@@ -178,10 +182,29 @@ class PaypalProcessor extends BasePaymentProcessor
         else
             $reason = TransactionReasons::REFUND;
 
-        if ($refundResponse['ACK'] == 'Success')
-            $this->addTransaction($this, $transaction->invoice, $amount, $transaction->reference, PaymentType::DEBIT, $reason);
+        $wrappedResponse = new PaymentProcessorResponse();
 
-        return $refundResponse;
+        // TODO: transaction->reference is WRONG, the refund has its own ID. Figure it out
+        if ($refundResponse['ACK'] == 'Success')
+        {
+            $transactionId = 'refundTxnId';
+            $raw = json_encode($refundResponse);
+
+            $ret = $this->addTransaction($this, $transaction->invoice,
+                                         $amount, 0.00,
+                                         $transactionId, PaymentType::DEBIT,
+                                         $reason, $raw,
+                                         $transaction->id);
+            $ret->raw_response = null;
+
+            $wrappedResponse->type = PaymentProcessorResponseType::SUCCESS;
+            $wrappedResponse->raw = $ret;
+        }
+
+        if (is_null($wrappedResponse->type))
+            $wrappedResponse->type = PaymentProcessorResponseType::FAILURE;
+
+        return $wrappedResponse;
     }
 
     public function subscribe(Order $order) : PaymentProcessorResponse
@@ -260,7 +283,7 @@ class PaypalProcessor extends BasePaymentProcessor
         }
 
         Log::error("Unexpected response from Paypal API: " . http_build_query($response) . "\n for data: " . http_build_query($data));
-        throw new UserFriendlyException(Errors::PAYPAL_API_ERROR, ResponseType::SERVICE_UNAVAILABLE);
+        throw new UserFriendlyException(Errors::PAYMENT_FAILED, ResponseType::SERVICE_UNAVAILABLE);
     }
     private function createRecurringPaymentsProfile(Invoice $invoice, String $token)
     {
@@ -286,11 +309,18 @@ class PaypalProcessor extends BasePaymentProcessor
         return PaymentProcessor::PAYPAL;
     }
 
-    public function getCallbackRules()
+    public function getValidationRules (String $method) : array
     {
-        return [
-            'token' => 'required',
-            'mode' => 'required'
-        ];
+        switch ($method)
+        {
+            case 'callback':
+                return [
+                    'token' => 'required',
+                    'mode' => 'required'
+                ];
+
+            default:
+                return [];
+        }
     }
 }

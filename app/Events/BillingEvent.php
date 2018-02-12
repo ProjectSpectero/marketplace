@@ -4,8 +4,6 @@
 namespace App\Events;
 
 
-use App\Transaction;
-
 class BillingEvent extends Event
 {
     public $data;

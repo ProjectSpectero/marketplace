@@ -21,6 +21,7 @@ class UserMetaKeys extends Holder
 
     const StripeCustomerIdentifier = 'stripe_customer_identifier';
     const StripeCardToken = 'stripe_card_token';
+    const StoredCardIdentifier = 'stored_card_identifier';
 
     static function getPublicMetaKeys()
     {
@@ -34,7 +35,8 @@ class UserMetaKeys extends Holder
             self::PhoneNumber,
             self::TaxIdentification,
             self::Organization,
-            self::TwoFactorEnabled
+            self::TwoFactorEnabled,
+            self::StoredCardIdentifier,
         ];
     }
 }

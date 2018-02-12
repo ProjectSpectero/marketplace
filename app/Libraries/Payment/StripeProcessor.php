@@ -21,6 +21,7 @@ use App\Transaction;
 use App\User;
 use App\UserMeta;
 use Cartalyst\Stripe\Exception\MissingParameterException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,9 +57,33 @@ class StripeProcessor extends BasePaymentProcessor
         $dueAmount = $this->getDueAmount($invoice);
 
         $user = $this->request->user();
-        $token = $this->request->get('stripeToken');
+        $save = $this->request->has('save') ? (bool) $this->request->get('save') : false;
 
-        $customerId = $this->resolveCustomer($user, $token);
+        $token = null;
+
+        if ($this->request->has('stripeToken'))
+        {
+            $token = $this->request->get('stripeToken');
+            $customerId = $this->resolveCustomer($user, $token, $save);
+        }
+        else
+        {
+            // Let's see if customer has a saved token instead.
+            $customerId = UserMeta::loadMeta($user, UserMetaKeys::StripeCustomerIdentifier);
+        }
+
+        if ($customerId == null && $token == null)
+            throw new UserFriendlyException(Errors::INVALID_STRIPE_TOKEN);
+
+        // This builder check is completely idiotic, but necessary because Eloquent scopes cannnot return null.
+        if ($customerId instanceof Builder)
+            throw new UserFriendlyException(Errors::NO_STORED_CARD);
+
+
+
+        if ($customerId instanceof UserMeta)
+            $customerId = $customerId->meta_value;
+
 
         $metadata = [
             'invoiceId' => $invoice->id,
@@ -67,16 +92,22 @@ class StripeProcessor extends BasePaymentProcessor
 
         try
         {
+            $descriptor = [
+                'currency' => $invoice->currency,
+                'amount'   => $dueAmount,
+                'statement_descriptor' => env('COMPANY_NAME', 'Spectero') . ' Invoice ' . $invoice->id,
+                'metadata' => $metadata,
+                'expand' => [ "balance_transaction" ]
+            ];
+
+            if (! is_null($customerId))
+                $descriptor['customer'] = $customerId;
+            else
+                $descriptor['source'] = $token;
+
             $charge = $this->provider
                 ->charges()
-                ->create([
-                             'customer' => $customerId,
-                             'currency' => $invoice->currency,
-                             'amount'   => $dueAmount,
-                             'statement_descriptor' => env('COMPANY_NAME', 'Spectero') . ' Invoice ' . $invoice->id,
-                             'metadata' => $metadata,
-                             'expand' => [ "balance_transaction" ]
-                         ]);
+                ->create($descriptor);
         }
         catch (MissingParameterException $silenced)
         {
@@ -84,6 +115,14 @@ class StripeProcessor extends BasePaymentProcessor
         }
 
         $this->ensureSuccess($charge);
+
+        if ($save)
+        {
+            $cardIdentifier = $charge['source']['brand'] . ' ' . $charge['source']['last4'];
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::StoredCardIdentifier, $cardIdentifier);
+        }
+
+        // TODO: integrate fraud check here before accepting transaction.
 
         $transactionId = $charge['id'];
         $amount = $charge['amount'] / 100;
@@ -151,7 +190,7 @@ class StripeProcessor extends BasePaymentProcessor
         // TODO: Implement unSubscribe() method.
     }
 
-    private function resolveCustomer (User $user, String $token)
+    private function resolveCustomer (User $user, String $token, bool $save = false)
     {
         $metaloaded = false;
 
@@ -169,8 +208,12 @@ class StripeProcessor extends BasePaymentProcessor
                              'source' => $token
                          ]);
 
-            UserMeta::addOrUpdateMeta($user, UserMetaKeys::StripeCustomerIdentifier, $customer['id']);
-            UserMeta::addOrUpdateMeta($user, UserMetaKeys::StripeCardToken, $token);
+            if ($save)
+            {
+                UserMeta::addOrUpdateMeta($user, UserMetaKeys::StripeCustomerIdentifier, $customer['id']);
+                UserMeta::addOrUpdateMeta($user, UserMetaKeys::StripeCardToken, $token);
+            }
+
             $customerId = $customer['id'];
         }
 
@@ -207,7 +250,8 @@ class StripeProcessor extends BasePaymentProcessor
         {
             case 'process':
                 return [
-                    'stripeToken' => 'required',
+                    'stripeToken' => 'sometimes|alpha_dash',
+                    'save' => 'sometimes|boolean'
                 ];
 
             default:

@@ -52,12 +52,14 @@ class Errors extends Holder
     const COULD_NOT_REFUND_NON_CREDIT_TXN = 'COULD_NOT_REFUND_NON_CREDIT_TXN';
     const SERVICE_OVERDUE = 'SERVICE_OVERDUE';
 
+    // Billing and payment processing
+    const PAYMENT_FAILED = 'PAYMENT_FAILED';
+
     // Paypal related
 
     // Stripe related
-
     const INVALID_STRIPE_TOKEN = 'INVALID_STRIPE_TOKEN';
-    const PAYMENT_FAILED = 'PAYMENT_FAILED';
+    const NO_STORED_CARD = 'NO_STORED_CARD';
 
     // Validation
     const FIELD_REQUIRED = 'FIELD_REQUIRED';
@@ -66,5 +68,7 @@ class Errors extends Holder
     const FIELD_MINLENGTH = 'FIELD_MINLENGTH';
     const FIELD_EMAIL = 'FIELD_EMAIL';
     const FIELD_ALPHANUM = 'FIELD_ALPHANUM';
+    const FIELD_ALPHADASH = 'FIELD_ALPHADASH';
     const FIELD_COUNTRY = 'FIELD_COUNTRY';
+    const FIELD_BOOLEAN = 'FIELD_BOOLEAN';
 }

@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+
 <!--
   Invoice template by invoicebus.com
   To customize this template consider following this guide https://invoicebus.com/how-to-create-invoice-template/
   This template is under Invoicebus Template License, see https://invoicebus.com/templates/license/
 -->
-<html lang="en">
+
 <head>
     <meta charset="utf-8">
     <title>Easy (corporate)</title>
@@ -385,6 +385,16 @@
 
 </style>
 <body>
+
+@if ($invoice->status == \App\Constants\InvoiceStatus::PAID)
+    <p>Thank you for your purchase</p>
+
+    <p>This is an automatically generated message to confirm receipt of your order</p>
+    <p>You do not need to reply to this e-mail, but you may wish to save it for your records.</p>
+
+    <p>Bellow you will find a copy of the invoice of your recent order</p>
+@endif
+
 <div id="container">
     <div class="left-stripes">
         <div class="circle c-upper"></div>
@@ -555,4 +565,4 @@
 
 {{--<script src="http://cdn.invoicebus.com/generator/generator.min.js?data=data.js"></script>--}}
 </body>
-</html>
+

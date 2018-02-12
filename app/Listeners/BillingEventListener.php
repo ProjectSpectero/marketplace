@@ -9,6 +9,8 @@ use App\Constants\InvoiceStatus;
 use App\Constants\PaymentType;
 use App\Events\BillingEvent;
 use App\Libraries\Utility;
+use App\Mail\InvoicePaid;
+use Illuminate\Support\Facades\Mail;
 
 class BillingEventListener extends BaseListener
 {
@@ -49,6 +51,10 @@ class BillingEventListener extends BaseListener
                             // Invoice can now be marked as paid, activate any associated orders
                             $invoice->status = InvoiceStatus::PAID;
                             $invoice->saveOrFail();
+
+                            $user = $invoice->order->user;
+
+                            Mail::to($user->email)->queue(new InvoicePaid($invoice));
 
                             // TODO: perform order activation here
                         }

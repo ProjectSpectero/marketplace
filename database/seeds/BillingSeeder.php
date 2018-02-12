@@ -77,6 +77,7 @@ class BillingSeeder extends Seeder
         $invoice = new \App\Invoice();
         $invoice->id = mt_rand(1, 10000);
         $invoice->order_id = 1;
+        $invoice->user_id = 6;
         $invoice->amount = 17.80;
         $invoice->currency = \App\Constants\Currency::USD;
         $invoice->status = \App\Constants\InvoiceStatus::UNPAID;
@@ -85,6 +86,7 @@ class BillingSeeder extends Seeder
         $invoice = new \App\Invoice();
         $invoice->id = mt_rand(1, 10000);
         $invoice->order_id = 2;
+        $invoice->user_id = 6;
         $invoice->amount = 6.20;
         $invoice->currency = \App\Constants\Currency::USD;
         $invoice->status = \App\Constants\InvoiceStatus::UNPAID;
@@ -93,6 +95,7 @@ class BillingSeeder extends Seeder
         $invoice = new \App\Invoice();
         $invoice->id = mt_rand(1, 10000);
         $invoice->order_id = 3;
+        $invoice->user_id = 6;
         $invoice->amount = 26.20;
         $invoice->currency = \App\Constants\Currency::USD;
         $invoice->status = \App\Constants\InvoiceStatus::UNPAID;
@@ -101,6 +104,7 @@ class BillingSeeder extends Seeder
         $invoice = new \App\Invoice();
         $invoice->id = mt_rand(1, 10000);
         $invoice->order_id = 4;
+        $invoice->user_id = 6;
         $invoice->amount = 109.60;
         $invoice->currency = \App\Constants\Currency::USD;
         $invoice->status = \App\Constants\InvoiceStatus::UNPAID;
@@ -109,6 +113,7 @@ class BillingSeeder extends Seeder
         $invoice = new \App\Invoice();
         $invoice->id = mt_rand(1, 10000);
         $invoice->order_id = 5;
+        $invoice->user_id = 6;
         $invoice->amount = 10.00;
         $invoice->currency = \App\Constants\Currency::USD;
         $invoice->status = \App\Constants\InvoiceStatus::UNPAID;

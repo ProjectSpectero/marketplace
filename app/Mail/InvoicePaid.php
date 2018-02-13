@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Http\Controllers\V1\InvoiceController;
 use App\Invoice;
+use App\Libraries\Utility;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -34,9 +35,12 @@ class InvoicePaid extends Mailable
     {
         $invoiceController = new InvoiceController();
         $invoice = $invoiceController->renderInvoice($this->invoice);
+
+        $invoiceUrl = Utility::generateUrl('invoice/' . $this->invoice->id . '/render', 'frontend');
+
         return $this->subject('Thank you for your purchase')
             ->view('PaidInvoice', [
-                'invoice' => $invoice
+                'invoiceUrl' => $invoiceUrl
             ]);
     }
 }

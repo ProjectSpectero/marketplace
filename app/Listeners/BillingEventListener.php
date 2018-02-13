@@ -52,7 +52,7 @@ class BillingEventListener extends BaseListener
                             $invoice->status = InvoiceStatus::PAID;
                             $invoice->saveOrFail();
 
-                            $user = $invoice->order->user;
+                            $user = $invoice->user;
 
                             Mail::to($user->email)->queue(new InvoicePaid($invoice));
 

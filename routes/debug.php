@@ -10,8 +10,15 @@
 
 /** @var \Laravel\Lumen\Routing\Router $router */
 
+use App\Invoice;
+use App\Mail\InvoicePaid;
+
 $router->group(['prefix' => 'debug', 'namespace' => 'V1' ], function($api)
 {
     /** @var \Laravel\Lumen\Routing\Router $api */
-    $api->get('/test', [ 'middleware' => [ 'auth:api', 'cors' ], 'uses' => 'DebugController@test' ]);
+    $api->get('/test', function ()
+    {
+        $invoice = Invoice::find(6914);
+        return new InvoicePaid($invoice);
+    });
 });

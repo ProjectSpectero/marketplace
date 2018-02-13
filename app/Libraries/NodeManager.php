@@ -8,11 +8,13 @@ use App\Constants\Events;
 use App\Constants\ResponseType;
 use App\Constants\ServiceType;
 use App\Errors\FatalException;
+use App\Errors\UserFriendlyException;
 use App\Events\NodeEvent;
 use App\Node;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
+use Illuminate\Support\Facades\Validator;
 
 class NodeManager
 {
@@ -149,6 +151,24 @@ class NodeManager
         $localEndpoint = $this->getUrl('service/' . $serviceName . '/' . $actionName);
 
         return $this->request('get', $localEndpoint);
+    }
+
+    public function dumpSystemConfig()
+    {
+        $rules = [
+
+        ];
+
+        $url = env('DAEMON_URL') . '/v1/cloud/config';
+
+        $response = $this->request('get', $url);
+
+        $validator = Validator::make($response, $rules);
+
+        if ($validator->fails())
+            throw new UserFriendlyException(Errors::COULD_NOT_DUMP_CONFIG);
+
+        return $response;
     }
 
     private function validateServiceAction (String $actionName)

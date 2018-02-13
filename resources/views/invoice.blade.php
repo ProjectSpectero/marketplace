@@ -386,15 +386,6 @@
 </style>
 <body>
 
-@if ($invoice->status == \App\Constants\InvoiceStatus::PAID)
-    <p>Thank you for your purchase</p>
-
-    <p>This is an automatically generated message to confirm receipt of your order</p>
-    <p>You do not need to reply to this e-mail, but you may wish to save it for your records.</p>
-
-    <p>Bellow you will find a copy of the invoice of your recent order</p>
-@endif
-
 <div id="container">
     <div class="left-stripes">
         <div class="circle c-upper"></div>

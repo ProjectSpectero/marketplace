@@ -7,16 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
 
-    protected $with = ['lineItems'];
+    protected $with = ['lineItems', 'lastInvoice'];
 
     public function lineItems()
     {
         return $this->hasMany(OrderLineItem::class);
     }
 
-    public function invoice()
+    public function lastInvoice()
     {
-        return $this->hasOne(Invoice::class);
+        return $this->hasOne(Invoice::class, 'id', 'last_invoice_id');
     }
 
     public function user()
@@ -28,4 +28,6 @@ class Order extends Model
     {
         return static::where('user_id', $id);
     }
+
+
 }

@@ -40,7 +40,8 @@ class InvoicePaid extends Mailable
 
         return $this->subject('Thank you for your purchase')
             ->view('PaidInvoice', [
-                'invoiceUrl' => $invoiceUrl
+                'invoiceUrl' => $invoiceUrl,
+                'transaction' => $this->invoice->transactions->first()
             ]);
     }
 }

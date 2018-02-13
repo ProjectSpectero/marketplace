@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Invoice extends Model
 {
-    protected $casts = ['amount' => 'float'];
+    protected $casts = [ 'amount' => 'float', 'tax' => 'float' ];
+    protected $with = [ 'transactions' ];
 
     public function order()
     {

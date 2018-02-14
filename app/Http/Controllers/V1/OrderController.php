@@ -12,8 +12,15 @@ use Illuminate\Http\Request;
 
 class OrderController extends CRUDController
 {
+    public function __construct()
+    {
+        $this->resource = 'order';
+    }
+
     public function index(Request $request): JsonResponse
     {
+        $this->authorizeResource();
+
         $rules = [
             'searchId' => 'sometimes|alphanum'
         ];
@@ -27,6 +34,8 @@ class OrderController extends CRUDController
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorizeResource();
+
         $rules = [
             'user_id' => 'required',
             'status' => 'required',
@@ -68,6 +77,8 @@ class OrderController extends CRUDController
 
         $order = Order::findOrFail($id);
 
+        $this->authorizeResource($order);
+
         foreach ($input as $key => $value)
             $order->$key = $value;
 
@@ -79,6 +90,7 @@ class OrderController extends CRUDController
     public function destroy(Request $request, int $id): JsonResponse
     {
         $order = Order::findOrFail($id);
+        $this->authorizeResource($order);
 
         $order->delete;
 
@@ -88,6 +100,7 @@ class OrderController extends CRUDController
     public function show(Request $request, int $id): JsonResponse
     {
         $order = Order::findOrFail($id);
+        $this->authorizeResource($order);
 
         return $this->respond($order->toArray());
     }

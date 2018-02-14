@@ -50,13 +50,16 @@ class PermissionManager
                          ]);
 
                 // Allow users to create/view THEIR OWN orders
+                Bouncer::allow($user)
+                    ->to([
+                        $orderResource . '.' . CRUDActions::STORE
+                    ]);
 
                 // Allow users to view THEIR OWN invoices
                 Bouncer::allow($user)
                     ->toOwn(Order::class)
                     ->to([
-                             $orderResource . '.' . CRUDActions::SHOW,
-                             $orderResource . '.' . CRUDActions::STORE
+                             $orderResource . '.' . CRUDActions::SHOW
                          ]);
                 break;
 

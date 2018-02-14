@@ -28,6 +28,8 @@ class InvoiceController extends CRUDController
 
     public function index(Request $request): JsonResponse
     {
+        $this->authorizeResource();
+
         $rules = [
             'searchId' => 'sometimes|alphanum'
         ];
@@ -42,6 +44,8 @@ class InvoiceController extends CRUDController
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorizeResource();
+
         $rules = [
             'order_id' => 'required',
             'user_id' => 'required',
@@ -53,6 +57,8 @@ class InvoiceController extends CRUDController
         ];
 
         $this->validate($request, $rules);
+
+
         $input = $this->cherryPick($request, $rules);
 
         $invoice = new Invoice();
@@ -91,6 +97,8 @@ class InvoiceController extends CRUDController
 
         $invoice = Invoice::findOrFail($id);
 
+        $this->authorizeResource($invoice);
+
         foreach ($input as $key => $value)
             $invoice->$key = $value;
 
@@ -108,6 +116,7 @@ class InvoiceController extends CRUDController
     public function destroy(Request $request, int $id): JsonResponse
     {
         $invoice = Invoice::findOrFail($id);
+        $this->authorizeResource($invoice);
 
         $invoice->delete();
 
@@ -117,6 +126,7 @@ class InvoiceController extends CRUDController
     public function show(Request $request, int $id): JsonResponse
     {
         $invoice = Invoice::findOrFail($id);
+        $this->authorizeResource($invoice);
 
         return $this->respond($invoice->toArray());
     }
@@ -167,7 +177,7 @@ class InvoiceController extends CRUDController
     {
         $invoice = Invoice::findOrFail($id);
 
-        //$this->authorizeResource($invoice, 'invoice.pdf');
+        $this->authorizeResource($invoice, 'invoice.render');
 
         return $this->renderInvoice($invoice);
     }

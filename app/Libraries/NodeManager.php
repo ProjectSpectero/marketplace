@@ -159,9 +159,7 @@ class NodeManager
 
         ];
 
-        $url = env('DAEMON_URL') . '/v1/cloud/config';
-
-        $response = $this->request('get', $url);
+        $response = $this->request('get', $this->getUrl('cloud/config'));
 
         $validator = Validator::make($response, $rules);
 

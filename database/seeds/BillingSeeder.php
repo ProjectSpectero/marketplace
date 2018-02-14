@@ -39,7 +39,7 @@ class BillingSeeder extends Seeder
             $invoice = new \App\Invoice();
             $invoice->id = mt_rand(1, 10000);
             $invoice->order_id = $order->id;
-            $invoice->user_id = 6;
+            $invoice->user_id = $order->user_id;
             $invoice->amount = ($amountOne + $amountTwo) * $quantity;
             $invoice->currency = \App\Constants\Currency::USD;
             $invoice->status = \App\Constants\InvoiceStatus::UNPAID;

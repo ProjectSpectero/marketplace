@@ -8,6 +8,7 @@ class Invoice extends Model
 {
     protected $casts = [ 'amount' => 'float', 'tax' => 'float' ];
     protected $with = [ 'transactions' ];
+    protected $hidden = [ 'notes' ];
 
     public function order()
     {

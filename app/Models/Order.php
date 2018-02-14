@@ -8,6 +8,7 @@ class Order extends Model
 {
 
     protected $with = ['lineItems', 'lastInvoice'];
+    protected $hidden = [ 'notes' ];
 
     public function lineItems()
     {

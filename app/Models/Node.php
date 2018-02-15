@@ -83,4 +83,9 @@ class Node extends Model
     {
         return $this->hasMany(Service::class);
     }
+
+    public function group ()
+    {
+        return $this->belongsTo(NodeGroup::class);
+    }
 }

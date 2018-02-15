@@ -72,6 +72,10 @@ class NodeManager
                 $this->validateAccessLevel();
             }
 
+            $systemConfig = $this->getAndValidateSystemConfig();
+
+            $ret['systemConfig'] = $systemConfig;
+
             $services = $this->discoverServices()['result'];
             foreach ($services as $service => $state)
             {
@@ -153,7 +157,7 @@ class NodeManager
         return $this->request('get', $localEndpoint);
     }
 
-    public function dumpSystemConfig()
+    public function getAndValidateSystemConfig ()
     {
         $rules = [
 

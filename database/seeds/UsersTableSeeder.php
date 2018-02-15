@@ -31,25 +31,40 @@ class UsersTableSeeder extends Seeder
       ]);
 
       $this->addMeta($admin);
+      PermissionManager::assign($admin, UserRoles::ADMIN);
 
       foreach (\App\Constants\UserStatus::getConstants() as $user)
       {
-          $newUser = \App\User::create([
-              'name' => 'Status ' . $user,
-              'email' => $user . '@dev.com',
-              'password' => \Illuminate\Support\Facades\Hash::make('temppass'),
-              'status' => $user,
-              'node_key' => \App\Libraries\Utility::getRandomString(2)
-          ]);
+          switch ($user)
+          {
+              case \App\Constants\UserStatus::ACTIVE:
+                  for ($i = 0; $i < 2; $i++)
+                  {
+                      $newUser = \App\User::create([
+                                                       'name' => 'Status ' . $user . ' ' . $i,
+                                                       'email' => $user . '-' . $i . '@dev.com',
+                                                       'password' => \Illuminate\Support\Facades\Hash::make('temppass'),
+                                                       'status' => $user,
+                                                       'node_key' => \App\Libraries\Utility::getRandomString(2)
+                                                   ]);
+                      PermissionManager::assign($newUser, UserRoles::USER);
+                      $this->addMeta($newUser);
+                  }
+                  break;
+
+              default:
+                  $newUser = \App\User::create([
+                                                   'name' => 'Status ' . $user ,
+                                                   'email' => $user . '@dev.com',
+                                                   'password' => \Illuminate\Support\Facades\Hash::make('temppass'),
+                                                   'status' => $user,
+                                                   'node_key' => \App\Libraries\Utility::getRandomString(2)
+                                               ]);
+                  PermissionManager::assign($newUser, UserRoles::USER);
+          }
 
           PermissionManager::assign($newUser, UserRoles::USER);
       }
-
-      $activeUser = \App\User::where('email', '=', 'active@dev.com')->first();
-      $this->addMeta($activeUser);
-
-      // The admin is a normal user too, despite being an admin
-      PermissionManager::assign($admin, UserRoles::ADMIN);
     }
 
     private function addMeta(\App\User $user)

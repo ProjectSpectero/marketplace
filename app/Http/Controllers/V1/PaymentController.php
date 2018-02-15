@@ -26,11 +26,10 @@ use Illuminate\Http\Request;
 class PaymentController extends V1Controller
 {
 
-    // TODO: add authorization rules to ALL these methods
-
     public function process (Request $request, String $processor, int $invoiceId) : JsonResponse
     {
         $invoice = Invoice::findOrFail($invoiceId);
+        $this->authorizeResource($invoice, 'invoice.pay');
 
         if ($invoice->status !== InvoiceStatus::UNPAID)
             throw new UserFriendlyException(Errors::INVOICE_ALREADY_PAID, ResponseType::BAD_REQUEST);
@@ -73,6 +72,8 @@ class PaymentController extends V1Controller
      */
     public function refund (Request $request, int $transactionId) : JsonResponse
     {
+        $this->authorizeResource();
+
         $rules = [
             'amount' => 'required'
         ];
@@ -97,6 +98,7 @@ class PaymentController extends V1Controller
     public function subscribe (Request $request, String $processor, int $orderId) : JsonResponse
     {
         $order = Order::findOrFail($orderId);
+        $this->authorizeResource($order, 'order.subscribe');
 
         if ($order->due_next->isPast())
             throw new UserFriendlyException(Errors::SERVICE_OVERDUE);

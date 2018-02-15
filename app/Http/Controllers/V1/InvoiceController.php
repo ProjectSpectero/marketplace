@@ -57,8 +57,6 @@ class InvoiceController extends CRUDController
         ];
 
         $this->validate($request, $rules);
-
-
         $input = $this->cherryPick($request, $rules);
 
         $invoice = new Invoice();

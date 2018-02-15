@@ -4,5 +4,6 @@ return [
     'user' => 'user',
     'node' => 'node',
     'order' => 'order',
-    'invoice' => 'invoice'
+    'invoice' => 'invoice',
+    'node_group' => 'node_group'
 ];

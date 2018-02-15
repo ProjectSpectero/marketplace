@@ -8,6 +8,7 @@ use App\Constants\CRUDActions;
 use App\Constants\UserRoles;
 use App\Invoice;
 use App\Node;
+use App\NodeGroup;
 use App\Order;
 use App\User;
 use Bouncer;
@@ -21,6 +22,7 @@ class PermissionManager
         $nodeResource = $resources['node'];
         $orderResource = $resources['order'];
         $invoiceResource = $resources['invoice'];
+        $nodeGroupResource = $resources['node_group'];
 
         switch ($role)
         {
@@ -38,7 +40,8 @@ class PermissionManager
                              $nodeResource . '.' . CRUDActions::SHOW,
                              $nodeResource . '.' . CRUDActions::UPDATE,
                              $nodeResource . '.' . CRUDActions::DESTROY,
-                             $nodeResource . '.' . 'verify'
+                             $nodeResource . '.' . 'verify',
+                             $nodeResource . '.' . 'assign'
                          ]);
 
                 // Allow users to view THEIR OWN invoices and their PDF representations
@@ -63,6 +66,16 @@ class PermissionManager
                              $orderResource . '.' . CRUDActions::SHOW,
                              $orderResource . '.' . 'subscribe'
                          ]);
+
+                // Allow user to view/update/destroy THEIR OWN node groups
+                Bouncer::allow($user)
+                    ->toOwn(NodeGroup::class)
+                    ->to([
+                        $nodeGroupResource . '.' . CRUDActions::SHOW,
+                        $nodeGroupResource . '.' . CRUDActions::UPDATE,
+                        $nodeGroupResource . '.' . CRUDActions::DESTROY,
+                        $nodeGroupResource . '.' . 'assign'
+                    ]);
                 break;
 
         }

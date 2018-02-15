@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Constants\CRUDActions;
 use App\Constants\ResponseType;
 use App\Constants\UserRoles;
+use App\Errors\FatalException;
 use App\Http\Controllers\Controller;
 use App\Libraries\Utility;
 use Illuminate\Database\Eloquent\Model;

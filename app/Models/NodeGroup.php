@@ -10,4 +10,9 @@ class NodeGroup extends Model
     {
         return $this->hasMany(Node::class, 'group_id');
     }
+
+    public static function findForUser (int $id)
+    {
+        return static::where('user_id', $id);
+    }
 }

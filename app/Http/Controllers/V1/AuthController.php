@@ -83,7 +83,6 @@ class AuthController extends V1Controller
 
     public function refreshToken(Request $request)
     {
-        // TODO: Stop disabled users from using refresh tokens to keep the session going
 
         $refreshToken = $request->get('refresh_token');
         $oauthResponse = $this->proxy('refresh_token', [

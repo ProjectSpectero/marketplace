@@ -184,7 +184,6 @@ class PaypalProcessor extends BasePaymentProcessor
 
         $wrappedResponse = new PaymentProcessorResponse();
 
-        // TODO: transaction->reference is WRONG, the refund has its own ID. Figure it out
         if ($refundResponse['ACK'] == 'Success')
         {
             $transactionId = $refundResponse['REFUNDTRANSACTIONID'];

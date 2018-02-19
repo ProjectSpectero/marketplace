@@ -25,7 +25,7 @@ class PasswordResetController extends V1Controller
     // This is the one that looks up an email address and emails them a reset link
     public function generateToken (Request $request) : JsonResponse
     {
-        // TODO: implement this, remember to prevent user enumeration. At no point should we confirm or deny a specific email/user exists
+        // Remember to prevent user enumeration. At no point should we confirm or deny a specific email/user exists
         // Just say that IF a user exists with the email address you've shared, they'll receive an email.
         // Create a PasswordResetToken object accordingly, set expiry to now + env('PASSWORD_RESET_TOKEN_EXPIRY')
         $rules = [

@@ -259,6 +259,14 @@ class StripeProcessor extends BasePaymentProcessor
         }
     }
 
+    public function clearSavedData()
+    {
+        $user = $this->request->user();
+
+        UserMeta::deleteMeta($user, UserMetaKeys::StripeCustomerIdentifier);
+        UserMeta::deleteMeta($user, UserMetaKeys::StripeCardToken);
+    }
+
     private function ensureSuccess (Array $data, String $caller = 'process')
     {
         $failed = false;

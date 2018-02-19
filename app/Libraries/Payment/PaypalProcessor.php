@@ -322,4 +322,11 @@ class PaypalProcessor extends BasePaymentProcessor
                 return [];
         }
     }
+
+    public function clearSavedData()
+    {
+       throw new NotSupportedException();
+    }
+
+
 }

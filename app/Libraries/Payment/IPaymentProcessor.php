@@ -20,4 +20,5 @@ interface IPaymentProcessor
     function subscribe (Order $order) : PaymentProcessorResponse;
     function unSubscribe (Order $order) : PaymentProcessorResponse;
     function getValidationRules(String $method): array;
+    function clearSavedData();
 }

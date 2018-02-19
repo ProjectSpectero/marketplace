@@ -114,6 +114,15 @@ class PaymentController extends V1Controller
         throw new NotSupportedException();
     }
 
+    public function clear(Request $request, String $processor) : JsonResponse
+    {
+        $paymentProcessor = $this->resolveProcessor($processor);
+
+        $paymentProcessor->clearSavedData();
+
+        return $this->respond(null, [], Messages::SAVED_DATA_CLEARED, ResponseType::NO_CONTENT);
+    }
+
     private function resolveProcessor (String $processor, Request $request) : IPaymentProcessor
     {
         switch (strtolower($processor))

@@ -37,7 +37,6 @@ class OrderController extends CRUDController
         $this->authorizeResource();
 
         $rules = [
-            'user_id' => 'required',
             'status' => 'required',
             'subscription_reference' => 'required',
             'subscription_provider' => 'required',
@@ -49,7 +48,7 @@ class OrderController extends CRUDController
         $input = $this->cherryPick($request, $rules);
 
         $order = new Order();
-        $order->user_id = $input['user_id'];
+        $order->user_id = $request->user()->id;
         $order->status = $input['status'];
         $order->subscription_reference = $input['subscription_reference'];
         $order->subscription_provider = $input['subscription_provider'];
@@ -64,7 +63,6 @@ class OrderController extends CRUDController
     public function update(Request $request, int $id): JsonResponse
     {
         $rules = [
-            'user_id' => 'required',
             'status' => 'required',
             'subscription_reference' => 'required',
             'subscription_provider' => 'required',
@@ -81,6 +79,8 @@ class OrderController extends CRUDController
 
         foreach ($input as $key => $value)
             $order->$key = $value;
+
+        $order->user_id = $request->user()->id;
 
         $order->saveOrFail();
 

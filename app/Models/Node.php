@@ -88,4 +88,9 @@ class Node extends Model
     {
         return $this->belongsTo(NodeGroup::class);
     }
+
+    public static function findForUser (int $id)
+    {
+        return static::where('user_id', $id);
+    }
 }

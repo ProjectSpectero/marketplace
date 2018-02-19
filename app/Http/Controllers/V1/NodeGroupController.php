@@ -41,7 +41,6 @@ class NodeGroupController extends CRUDController
         $rules = [
             'friendly_name' => 'required',
             'status' => 'required',
-            'user_id' => 'required',
             'market_model' => 'required',
             'price' => 'required'
         ];
@@ -52,7 +51,7 @@ class NodeGroupController extends CRUDController
         $nodeGroup = new NodeGroup();
         $nodeGroup->friendly_name = $input['friendly_name'];
         $nodeGroup->status = $input['status'];
-        $nodeGroup->user_id = $input['user_id'];
+        $nodeGroup->user_id = $request->user()->id;
         $nodeGroup->market_model = $input['market_model'];
         $nodeGroup->price = $input['price'];
 
@@ -66,7 +65,6 @@ class NodeGroupController extends CRUDController
         $rules = [
             'friendly_name' => 'required',
             'status' => 'required',
-            'user_id' => 'required',
             'market_model' => 'required',
             'price' => 'required'
         ];
@@ -80,6 +78,8 @@ class NodeGroupController extends CRUDController
 
         foreach ($input as $key => $value)
             $nodeGroup->$key = $value;
+
+        $nodeGroup->user_id = $request->user()->id;
 
         $nodeGroup->saveOrFail();
 

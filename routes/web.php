@@ -57,6 +57,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
 
         // Node resource routes, the static "verify" route HAS to be before the resource routes
         $api->get('node/{id}/verify', 'NodeController@reverify');
+        $api->get('node/self', 'NodeController@self');
         \App\Libraries\Utility::defineResourceRoute('node', 'NodeController', $api, []);
 
         // Invoice resource routes

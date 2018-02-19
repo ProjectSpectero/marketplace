@@ -116,7 +116,7 @@ class PaymentController extends V1Controller
 
     public function clear(Request $request, String $processor) : JsonResponse
     {
-        $paymentProcessor = $this->resolveProcessor($processor);
+        $paymentProcessor = $this->resolveProcessor($processor, $request);
 
         $paymentProcessor->clearSavedData();
 

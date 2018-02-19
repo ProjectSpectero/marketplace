@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Traits\MetaTrait;
 use App\Libraries\Utility;
 
-class NodeMeta extends Model
+class NodeMeta extends BaseModel
 {
 
     use MetaTrait;

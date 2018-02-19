@@ -6,7 +6,7 @@ use App\Constants\UserMetaKeys;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\MetaTrait;
 
-class UserMeta extends Model
+class UserMeta extends BaseModel
 {
 
     use MetaTrait;

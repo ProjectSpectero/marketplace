@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ServiceIPAddress extends Model
+class ServiceIPAddress extends BaseModel
 {
     public function service ()
     {

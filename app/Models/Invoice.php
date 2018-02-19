@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Invoice extends Model
+class Invoice extends BaseModel
 {
     protected $casts = [ 'amount' => 'float', 'tax' => 'float' ];
     protected $with = [ 'transactions' ];
@@ -18,11 +18,6 @@ class Invoice extends Model
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
-    }
-
-    public static function findForUser (int $id)
-    {
-        return static::where('user_id', $id);
     }
 
     public function user ()

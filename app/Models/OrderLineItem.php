@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class OrderLineItem extends Model
+class OrderLineItem extends BaseModel
 {
     protected $casts = ['amount' => 'float'];
 

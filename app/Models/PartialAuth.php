@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PartialAuth extends Model
+class PartialAuth extends BaseModel
 {
     protected $table = 'partial_auth';
 

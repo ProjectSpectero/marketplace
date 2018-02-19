@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Order extends Model
+class Order extends BaseModel
 {
 
     protected $with = ['lineItems', 'lastInvoice'];
@@ -24,11 +24,5 @@ class Order extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    public static function findForUser (int $id)
-    {
-        return static::where('user_id', $id);
-    }
-
 
 }

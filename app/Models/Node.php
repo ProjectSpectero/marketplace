@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Node extends Model
+class Node extends BaseModel
 {
     use SoftDeletes;
 
@@ -87,10 +87,5 @@ class Node extends Model
     public function group ()
     {
         return $this->belongsTo(NodeGroup::class);
-    }
-
-    public static function findForUser (int $id)
-    {
-        return static::where('user_id', $id);
     }
 }

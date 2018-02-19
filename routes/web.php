@@ -77,6 +77,6 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->post('payment/{processor}/process/{invoiceId}', 'PaymentController@process');
         $api->post('payment/{processor}/subscribe/{invoiceId}', 'PaymentController@subscribe');
         $api->post('payment/refund/{transactionId}', 'PaymentController@refund');
-        $api->post('payment/{processor}/clear', 'PaymentController@clear');
+        $api->delete('payment/{processor}/clear', 'PaymentController@clear');
     });
 });

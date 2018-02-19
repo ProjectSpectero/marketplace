@@ -263,6 +263,16 @@ class StripeProcessor extends BasePaymentProcessor
     {
         $user = $this->request->user();
 
+        try
+        {
+            UserMeta::loadMeta($user, UserMetaKeys::StripeCardToken, true);
+            UserMeta::loadMeta($user, UserMetaKeys::StripeCustomerIdentifier, true);
+        }
+        catch (ModelNotFoundException $exception)
+        {
+            throw new UserFriendlyException(Errors::REQUEST_FAILED);
+        }
+
         UserMeta::deleteMeta($user, UserMetaKeys::StripeCustomerIdentifier);
         UserMeta::deleteMeta($user, UserMetaKeys::StripeCardToken);
     }

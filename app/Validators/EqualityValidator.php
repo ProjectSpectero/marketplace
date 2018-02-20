@@ -15,15 +15,11 @@ class EqualityValidator
         if ($param == null)
             throw new UserFriendlyException(Errors::FIELD_REQUIRED);
 
-        // VERY DIRTY HACK TO WORK AROUND LARAVEL NOT PASSING IN THE 'false' value
-        //if (empty($value))
-        //   $value = false;
+        // TODO: the source of truth should actually be the param instead of the value
+        // Problem is, it's always returned as a string. Keep this in mind if the equality check is used for more than bool/strings though
 
         if (is_bool($value))
             $param = ($param == 'true') ? true : false;
-
-        //if ($attribute == 'config.LocalSubnetBanEnabled')
-            //dd($value, $param, $value === $param);
 
         // Otherwise standard String comparison
         return $value === $param;

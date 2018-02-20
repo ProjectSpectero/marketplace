@@ -65,7 +65,7 @@ class NodeManager
     public function getAndValidateSystemDescriptor ()
     {
         $rules = [
-            'config.BlockedRedirectUri' => 'required|in:https://blocked.spectero.com/?reason={0}&uri={1}&data={2}',
+            'config.BlockedRedirectUri' => 'required|equals:https://blocked.spectero.com/?reason={0}&uri={1}&data={2}',
             'config.AuthCacheMinutes' => 'required|max:10',
             'config.LocalSubnetBanEnabled' => 'required|equals:true',
             'config.JWTTokenExpiryInMinutes' => 'required|max:100',

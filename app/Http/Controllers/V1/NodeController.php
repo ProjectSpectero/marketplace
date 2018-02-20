@@ -105,6 +105,7 @@ class NodeController extends CRUDController
     public function self(Request $request)
     {
         $user = $request->user();
-        return PaginationManager::paginate($request, Node::findForUser($user->id));
+        $queryBuilder = SearchManager::process($request, 'node')->where('user_id', $user->id);
+        return PaginationManager::paginate($request, $queryBuilder);
     }
 }

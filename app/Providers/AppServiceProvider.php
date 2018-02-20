@@ -25,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot ()
     {
         Validator::extend('country', 'App\Validators\CountryValidator@validate');
+        Validator::extend('equals', 'App\Validators\EqualityValidator@validate');
+
         \Queue::failing(function (JobFailed $event)
         {
             // TODO: implement default action when a job fails, perhaps to notify us in Slack?

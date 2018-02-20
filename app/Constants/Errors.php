@@ -73,4 +73,6 @@ class Errors extends Holder
     const FIELD_COUNTRY = 'FIELD_COUNTRY';
     const FIELD_BOOLEAN = 'FIELD_BOOLEAN';
     const FIELD_IN = 'FIELD_IN';
+    const FIELD_BETWEEN = 'FIELD_BETWEEN';
+    const FIELD_EQUALS = 'FIELD_EQUALS';
 }

@@ -127,7 +127,6 @@ $app->middleware([
     $app->register(Nord\Lumen\Cors\CorsServiceProvider::class);
     $app->register(Cartalyst\Stripe\Laravel\StripeServiceProvider::class);
 
-
 /*
 |--------------------------------------------------------------------------
 | Class Aliases

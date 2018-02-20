@@ -27,6 +27,7 @@ class NodeManager
     private $jwtAccessToken;
     private $jwtRefreshToken;
     private $authenticated;
+    private $identity;
 
     private $client;
     private $headers;
@@ -39,6 +40,7 @@ class NodeManager
         $this->node = $node;
         $this->baseUrl = $node->accessor();
         $this->accessToken = $node->access_token;
+        $this->identity = $node->install_id;
 
         $this->client = new Client([
             'base_url' => $this->baseUrl,
@@ -58,6 +60,34 @@ class NodeManager
             $this->authenticate();
             $this->validateAccessLevel();
         }
+    }
+
+    public function getAndValidateSystemDescriptor ()
+    {
+        $rules = [
+            'config.BlockedRedirectUri' => 'required|in:https://blocked.spectero.com/?reason={0}&uri={1}&data={2}',
+            'config.AuthCacheMinutes' => 'required|max:10',
+            'config.LocalSubnetBanEnabled' => 'required|equals:true',
+            'config.JWTTokenExpiryInMinutes' => 'required|max:100',
+            'config.RespectEndpointToOutgoingMapping' => 'required|equals:true',
+            'config.InMemoryAuth' => 'required|equals:true',
+            'config.InMemoryAuthCacheMinutes' => 'required|max:5',
+            'config.AutoStartServices' => 'required|equals:true',
+            'identity' => 'required|alpha_dash'
+        ];
+
+        $response = $this->request('get', $this->getUrl('cloud/descriptor'));
+        $result = $response['result'];
+
+        /** @var \Illuminate\Validation\Validator $validator */
+        $validator = Validator::make($result, $rules);
+
+        if ($validator->fails())
+        {
+            dd($result, $validator->errors());
+        }
+
+        return $response;
     }
 
     public function firstTimeDiscovery ()
@@ -102,12 +132,12 @@ class NodeManager
 
     public function heartbeat ()
     {
-        return $this->request('get', $this->getUrl('heartbeat'));
+        return $this->request('get', $this->getUrl('cloud/heartbeat'));
     }
 
     public function discoverIdentity ()
     {
-        return $this->request('get', $this->getUrl('identity'));
+        return $this->request('get', $this->getUrl('cloud/identity'));
     }
 
     public function discoverServices ()
@@ -155,22 +185,6 @@ class NodeManager
         $localEndpoint = $this->getUrl('service/' . $serviceName . '/' . $actionName);
 
         return $this->request('get', $localEndpoint);
-    }
-
-    public function getAndValidateSystemConfig ()
-    {
-        $rules = [
-
-        ];
-
-        $response = $this->request('get', $this->getUrl('cloud/config'));
-
-        $validator = Validator::make($response, $rules);
-
-        if ($validator->fails())
-            throw new UserFriendlyException(Errors::COULD_NOT_DUMP_CONFIG);
-
-        return $response;
     }
 
     private function validateServiceAction (String $actionName)

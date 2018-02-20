@@ -10,6 +10,8 @@ class Order extends BaseModel
     protected $with = ['lineItems', 'lastInvoice'];
     protected $hidden = [ 'notes' ];
 
+    public $searchAble = ['due_next', 'status', 'term'];
+
     public function lineItems()
     {
         return $this->hasMany(OrderLineItem::class);

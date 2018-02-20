@@ -10,6 +10,8 @@ class Invoice extends BaseModel
     protected $with = [ 'transactions' ];
     protected $hidden = [ 'notes' ];
 
+    public $searchAble = ['status', 'currency', 'amount', 'due_date'];
+
     public function order()
     {
         return $this->belongsTo(Order::class);

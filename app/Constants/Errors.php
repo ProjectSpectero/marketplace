@@ -72,4 +72,5 @@ class Errors extends Holder
     const FIELD_ALPHADASH = 'FIELD_ALPHADASH';
     const FIELD_COUNTRY = 'FIELD_COUNTRY';
     const FIELD_BOOLEAN = 'FIELD_BOOLEAN';
+    const FIELD_IN = 'FIELD_IN';
 }

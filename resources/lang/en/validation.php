@@ -15,5 +15,6 @@ return [
         'string' => \App\Constants\Errors::FIELD_MAXLENGTH . '::attribute::max',
     ],
     'country' => \App\Constants\Errors::FIELD_COUNTRY . '::attribute:',
-    'boolean' => \App\Constants\Errors::FIELD_BOOLEAN . '::attribute:'
+    'boolean' => \App\Constants\Errors::FIELD_BOOLEAN . '::attribute:',
+    'in' => \App\Constants\Errors::FIELD_IN . '::attribute:'
 ];

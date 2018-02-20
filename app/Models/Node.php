@@ -19,7 +19,7 @@ class Node extends BaseModel
     ];
 
     public $searchAble = [
-        'ip', 'install_id'
+        'ip', 'install_id', 'friendly_name', 'cc', 'asn'
     ];
 
     /**

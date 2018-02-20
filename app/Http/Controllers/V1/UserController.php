@@ -22,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Phalcon\Config\Adapter\Json;
+use phpDocumentor\Reflection\Types\Integer;
 
 class UserController extends CRUDController
 {
@@ -228,6 +229,16 @@ class UserController extends CRUDController
 
         return $this->respond(
             null, [ Errors::USER_VERIFICATION_FAILED ], null, ResponseType::NOT_AUTHORIZED);
+    }
+
+    public function regenNodeKey(Request $request)
+    {
+        $user = $request->user();
+
+        $user->node_key = Utility::getRandomString(2);
+        $user->saveOrFail();
+
+        return $this->respond($user->toArray(), [], Messages::NODE_KEY_REGENERATED);
     }
 
 }

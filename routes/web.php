@@ -51,6 +51,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
 
         // User resource routes, the static "self" route HAS to be before the resource routes
         $api->get('user/self', 'UserController@self');
+        $api->put('user/node_key', 'UserController@regenNodeKey');
         \App\Libraries\Utility::defineResourceRoute('user', 'UserController', $api, [], [
             'excluded' =>  \App\Constants\CRUDActions::STORE
         ]);

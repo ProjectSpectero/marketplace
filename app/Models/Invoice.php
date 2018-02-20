@@ -10,7 +10,7 @@ class Invoice extends BaseModel
     protected $with = [ 'transactions' ];
     protected $hidden = [ 'notes' ];
 
-    public $searchAble = ['status', 'currency', 'amount', 'due_date'];
+    public $searchAble = ['status', 'currency', 'amount', 'due_date', 'order_id '];
 
     public function order()
     {

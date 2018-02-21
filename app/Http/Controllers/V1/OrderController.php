@@ -4,6 +4,7 @@ namespace App\Http\Controllers\V1;
 
 use App\Constants\Messages;
 use App\Constants\ResponseType;
+use App\Invoice;
 use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
 use App\Order;
@@ -102,7 +103,13 @@ class OrderController extends CRUDController
         $order = Order::findOrFail($id);
         $this->authorizeResource($order);
 
-        return $this->respond($order->toArray());
+        switch ($action)
+        {
+            case 'invoices':
+                return PaginationManager::paginate($request, Invoice::findForOrder($order)->noEagerLoads());
+            default:
+                return $this->respond($order->toArray());
+        }
     }
 
     public function self(Request $request)

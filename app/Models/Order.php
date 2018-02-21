@@ -5,7 +5,7 @@ namespace App;
 class Order extends BaseModel
 {
 
-    protected $with = [ 'lineItems', 'lastInvoice '];
+    protected $with = [ 'lineItems', 'lastInvoice' ];
     protected $hidden = [ 'notes', 'user_id', 'subscription_reference', 'subscription_provider' ];
 
     public $searchAble = ['due_next', 'status', 'term'];

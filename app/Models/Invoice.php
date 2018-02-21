@@ -2,13 +2,11 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
-
 class Invoice extends BaseModel
 {
     protected $casts = [ 'amount' => 'float', 'tax' => 'float' ];
     protected $with = [ 'transactions' ];
-    protected $hidden = [ 'notes' ];
+    protected $hidden = [ 'notes', 'user_id' ];
 
     public $searchAble = ['status', 'currency', 'amount', 'due_date', 'order_id '];
 
@@ -25,5 +23,10 @@ class Invoice extends BaseModel
     public function user ()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public static function findForOrder (Order $order)
+    {
+        return static::where('order_id', $order->id);
     }
 }

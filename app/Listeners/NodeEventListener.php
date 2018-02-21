@@ -37,6 +37,15 @@ class NodeEventListener extends BaseListener
         {
             case Events::NODE_CREATED:
                 // Great, let's actually attempt to discover this node's services
+                /*
+                 * Flow:
+                 * Verify connectivity
+                 * Verify auth
+                 * Verify node config
+                 * Verify service config
+                 * Lookup ASN and CC
+                 * Insert it all accordingly
+                 */
                 $manager = new NodeManager($node);
                 $data = $manager->firstTimeDiscovery();
 

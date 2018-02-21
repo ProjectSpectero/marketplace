@@ -18,6 +18,26 @@ class OrderController extends CRUDController
         $this->resource = 'order';
     }
 
+    public function show (Request $request, int $id, String $action = null) : JsonResponse
+    {
+        $order = Order::findOrFail($id);
+        $this->authorizeResource($order);
+
+        switch ($action)
+        {
+            case 'invoices':
+                return PaginationManager::paginate($request, Invoice::findForOrder($order)->noEagerLoads());
+            default:
+                return $this->respond($order->toArray());
+        }
+    }
+
+    public function self(Request $request)
+    {
+        $user = $request->user();
+        return PaginationManager::paginate($request, Order::findForUser($user->id));
+    }
+
     public function index(Request $request): JsonResponse
     {
         $this->authorizeResource();
@@ -96,25 +116,5 @@ class OrderController extends CRUDController
         $order->delete;
 
         return $this->respond(null, [], Messages::ORDER_DELETED, ResponseType::NO_CONTENT);
-    }
-
-    public function show (Request $request, int $id, String $action = null) : JsonResponse
-    {
-        $order = Order::findOrFail($id);
-        $this->authorizeResource($order);
-
-        switch ($action)
-        {
-            case 'invoices':
-                return PaginationManager::paginate($request, Invoice::findForOrder($order)->noEagerLoads());
-            default:
-                return $this->respond($order->toArray());
-        }
-    }
-
-    public function self(Request $request)
-    {
-        $user = $request->user();
-        return PaginationManager::paginate($request, Order::findForUser($user->id));
     }
 }

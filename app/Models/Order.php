@@ -2,13 +2,11 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
-
 class Order extends BaseModel
 {
 
-    protected $with = ['lineItems', 'lastInvoice'];
-    protected $hidden = [ 'notes' ];
+    protected $with = [ 'lineItems', 'lastInvoice '];
+    protected $hidden = [ 'notes', 'user_id', 'subscription_reference', 'subscription_provider' ];
 
     public $searchAble = ['due_next', 'status', 'term'];
 

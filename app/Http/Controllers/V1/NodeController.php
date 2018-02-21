@@ -8,8 +8,10 @@ use App\Constants\Errors;
 use App\Constants\Events;
 use App\Constants\Messages;
 use App\Constants\NodeStatus;
+use App\Constants\OrderStatus;
 use App\Constants\Protocols;
 use App\Constants\ResponseType;
+use App\Errors\UserFriendlyException;
 use App\Events\NodeEvent;
 use App\Libraries\PaginationManager;
 use App\Node;
@@ -26,13 +28,19 @@ class NodeController extends CRUDController
         $this->resource = 'node';
     }
 
-    public function show (Request $request, int $id) : JsonResponse
+    public function show (Request $request, int $id, String $action = null) : JsonResponse
     {
         /** @var Node $node */
         $node = Node::findOrFail($id);
         $this->authorizeResource($node);
 
-        return $this->respond($node->toArray());
+        switch ($action)
+        {
+            case 'orders':
+                return PaginationManager::paginate($request, $node->getOrders()->noEagerLoads());
+            default:
+                return $this->respond($node->toArray());
+        }
     }
 
     public function index(Request $request) : JsonResponse
@@ -115,7 +123,10 @@ class NodeController extends CRUDController
         $node = Node::findOrFail($id);
         $this->authorizeResource($node);
 
-        // TODO: check that node has no active order before allowing this.
+        // A node group for which at least one active order exists cannot be destroyed. Cancel the order first.
+        if ($node->getOrders(OrderStatus::ACTIVE)->count() != 0)
+            throw new UserFriendlyException(Errors::ORDERS_EXIST, ResponseType::FORBIDDEN);
+
         $node->delete();
         event(new NodeEvent(Events::NODE_DELETED, $node));
         return $this->respond(null, [], Messages::USER_DESTROYED, ResponseType::NO_CONTENT);

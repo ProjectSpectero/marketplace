@@ -96,20 +96,31 @@ class NodeGroupController extends CRUDController
 
     public function destroy(Request $request, int $id): JsonResponse
     {
+        /** @var NodeGroup $nodeGroup */
         $nodeGroup = NodeGroup::findOrFail($id);
         $this->authorizeResource($nodeGroup);
+
+        // A node group for which at least one active order exists cannot be destroyed. Cancel the order first.
+        if ($nodeGroup->getOrders(OrderStatus::ACTIVE)->count() != 0)
+            throw new UserFriendlyException(Errors::ORDERS_EXIST, ResponseType::FORBIDDEN);
 
         $nodeGroup->delete();
 
         return $this->respond(null, [], Messages::NODE_GROUP_DELETED, ResponseType::NO_CONTENT);
     }
 
-    public function show(Request $request, int $id): JsonResponse
+    public function show (Request $request, int $id, String $action = null) : JsonResponse
     {
         $nodeGroup = NodeGroup::findOrFail($id);
         $this->authorizeResource($nodeGroup);
 
-        return $this->respond($nodeGroup->toArray());
+        switch ($action)
+        {
+            case 'orders':
+                return PaginationManager::paginate($request, $nodeGroup->getOrders()->noEagerLoads());
+            default:
+                return $this->respond($nodeGroup->toArray());
+        }
     }
 
     public function assign(Request $request)

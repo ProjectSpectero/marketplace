@@ -10,4 +10,9 @@ class BaseModel extends Model
     {
         return static::where('user_id', $id);
     }
+
+    public function scopeNoEagerLoads($query)
+    {
+        return $query->setEagerLoads([]);
+    }
 }

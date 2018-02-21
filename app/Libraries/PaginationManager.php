@@ -6,13 +6,14 @@ use App\Constants\Errors;
 use App\Constants\ResponseType;
 use App\Errors\UserFriendlyException;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 
 class PaginationManager
 {
-    public static function paginate(Request $request, Builder $builder) : JsonResponse
+    public static function paginate(Request $request, $builder) : JsonResponse
     {
         $requestedPage = $request->get('page', 1);
         $perPage = $request->get('perPage', config('pagination.default_per_page'));

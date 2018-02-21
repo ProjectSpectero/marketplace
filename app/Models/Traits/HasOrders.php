@@ -5,6 +5,7 @@ namespace App\Models\Traits;
 
 
 use App\Constants\OrderResourceType;
+use App\Order;
 use Illuminate\Database\Eloquent\Model;
 
 trait HasOrders
@@ -13,7 +14,7 @@ trait HasOrders
      * @param Model $model
      * @param String|null $status
      * @param String $resourceType
-     * @return \Illuminate\Support\Collection
+     * @return \Illuminate\Database\Query\Builder
      */
     public function genericGetOrders(Model $model, String $status = null, String $resourceType = OrderResourceType::NODE)
     {
@@ -25,10 +26,8 @@ trait HasOrders
         $constraints[] = ['order_line_items.type', OrderResourceType::NODE];
         $constraints[] = ['order_line_items.resource', $model->id];
 
-        return \DB::table('orders')
-            ->join('order_line_items', 'orders.id', '=', 'order_line_items.id')
-            ->select('orders.*', 'order_line_items.*')
-            ->where($constraints)
-            ->get();
+        return Order::join('order_line_items', 'orders.id', '=', 'order_line_items.id')
+            ->select('orders.*')
+            ->where($constraints);
     }
 }

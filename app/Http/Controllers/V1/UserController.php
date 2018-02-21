@@ -102,7 +102,7 @@ class UserController extends CRUDController
         return $this->respond($user->toArray(), [], Messages::USER_CREATED, ResponseType::CREATED);
     }
 
-    public function show(Request $request, int $id): JsonResponse
+    public function show (Request $request, int $id, String $action = null) : JsonResponse
     {
         /** @var User $user */
         $user = User::findOrFail($id);

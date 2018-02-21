@@ -97,7 +97,7 @@ class OrderController extends CRUDController
         return $this->respond(null, [], Messages::ORDER_DELETED, ResponseType::NO_CONTENT);
     }
 
-    public function show(Request $request, int $id): JsonResponse
+    public function show (Request $request, int $id, String $action = null) : JsonResponse
     {
         $order = Order::findOrFail($id);
         $this->authorizeResource($order);

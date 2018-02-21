@@ -121,7 +121,7 @@ class InvoiceController extends CRUDController
         return $this->respond(null, [], Messages::INVOICE_DELETED, ResponseType::NO_CONTENT);
     }
 
-    public function show(Request $request, int $id): JsonResponse
+    public function show (Request $request, int $id, String $action = null) : JsonResponse
     {
         $invoice = Invoice::findOrFail($id);
         $this->authorizeResource($invoice);

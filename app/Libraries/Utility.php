@@ -52,7 +52,7 @@ class Utility
             $router->get($slug, self::generateRouteOptions($slug, $controller, CRUDActions::INDEX, $middlewares));
 
         if (! self::checkIfActionIsExcluded($rules, CRUDActions::SHOW))
-            $router->get($slug . '/{id}', self::generateRouteOptions($slug, $controller, CRUDActions::SHOW, $middlewares));
+            $router->get($slug . '/{id}[/{action}]', self::generateRouteOptions($slug, $controller, CRUDActions::SHOW, $middlewares));
 
         if (! self::checkIfActionIsExcluded($rules, CRUDActions::STORE))
             $router->post($slug, self::generateRouteOptions($slug, $controller, CRUDActions::STORE, $middlewares));

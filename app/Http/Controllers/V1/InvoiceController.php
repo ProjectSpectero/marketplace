@@ -4,12 +4,14 @@ namespace App\Http\Controllers\V1;
 
 use App\Constants\Errors;
 use App\Constants\Messages;
+use App\Constants\PaymentType;
 use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
 use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
+use App\Transaction;
 use App\UserMeta;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -126,7 +128,21 @@ class InvoiceController extends CRUDController
         $invoice = Invoice::findOrFail($id);
         $this->authorizeResource($invoice);
 
-        return $this->respond($invoice->toArray());
+        switch ($action)
+        {
+            case 'transactions':
+                return PaginationManager::paginate($request, Transaction::findForInvoice($invoice)->noEagerLoads());
+            case 'due':
+                $amount = $invoice->amount - $invoice->transactions
+                        ->where('type', PaymentType::CREDIT)
+                        ->sum('amount');
+                if ($amount < 0)
+                    $amount = 0;
+
+                return $this->respond([ 'amount' => $amount, 'currency' => $invoice->currency ]);
+            default:
+                return $this->respond($invoice->toArray());
+        }
     }
 
     public function renderInvoice (Invoice $invoice) : string

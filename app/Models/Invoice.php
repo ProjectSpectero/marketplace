@@ -5,7 +5,7 @@ namespace App;
 class Invoice extends BaseModel
 {
     protected $casts = [ 'amount' => 'float', 'tax' => 'float' ];
-    protected $with = [ 'transactions' ];
+    //protected $with = [ 'transactions' ];
     protected $hidden = [ 'notes', 'user_id' ];
 
     public $searchAble = ['status', 'currency', 'amount', 'due_date', 'order_id '];

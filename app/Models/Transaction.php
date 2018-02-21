@@ -13,4 +13,9 @@ class Transaction extends BaseModel
     {
         return $this->belongsTo(Invoice::class);
     }
+
+    public static function findForInvoice (Invoice $invoice)
+    {
+        return static::where('invoice_id', $invoice->id);
+    }
 }

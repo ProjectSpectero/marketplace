@@ -2,12 +2,12 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Traits\HasOrders;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Node extends BaseModel
 {
+    use HasOrders;
     use SoftDeletes;
 
     protected $fillable = [
@@ -64,19 +64,6 @@ class Node extends BaseModel
             ->firstOrFail();
     }
 
-    public function getActiveOrders(Node $node)
-    {
-        return \DB::table('orders')
-            ->join('order_line_items', 'orders.id', '=', 'order_line_items.id')
-            ->select('orders.*', 'order_line_items.*')
-            ->where([
-                ['status', '=', 'active'],
-                ['order_line_items.type', '=', 'NODE'],
-                ['order_line_items.resource', '=', (string) $node->id]
-            ])
-            ->get();
-    }
-
     public function nodeMeta()
     {
         return $this->hasMany(NodeMeta::class);
@@ -100,5 +87,10 @@ class Node extends BaseModel
     public function group ()
     {
         return $this->belongsTo(NodeGroup::class);
+    }
+
+    public function getOrders (String $status = null)
+    {
+        return $this->genericGetOrders($this, $status);
     }
 }

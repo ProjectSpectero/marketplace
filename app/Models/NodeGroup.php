@@ -2,26 +2,22 @@
 
 namespace App;
 
+use App\Constants\OrderResourceType;
+use App\Models\Traits\HasOrders;
+
 class NodeGroup extends BaseModel
 {
+    use HasOrders;
 
     protected $with = ['nodes'];
-
-    public function getActiveOrders(Node $node)
-    {
-        return \DB::table('orders')
-            ->join('order_line_items', 'orders.id', '=', 'order_line_items.id')
-            ->select('orders.*', 'order_line_items.*')
-            ->where([
-                ['status', '=', 'active'],
-                ['order_line_items.type', '=', 'NODE'],
-                ['order_line_items.resource', '=', (string) $node->id]
-            ])
-            ->get();
-    }
 
     public function nodes ()
     {
         return $this->hasMany(Node::class, 'group_id');
+    }
+
+    public function getOrders (String $status = null)
+    {
+        return $this->genericGetOrders($this, $status, OrderResourceType::NODE_GROUP);
     }
 }

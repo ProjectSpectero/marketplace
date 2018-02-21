@@ -175,14 +175,7 @@ class UserController extends CRUDController
         $this->authorizeResource();
 
         /** @var User $user */
-        try
-        {
-            $user = User::findOrFail($id);
-        }
-        catch (ModelNotFoundException $silenced)
-        {
-            return $this->respond(null, [Errors::RESOURCE_NOT_FOUND], ResponseType::NOT_FOUND);
-        }
+        $user = User::findOrFail($id);
 
         $user->delete();
 

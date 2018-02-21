@@ -22,7 +22,7 @@ class BillingSeeder extends Seeder
             $lineItem->description = "Example line item 1";
             $lineItem->order_id = $order->id;
             $lineItem->type = \App\Constants\OrderResourceType::NODE;
-            $lineItem->resource = \App\Libraries\Utility::getRandomString();
+            $lineItem->resource = mt_rand(1, 25);
             $lineItem->quantity = $quantity;
             $lineItem->amount = $amountOne;
             $lineItem->saveOrFail();
@@ -30,8 +30,8 @@ class BillingSeeder extends Seeder
             $lineItem = new \App\OrderLineItem();
             $lineItem->description = "Example line item 2";
             $lineItem->order_id = $order->id;
-            $lineItem->type = \App\Constants\OrderResourceType::NODE;
-            $lineItem->resource = \App\Libraries\Utility::getRandomString();
+            $lineItem->type = \App\Constants\OrderResourceType::NODE_GROUP;
+            $lineItem->resource = mt_rand(1, 5);
             $lineItem->quantity = $quantity;
             $lineItem->amount = $amountTwo;
             $lineItem->saveOrFail();

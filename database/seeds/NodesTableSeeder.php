@@ -11,23 +11,13 @@ class NodesTableSeeder extends Seeder
      */
     public function run()
     {
-        factory(App\Node::class, 15)->create();
+        factory(App\Node::class, 25)->create();
         factory(App\NodeGroup::class, 5)->create();
 
-        foreach (range(1, 5) as $index)
+        foreach (\App\Node::all()->random(10) as $node)
         {
-            \App\Node::create([
-                'ip' => '242.133.252.12'. $index,
-                'port' => 8080,
-                'protocol' => 'HTTP',
-                'access_token' => 'cloudUser' . ':' . \App\Libraries\Utility::getRandomString(),
-                'install_id' => \App\Libraries\Utility::getRandomString(),
-                'status' => array_random(\App\Constants\NodeStatus::getConstants()),
-                'user_id' => 6,
-                'price' => 9.99,
-                'market_model' => array_random(\App\Constants\NodeMarketModel::getConstants()),
-                'group_id' => null
-            ]);
+            $node->group_id = null;
+            $node->save();
         }
     }
 }

@@ -8,6 +8,5 @@ return [
      */
 
     'max_per_page' => 15,
-
     'default_per_page' => 3,
 ];

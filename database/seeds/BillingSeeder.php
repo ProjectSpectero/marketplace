@@ -12,7 +12,7 @@ class BillingSeeder extends Seeder
     public function run()
     {
         factory(App\Order::class, 10)->create();
-        foreach (\App\Order::all() as $order)
+        foreach (App\Order::noEagerLoads()->get() as $order)
         {
             $amountOne = mt_rand(1, 100);
             $amountTwo = mt_rand(1, 100);

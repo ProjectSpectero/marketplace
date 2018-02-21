@@ -33,6 +33,28 @@ class UsersTableSeeder extends Seeder
       $this->addMeta($admin);
       PermissionManager::assign($admin, UserRoles::ADMIN);
 
+      $anatolie = \App\User::create([
+          'name' => "Anatolie Diordita",
+          'email' => 'anatolie@spectero.com',
+          'password' => \Illuminate\Support\Facades\Hash::make('temppass'),
+          'status' => \App\Constants\UserStatus::ACTIVE,
+          'node_key' => \App\Libraries\Utility::getRandomString(2)
+      ]);
+
+      $this->addMeta($anatolie);
+      PermissionManager::assign($anatolie, UserRoles::USER);
+
+        $sergio = \App\User::create([
+            'name' => "Sergio Castro",
+            'email' => 'sergio@spectero.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('temppass'),
+            'status' => \App\Constants\UserStatus::ACTIVE,
+            'node_key' => \App\Libraries\Utility::getRandomString(2)
+        ]);
+
+        $this->addMeta($sergio);
+        PermissionManager::assign($sergio, UserRoles::USER);
+
       foreach (\App\Constants\UserStatus::getConstants() as $user)
       {
           switch ($user)

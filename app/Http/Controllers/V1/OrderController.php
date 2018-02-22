@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Constants\Events;
 use App\Constants\Messages;
 use App\Constants\OrderResourceType;
 use App\Constants\ResponseType;
+use App\Events\BillingEvent;
+use App\Events\Event;
 use App\Invoice;
 use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
@@ -123,7 +126,7 @@ class OrderController extends CRUDController
 
     public function cart(Request $request)
     {
-        $this->authorizeResource();
+        $this->authorizeResource(null, 'order.cart');
 
         $rules = [
             'items' => 'array|min:1',
@@ -136,7 +139,11 @@ class OrderController extends CRUDController
        $input = $this->cherryPick($request, $rules);
        unset($input['items']['*']);
 
-       dd($input);
+       $order = Order::addNew($request->user(), $input['meta']['term']);
+       $lineItems = OrderLineItem::populate($input['items'], $order->id);
+       $invoice = Invoice::addNew($order->id, $request->user()->id, $lineItems);
+
+       event(new BillingEvent(Events::CART_ITEMS_ADDED, $order));
     }
 
 }

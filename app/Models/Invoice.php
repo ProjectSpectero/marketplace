@@ -2,6 +2,10 @@
 
 namespace App;
 
+use App\Constants\Currency;
+use App\Constants\InvoiceStatus;
+use Carbon\Carbon;
+
 class Invoice extends BaseModel
 {
     protected $casts = [ 'amount' => 'float', 'tax' => 'float' ];
@@ -28,5 +32,33 @@ class Invoice extends BaseModel
     public static function findForOrder (Order $order)
     {
         return static::where('order_id', $order->id);
+    }
+
+    public static function addNew(int $order_id, int $user_id, array $items)
+    {
+
+        $invoice = new Invoice();
+        $invoice->order_id = $order_id;
+        $invoice->user_id = $user_id;
+        $invoice->amount = self::calculateAmount($items);
+        $invoice->tax = 12;
+        $invoice->status = InvoiceStatus::UNPAID;
+        $invoice->due_date = Carbon::now();
+        $invoice->currency = Currency::USD;
+
+        $invoice->saveOrFail();
+
+        return $invoice;
+    }
+
+    private static function calculateAmount(array $items)
+    {
+        $amount = 0;
+        foreach ($items as $item)
+        {
+            $amount += $item->amount;
+        }
+
+        return $amount;
     }
 }

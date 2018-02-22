@@ -21,4 +21,5 @@ class Events extends Holder
 
 
     const BILLING_TRANSACTION_ADDED = 'billing.txn.added';
+    const CART_ITEMS_ADDED = 'cart.items.added';
 }

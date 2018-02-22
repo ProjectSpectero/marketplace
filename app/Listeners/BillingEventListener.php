@@ -80,7 +80,7 @@ class BillingEventListener extends BaseListener
 
                 $user = $order->user;
 
-                Mail::to($user->email)->queue(new OrderCreated());
+                Mail::to($user->email)->queue(new OrderCreated($order));
 
         }
     }

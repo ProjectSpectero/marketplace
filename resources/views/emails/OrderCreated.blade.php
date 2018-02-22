@@ -8,4 +8,6 @@
 
     <p>Have questions or comments? Email us at info@spectero and
         we'll be happy to help you with anything we can.</p>
+
+    <a target="_blank" href="{{ $url }}">View Order</a>
 @endsection

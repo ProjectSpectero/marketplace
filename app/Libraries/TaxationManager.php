@@ -1,20 +1,19 @@
 <?php
 
-
 namespace App\Libraries;
 
-
+use App\Order;
 use App\User;
 
 class TaxationManager
 {
     // TODO: actually implement these
-    public function getPercentage (User $user)
+    public static function getPercentage (User $user)
     {
         return 0;
     }
 
-    public function getTaxAmount (Invoice $invoice)
+    public static function getTaxAmount (Order $order)
     {
         return 0;
     }

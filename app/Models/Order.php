@@ -29,20 +29,4 @@ class Order extends BaseModel
     {
         return $this->belongsTo(User::class);
     }
-
-    public static function addNew(User $user, $term)
-    {
-        $order = new Order();
-        $order->user_id = $user->id;
-        $order->status = OrderStatus::ACTIVE;
-        $order->subscription_reference = Utility::getRandomString(2);
-        $order->subscription_provider = PaymentProcessor::STRIPE;
-        $order->term = $term;
-        $order->due_next = Carbon::now();
-
-        $order->saveOrFail();
-
-        return $order;
-    }
-
 }

@@ -26,7 +26,7 @@ class CreateOrdersTable extends Migration
             $table->mediumText('notes');
             $table->timestamps();
 
-            $table->unique([ 'subscription_reference', 'subscription_provider' ], 'unique_reference_provider_index');
+            $table->index([ 'subscription_reference', 'subscription_provider' ], 'reference_provider_index');
         });
     }
 

@@ -123,26 +123,20 @@ class OrderController extends CRUDController
 
     public function cart(Request $request)
     {
-        $rules = $this->getCartRules($request);
+        $this->authorizeResource();
 
-       $this->validate($request, $rules);
-       $items = $this->cherryPick($request, $rules);
-    }
-
-    private function getCartRules(Request $request)
-    {
         $rules = [
             'items' => 'array|min:1',
-            'meta' => 'array|min:1'
+            'items.*.type' =>  Rule::in(OrderResourceType::getConstants()),
+            'items.*.id' => 'required|numeric',
+            'meta.term' => 'required|numeric'
         ];
-        foreach ($request->get('items') as $key => $value)
-        {
-            $rules['items.' .$key. '.type'] = Rule::in(OrderResourceType::getConstants());
-            $rules['items.' .$key. '.id'] = 'required|numeric';
-        }
-        foreach ($request->get('meta') as $key => $value)
-            $rules['meta.' .$key. '.term'] = 'required|equals:30';
 
-        return $rules;
+       $this->validate($request, $rules);
+       $input = $this->cherryPick($request, $rules);
+       unset($input['items']['*']);
+
+       dd($input);
     }
+
 }

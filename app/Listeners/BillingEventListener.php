@@ -11,6 +11,7 @@ use App\Events\BillingEvent;
 use App\Invoice;
 use App\Libraries\Utility;
 use App\Mail\InvoicePaid;
+use App\Mail\OrderCreated;
 use App\Order;
 use Illuminate\Support\Facades\Mail;
 
@@ -77,6 +78,9 @@ class BillingEventListener extends BaseListener
                 /** @var Order $order */
                 $order = $event->data;
 
+                $user = $order->user;
+
+                Mail::to($user->email)->queue(new OrderCreated());
 
         }
     }

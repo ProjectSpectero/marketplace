@@ -6,9 +6,11 @@ namespace App\Listeners;
 
 use App\Constants\Events;
 use App\Constants\InvoiceStatus;
+use App\Constants\OrderStatus;
 use App\Constants\PaymentType;
 use App\Events\BillingEvent;
 use App\Invoice;
+use App\Libraries\FraudCheckManager;
 use App\Libraries\Utility;
 use App\Mail\InvoicePaid;
 use App\Mail\OrderCreated;
@@ -73,14 +75,29 @@ class BillingEventListener extends BaseListener
             break;
             case Events::ORDER_CREATED:
                 // The object is an order in this case
-                // TODO: Send the user an e-mail confirmation that their order has been successfully lodged.
-
                 /** @var Order $order */
                 $order = $event->data;
 
                 $user = $order->user;
 
+                // Now, let's verify that the order passes standard fraud checks (assuming the relevant status exists)
+                if ($order->status == OrderStatus::AUTOMATED_FRAUD_CHECK)
+                {
+                    if (FraudCheckManager::verify($order))
+                        $order->status = OrderStatus::PENDING;
+                    else
+                        $order->status = OrderStatus::MANUAL_FRAUD_CHECK;
+
+                    $order->saveOrFail();
+                }
+
+                // Let's notify our user and confirm that their order has been placed.
+                // This email also notifies them if they failed the fraud check
+                // If they passed, it asks them to make payment.
                 Mail::to($user->email)->queue(new OrderCreated($order));
+
+            break;
+
 
         }
     }

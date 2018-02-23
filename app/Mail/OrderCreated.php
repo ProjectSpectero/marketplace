@@ -35,7 +35,8 @@ class OrderCreated extends Mailable
         $url = Utility::generateUrl('order/' . $this->order->id, 'frontend');
         return $this->subject('Thank you for your order')
             ->view('emails.OrderCreated', [
-                'url' => $url
+                'url' => $url,
+                'order' => $this->order
             ]);
     }
 }

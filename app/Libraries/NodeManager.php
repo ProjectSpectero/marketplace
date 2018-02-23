@@ -83,14 +83,15 @@ class NodeManager
         $validator = Validator::make($result, $rules);
 
         if ($validator->fails())
-        {
-            dd($result, $validator->errors());
-        }
+            throw new FatalException(implode(PHP_EOL, $validator->errors()->toArray()));
 
-        return $response;
+        if($this->identity != $result['identity'])
+            throw new FatalException();
+
+        return $result;
     }
 
-    public function firstTimeDiscovery ()
+    public function discover (bool $loadServiceConfigs = false)
     {
         $ret = [];
 
@@ -102,7 +103,7 @@ class NodeManager
                 $this->validateAccessLevel();
             }
 
-            $systemConfig = $this->getAndValidateSystemConfig();
+            $systemConfig = $this->getAndValidateSystemDescriptor();
 
             $ret['systemConfig'] = $systemConfig;
 
@@ -110,7 +111,12 @@ class NodeManager
             foreach ($services as $service => $state)
             {
                 $this->validateServiceName($service);
-                $config = $this->getServiceConfig($service);
+
+                if ($loadServiceConfigs)
+                    $config = $this->getServiceConfig($service);
+                else
+                    $config = null;
+
                 $connectionResource = $this->getServiceConnectionResources($service);
 
                 $ret[$service] = [
@@ -132,26 +138,26 @@ class NodeManager
 
     public function heartbeat ()
     {
-        return $this->request('get', $this->getUrl('cloud/heartbeat'));
+        return $this->request('get', $this->getUrl('cloud/heartbeat'), [], true);
     }
 
     public function discoverIdentity ()
     {
-        return $this->request('get', $this->getUrl('cloud/identity'));
+        return $this->request('get', $this->getUrl('cloud/identity'), [], true);
     }
 
     public function discoverServices ()
     {
         $localEndpoint = $this->getUrl('service');
 
-        return $this->request('get', $localEndpoint);
+        return $this->request('get', $localEndpoint, []);
     }
 
     public function discoverIPAddresses ()
     {
         $localEndpoint = $this->getUrl('service/ips');
 
-        return $this->request('get', $localEndpoint);
+        return $this->request('get', $localEndpoint, [], true);
     }
 
     public function getServiceConfig (String $serviceName)
@@ -160,7 +166,7 @@ class NodeManager
 
         $localEndpoint = $this->getUrl('service/' . $serviceName . '/config');
 
-        return $this->request('get', $localEndpoint);
+        return $this->request('get', $localEndpoint, [], true);
     }
 
     public function getServiceConnectionResources (String $serviceName = '')
@@ -174,7 +180,7 @@ class NodeManager
 
         $localEndpoint = $this->getUrl($slug);
 
-        return $this->request('get', $localEndpoint);
+        return $this->request('get', $localEndpoint, [], true);
     }
 
     public function manageService (String $serviceName, String $actionName)
@@ -243,7 +249,7 @@ class NodeManager
         return $this->baseUrl . '/' . $this->version . '/' . $slug;
     }
 
-    private function request($method, $localEndpoint, $json = [])
+    private function request($method, $localEndpoint, $json = [], $resolveResults = false)
     {
         if ($this->authenticated)
             $this->headers['Authorization'] = 'Bearer ' . $this->jwtAccessToken;
@@ -272,6 +278,7 @@ class NodeManager
         }
 
         $returnedData = json_decode($results, true);
-        return $returnedData;
+
+        return $resolveResults ? $returnedData['result'] : $returnedData;
     }
 }

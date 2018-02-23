@@ -28,6 +28,7 @@ class CreateNodesTable extends Migration
             $table->decimal('price', 13, 4);
             $table->integer('asn');
             $table->string('cc');
+            $table->json('system_config');
             $table->timestamps();
             $table->softDeletes();
 

@@ -47,7 +47,21 @@ class NodeEventListener extends BaseListener
                  * Insert it all accordingly
                  */
                 $manager = new NodeManager($node);
-                $data = $manager->firstTimeDiscovery();
+                $data = $manager->discover(true);
+
+                // OK, we managed to talk to the daemon and got the data.
+                // If we got here, it also means that the daemon's configs are as we expect it to be (otherwise NODE_VERIFICATION_FAILED has been fired)
+
+                // Let's save them.
+                $node->system_config = json_encode($data['systemConfig']);
+                $node->saveOrFail();
+
+                // Now let us iterate and validate each service is really what it claims to be.
+
+
+
+
+
 
 
 

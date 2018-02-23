@@ -16,6 +16,18 @@ class CreateServicesTable extends Migration
         Schema::create('services', function (Blueprint $table)
         {
             $table->increments('id');
+
+            $table->integer('node_id');
+            $table->index('node_id', 'node_id_index');
+
+            $table->string('type');
+
+            $table->json('config');
+
+            $table->json('access_reference');
+            $table->mediumText('access_config');
+            $table->string('access_credentials');
+
             $table->timestamps();
         });
     }

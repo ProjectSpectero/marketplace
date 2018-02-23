@@ -10,6 +10,7 @@ use App\Constants\OrderStatus;
 use App\Constants\PaymentType;
 use App\Events\BillingEvent;
 use App\Invoice;
+use App\Libraries\AccountingManager;
 use App\Libraries\FraudCheckManager;
 use App\Libraries\Utility;
 use App\Mail\InvoicePaid;
@@ -70,8 +71,8 @@ class BillingEventListener extends BaseListener
                     case PaymentType::DEBIT:
                         // TODO: terminate/cancel stuff if refunds happen
                 }
+                AccountingManager::account($object);
 
-                // TODO: communicate with xero/whoever to accurately account
             break;
             case Events::ORDER_CREATED:
                 // The object is an order in this case

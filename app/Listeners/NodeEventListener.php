@@ -3,12 +3,15 @@
 namespace App\Listeners;
 
 use App\Constants\Events;
+use App\Constants\HTTPProxyMode;
 use App\Constants\ServiceType;
 use App\Events\NodeEvent;
 use App\Libraries\NodeManager;
 use App\Libraries\Utility;
 use App\Mail\NodeVerificationFailed;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class NodeEventListener extends BaseListener
 {
@@ -65,7 +68,27 @@ class NodeEventListener extends BaseListener
                     switch ($service)
                     {
                         case ServiceType::HTTPProxy:
+                            // First, let us account for the proxy mode, and the count(s) of the allowed/banned domains
                             // We validate EVERY proxy here to confirm that a DISTINCT outgoing IP is available for each.
+                            $config = $resource['config'];
+
+                            $rules = [
+                                'listeners' => 'array|min:1',
+                                'listeners.*.item1' => 'required|ip',
+                                'listeners.*.item2' => 'required|min:1024|max:65534',
+                                'proxyMode' => Rule::in(HTTPProxyMode::getConstants())
+                            ];
+
+                            $validator = Validator::make($config, $rules);
+
+                            /*
+                             * TODO: if invalid, email user why and bail.
+                             * if valid, see https://paste.ee/p/rW4G6#61DhWNCU1JtXz6GHouDQxJfndTtsLefy for schema
+                             * verify resource->connectionresource->accessReference (all on a loop) with the HTTPProxyManager, they ALL need to pass validation. If failed, again, mail user why
+                             * If that passes, create a new service with these details. See migration for schema, self explanatory. Apply json_encode when needed
+                             * Then create ServiceIPAddresses (one for each accessReference ip), see migration for wchema again
+                             */
+
                             break;
                         case ServiceType::OpenVPN:
                             break;

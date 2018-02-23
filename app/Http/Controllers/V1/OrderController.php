@@ -17,6 +17,7 @@ use App\Invoice;
 use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
 use App\Libraries\TaxationManager;
+use App\Libraries\Utility;
 use App\Node;
 use App\NodeGroup;
 use App\Order;
@@ -205,6 +206,9 @@ class OrderController extends CRUDController
             $lineItem->resource = $resource->id;
             $lineItem->quantity = $quantity;
             $lineItem->amount = $resource->price;
+
+            // User's id number + this (below) will become their login credentials for this line item if the order is fulfilled.
+            $lineItem->access_password = Utility::getRandomString();
 
             $amount += $resource->price * $quantity;
 

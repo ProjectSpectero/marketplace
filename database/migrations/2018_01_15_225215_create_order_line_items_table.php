@@ -22,6 +22,7 @@ class CreateOrderLineItemsTable extends Migration
             $table->string('resource');
             $table->integer('quantity');
             $table->decimal('amount', 13, 4);
+            $table->string('access_password');
             $table->timestamps();
         });
     }

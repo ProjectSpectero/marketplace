@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Constants\Events;
+use App\Constants\ServiceType;
 use App\Events\NodeEvent;
 use App\Libraries\NodeManager;
 use App\Libraries\Utility;
@@ -56,7 +57,22 @@ class NodeEventListener extends BaseListener
                 $node->system_config = json_encode($data['systemConfig']);
                 $node->saveOrFail();
 
+                unset($data['systemConfig']);
+
                 // Now let us iterate and validate each service is really what it claims to be.
+                foreach ($data['services'] as $service => $resource)
+                {
+                    switch ($service)
+                    {
+                        case ServiceType::HTTPProxy:
+                            // We validate EVERY proxy here to confirm that a DISTINCT outgoing IP is available for each.
+                            break;
+                        case ServiceType::OpenVPN:
+                            break;
+                    }
+                }
+
+
 
 
 

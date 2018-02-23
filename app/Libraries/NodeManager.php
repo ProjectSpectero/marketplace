@@ -112,14 +112,11 @@ class NodeManager
             {
                 $this->validateServiceName($service);
 
-                if ($loadServiceConfigs)
-                    $config = $this->getServiceConfig($service);
-                else
-                    $config = null;
+                $config = $loadServiceConfigs ? $this->getServiceConfig($service) : null;
 
                 $connectionResource = $this->getServiceConnectionResources($service);
 
-                $ret[$service] = [
+                $ret['services'][$service] = [
                     'config' => $config,
                     'connectionResource' => $connectionResource
                 ];

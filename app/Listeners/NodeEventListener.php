@@ -94,7 +94,8 @@ class NodeEventListener extends BaseListener
 
                             $proxyManager = new HTTPProxyManager();
                             list($authKey, $password) = explode(':', $node->access_token, 2);
-
+                            $ip = '';
+                            $port = '';
                             foreach ($resource['connectionResource']['accessReference'] as $reference)
                             {
                                 list($ip, $port) = explode(':', $reference, 2);
@@ -105,22 +106,22 @@ class NodeEventListener extends BaseListener
                                     Mail::to($node->user->email)->queue(new ProxyVerificationFailed());
                                     break;
                                 }
-
-                                $newService = new Service();
-                                $newService->node_id = $node->id;
-                                $newService->type = $service;
-                                $newService->config = json_encode($config);
-                                $newService->connection_resource = json_encode($resource['connectionResource']);
-
-                                $newService->saveOrFail();
-
-                                $serviceIpAddr = new ServiceIPAddress();
-                                $serviceIpAddr->ip = $ip;
-                                $serviceIpAddr->type = $service;
-                                $serviceIpAddr->service_id = $newService->id;
-
-                                $serviceIpAddr->saveOrFail();
                             }
+
+                            $newService = new Service();
+                            $newService->node_id = $node->id;
+                            $newService->type = $service;
+                            $newService->config = json_encode($config);
+                            $newService->connection_resource = json_encode($resource['connectionResource']);
+
+                            $newService->saveOrFail();
+
+                            $serviceIpAddr = new ServiceIPAddress();
+                            $serviceIpAddr->ip = $ip;
+                            $serviceIpAddr->type = $service;
+                            $serviceIpAddr->service_id = $newService->id;
+
+                            $serviceIpAddr->saveOrFail();
 
                             /*
                              * TODO: if invalid, email user why and bail.

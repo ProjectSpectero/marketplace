@@ -42,6 +42,9 @@ class NodeEventListener extends BaseListener
         $oldState = Utility::getPreviousModel($event->dataBag);
         $error = Utility::getError($event->dataBag);
 
+        $servicesData = array();
+        $servicesIpData = array();
+
         switch ($event->type)
         {
             case Events::NODE_CREATED:
@@ -94,9 +97,7 @@ class NodeEventListener extends BaseListener
 
                             $proxyManager = new HTTPProxyManager();
                             list($authKey, $password) = explode(':', $node->access_token, 2);
-                            $ip = '';
-                            $port = '';
-                            foreach ($resource['connectionResource']['accessReference'] as $reference)
+                            foreach ($resource['connectionResource']['accessReference'] as $index => $reference)
                             {
                                 list($ip, $port) = explode(':', $reference, 2);
                                 $verified = $proxyManager->verify($ip, $ip, $port, $authKey, $password);
@@ -106,22 +107,26 @@ class NodeEventListener extends BaseListener
                                     Mail::to($node->user->email)->queue(new ProxyVerificationFailed());
                                     break;
                                 }
+
+                                $newService = new Service();
+                                $servicesData[] = [
+                                    'id' => $newService->id,
+                                    'node_id' => $node->id,
+                                    'type' => $service,
+                                    'config' => json_encode($config),
+                                    'connection_resource' => json_encode($resource['connectionResource'])
+                                ];
+
+                                $serviceIpAddr = new ServiceIPAddress();
+                                $servicesIpData[] = [
+                                    'id' => $serviceIpAddr->id,
+                                    'ip' => $ip,
+                                    'type' => $service,
+                                    'service_id' => $newService->id,
+                                ];
                             }
 
-                            $newService = new Service();
-                            $newService->node_id = $node->id;
-                            $newService->type = $service;
-                            $newService->config = json_encode($config);
-                            $newService->connection_resource = json_encode($resource['connectionResource']);
 
-                            $newService->saveOrFail();
-
-                            $serviceIpAddr = new ServiceIPAddress();
-                            $serviceIpAddr->ip = $ip;
-                            $serviceIpAddr->type = $service;
-                            $serviceIpAddr->service_id = $newService->id;
-
-                            $serviceIpAddr->saveOrFail();
 
                             /*
                              * TODO: if invalid, email user why and bail.
@@ -137,13 +142,8 @@ class NodeEventListener extends BaseListener
                     }
                 }
 
-
-
-
-
-
-
-
+                \DB::table('services')->insert($servicesData);
+                \DB::table('service_ip_address')->insert($servicesIpData);
 
 
                 break;

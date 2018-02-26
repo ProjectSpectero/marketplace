@@ -4,7 +4,7 @@
 namespace App\Constants;
 
 
-class TransactionReasons
+class TransactionReasons extends Holder
 {
     const PAYMENT = 'PAYMENT';
     const SUBSCRIPTION = 'SUBSCRIPTION';

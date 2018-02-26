@@ -2,12 +2,11 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
-
 class Transaction extends BaseModel
 {
 
     protected $casts = ['amount' => 'float', 'fee' => 'float'];
+    public $searchAble = [ 'invoice_id' ];
 
     public function invoice()
     {

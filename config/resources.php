@@ -5,5 +5,6 @@ return [
     'node' => 'node',
     'order' => 'order',
     'invoice' => 'invoice',
-    'node_group' => 'node_group'
+    'node_group' => 'node_group',
+    'transaction' => 'transaction'
 ];

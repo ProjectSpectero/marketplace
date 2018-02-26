@@ -9,7 +9,7 @@
 namespace App\Constants;
 
 
-class PaymentType
+class PaymentType extends Holder
 {
     const CREDIT = 'credit';
     const DEBIT = 'debit';

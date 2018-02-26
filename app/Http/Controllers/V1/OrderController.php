@@ -10,6 +10,7 @@ use App\Constants\Messages;
 use App\Constants\NodeMarketModel;
 use App\Constants\OrderResourceType;
 use App\Constants\OrderStatus;
+use App\Constants\PaymentProcessor;
 use App\Constants\ResponseType;
 use App\Errors\UserFriendlyException;
 use App\Events\BillingEvent;
@@ -76,8 +77,8 @@ class OrderController extends CRUDController
 
         $rules = [
             'status' => 'required',
-            'subscription_reference' => 'required',
-            'subscription_provider' => 'required',
+            'subscription_reference' => 'sometimes|alpha_dash',
+            'subscription_provider' => [ 'required_with:subscription_reference', Rule::in(PaymentProcessor::getConstants()) ],
             'term' => 'required',
             'due_next' => 'required'
         ];

@@ -265,16 +265,24 @@ class StripeProcessor extends BasePaymentProcessor
 
         try
         {
-            UserMeta::loadMeta($user, UserMetaKeys::StripeCardToken, true);
-            UserMeta::loadMeta($user, UserMetaKeys::StripeCustomerIdentifier, true);
+            /** @var UserMeta $token */
+            $token = UserMeta::loadMeta($user, UserMetaKeys::StripeCardToken, true);
+
+            /** @var UserMeta $cust */
+            $cust = UserMeta::loadMeta($user, UserMetaKeys::StripeCustomerIdentifier, true);
+
+
+            /** @var UserMeta $card */
+            $card = UserMeta::loadMeta($user, UserMetaKeys::StoredCardIdentifier, true);
         }
         catch (ModelNotFoundException $exception)
         {
             throw new UserFriendlyException(Errors::NO_STORED_CARD);
         }
 
-        UserMeta::deleteMeta($user, UserMetaKeys::StripeCustomerIdentifier);
-        UserMeta::deleteMeta($user, UserMetaKeys::StripeCardToken);
+        $token->delete();
+        $cust->delete();
+        $card->delete();
     }
 
     private function ensureSuccess (Array $data, String $caller = 'process')

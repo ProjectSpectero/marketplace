@@ -11,7 +11,7 @@ class Node extends BaseModel
     use SoftDeletes;
 
     protected $fillable = [
-        'ip', 'port', 'protocol', 'access_token', 'install_id', 'status'
+        'ip', 'port', 'protocol', 'access_token', 'install_id', 'status',' user_id'
     ];
 
     protected $hidden = [

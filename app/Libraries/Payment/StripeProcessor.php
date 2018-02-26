@@ -270,7 +270,7 @@ class StripeProcessor extends BasePaymentProcessor
         }
         catch (ModelNotFoundException $exception)
         {
-            throw new UserFriendlyException(Errors::NO_STRIPE_CARD_FOUND);
+            throw new UserFriendlyException(Errors::NO_STORED_CARD);
         }
 
         UserMeta::deleteMeta($user, UserMetaKeys::StripeCustomerIdentifier);

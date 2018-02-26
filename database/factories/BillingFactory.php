@@ -30,6 +30,7 @@ $factory->define(App\Invoice::class, function (Faker\Generator $faker) {
         'amount' => 49.95,
         'currency' => \App\Constants\Currency::USD,
         'status' => \App\Constants\InvoiceStatus::UNPAID,
+        'due_date' => \Carbon\Carbon::now(),
     ];
 });
 

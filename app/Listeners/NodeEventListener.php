@@ -6,12 +6,17 @@ use App\Constants\Events;
 use App\Constants\HTTPProxyMode;
 use App\Constants\ServiceType;
 use App\Events\NodeEvent;
+use App\Libraries\HTTPProxyManager;
 use App\Libraries\NodeManager;
 use App\Libraries\Utility;
 use App\Mail\NodeVerificationFailed;
+use App\Mail\ProxyVerificationFailed;
+use App\Mail\ResourceConfigFailed;
+use App\Service;
+use App\ServiceIPAddress;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
+use Validator;
 
 class NodeEventListener extends BaseListener
 {
@@ -52,12 +57,11 @@ class NodeEventListener extends BaseListener
                  */
                 $manager = new NodeManager($node);
                 $data = $manager->discover(true);
-
                 // OK, we managed to talk to the daemon and got the data.
                 // If we got here, it also means that the daemon's configs are as we expect it to be (otherwise NODE_VERIFICATION_FAILED has been fired)
 
                 // Let's save them.
-                $node->system_config = json_encode($data['systemConfig']);
+                $node->loaded_config = json_encode($data['systemConfig']);
                 $node->saveOrFail();
 
                 unset($data['systemConfig']);
@@ -81,12 +85,49 @@ class NodeEventListener extends BaseListener
 
                             $validator = Validator::make($config, $rules);
 
+                            if ($validator->fails())
+                            {
+                                $errors = $validator->errors()->getMessages();
+                                Mail::to($node->user->email)->queue(new ResourceConfigFailed($errors));
+                                break;
+                            }
+
+                            $proxyManager = new HTTPProxyManager();
+                            list($authKey, $password) = explode(':', $node->access_token, 2);
+
+                            foreach ($resource['connectionResource']['accessReference'] as $reference)
+                            {
+                                list($ip, $port) = explode(':', $reference, 2);
+                                $verified = $proxyManager->verify($ip, $ip, $port, $authKey, $password);
+
+                                if (!$verified)
+                                {
+                                    Mail::to($node->user->email)->queue(new ProxyVerificationFailed());
+                                    break;
+                                }
+
+                                $newService = new Service();
+                                $newService->node_id = $node->id;
+                                $newService->type = $service;
+                                $newService->config = json_encode($config);
+                                $newService->connection_resource = json_encode($resource['connectionResource']);
+
+                                $newService->saveOrFail();
+
+                                $serviceIpAddr = new ServiceIPAddress();
+                                $serviceIpAddr->ip = $ip;
+                                $serviceIpAddr->type = $service;
+                                $serviceIpAddr->service_id = $newService->id;
+
+                                $serviceIpAddr->saveOrFail();
+                            }
+
                             /*
                              * TODO: if invalid, email user why and bail.
                              * if valid, see https://paste.ee/p/rW4G6#61DhWNCU1JtXz6GHouDQxJfndTtsLefy for schema
-                             * verify resource->connectionresource->accessReference (all on a loop) with the HTTPProxyManager, they ALL need to pass validation. If failed, again, mail user why
+                             * verify resource->connectionResource->accessReference (all on a loop) with the HTTPProxyManager, they ALL need to pass validation. If failed, again, mail user why
                              * If that passes, create a new service with these details. See migration for schema, self explanatory. Apply json_encode when needed
-                             * Then create ServiceIPAddresses (one for each accessReference ip), see migration for wchema again
+                             * Then create ServiceIPAddresses (one for each accessReference ip), see migration for schema again
                              */
 
                             break;

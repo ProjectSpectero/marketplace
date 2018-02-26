@@ -100,6 +100,8 @@ class NodeController extends CRUDController
             $input['ip'] = $ipAddress;
             $input['status'] = NodeStatus::UNCONFIRMED;
             $node = Node::create($input);
+            $node->user_id = $request->user()->id;
+            $node->saveOrFail();
         }
 
         event(new NodeEvent(Events::NODE_CREATED, $node, []));

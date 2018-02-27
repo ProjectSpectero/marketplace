@@ -17,6 +17,7 @@ use App\Mail\ResourceConfigFailed;
 use App\Service;
 use App\ServiceIPAddress;
 use DB;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -123,7 +124,15 @@ class NodeEventListener extends BaseListener
                             foreach ($resource['connectionResource']['accessReference'] as $index => $reference)
                             {
                                 list($ip, $port) = explode(':', $reference, 2);
-                                $outgoingIp = $proxyManager->discover($ip, $port, $authKey, $password);
+
+                                try
+                                {
+                                    $outgoingIp = $proxyManager->discover($ip, $port, $authKey, $password);
+                                }
+                                catch (RequestException $exception)
+                                {
+                                    $outgoingIp = false;
+                                }
 
                                 if ($outgoingIp == false)
                                 {
@@ -183,7 +192,6 @@ class NodeEventListener extends BaseListener
                             $persistedIp->service_id = $service->id;
                             $persistedIp->saveOrFail();
                         }
-
                     }
 
                     // If everything went well, node is now confirmed.

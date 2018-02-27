@@ -67,7 +67,7 @@ class NodeManager
         $rules = [
             'config.BlockedRedirectUri' => 'required|equals:https://blocked.spectero.com/?reason={0}&uri={1}&data={2}',
             'config.AuthCacheMinutes' => 'required|max:10',
-//            'config.LocalSubnetBanEnabled' => 'required|equals:true',
+            'config.LocalSubnetBanEnabled' => 'required|equals:true',
             'config.JWTTokenExpiryInMinutes' => 'required|max:100',
             'config.RespectEndpointToOutgoingMapping' => 'required|equals:true',
             'config.InMemoryAuth' => 'required|equals:true',

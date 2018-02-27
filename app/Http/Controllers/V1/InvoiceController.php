@@ -9,6 +9,7 @@ use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
+use App\Libraries\BillingUtils;
 use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
 use App\Transaction;
@@ -149,33 +150,11 @@ class InvoiceController extends CRUDController
     {
         $user = $invoice->order->user;
 
-        try
-        {
-            $addrLine1 = UserMeta::loadMeta($user, UserMetaKeys::AddressLineOne, true)->meta_value;
-            $addrLine2 = UserMeta::loadMeta($user, UserMetaKeys::AddressLineTwo, true)->meta_value;
-            $city = UserMeta::loadMeta($user, UserMetaKeys::City, true)->meta_value;
-            $state = UserMeta::loadMeta($user, UserMetaKeys::State, true)->meta_value;
-            $country = UserMeta::loadMeta($user, UserMetaKeys::Country, true)->meta_value;
-            $postCode = UserMeta::loadMeta($user, UserMetaKeys::PostCode, true)->meta_value;
+        $compiledDetails = BillingUtils::compileDetails($user);
+        $formattedUserAddress = BillingUtils::getFormattedUserAddress($compiledDetails);
 
-            // These are nullable
-            $organization = UserMeta::loadMeta($user, UserMetaKeys::Organization);
-            $taxId = UserMeta::loadMeta($user, UserMetaKeys::TaxIdentification);
-
-        }
-        catch (ModelNotFoundException $e)
-        {
-            throw new UserFriendlyException(Errors::BILLING_PROFILE_INCOMPLETE, ResponseType::FORBIDDEN);
-        }
-
-        $organization = $this->getMetaValueIfNotNull($organization);
-        $taxId = $this->getMetaValueIfNotNull($taxId);
-
-        $formattedUserAddress = $addrLine1;
-        if (! empty($addrLine2))
-            $formattedUserAddress .= PHP_EOL . $addrLine2;
-        $formattedUserAddress .= PHP_EOL . $city . ', ' . $state . ', ' . $postCode;
-        $formattedUserAddress .= PHP_EOL . $country;
+        $organization = $this->getMetaValueIfNotNull($compiledDetails['organization']);
+        $taxId = $this->getMetaValueIfNotNull($compiledDetails['$taxId']);
 
         return View::make('invoice', [
             'invoice' => $invoice,

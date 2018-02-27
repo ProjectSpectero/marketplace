@@ -15,6 +15,7 @@ use App\Constants\ResponseType;
 use App\Errors\UserFriendlyException;
 use App\Events\BillingEvent;
 use App\Invoice;
+use App\Libraries\BillingUtils;
 use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
 use App\Libraries\TaxationManager;
@@ -241,6 +242,10 @@ class OrderController extends CRUDController
     public function cart(Request $request)
     {
         $this->authorizeResource(null, 'order.cart');
+
+        // Why this useless call when we don't care about the billing details? Because this checks for billing profile completeness.
+        // Will send people a nice 403 if they try to submit orders without a complete billing profile.
+        BillingUtils::compileDetails($request->user());
 
         $rules = [
             'items' => 'array|min:1',

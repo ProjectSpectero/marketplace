@@ -22,6 +22,8 @@ class NodeVerificationFailed extends NodeMail
     {
         $this->node = $node;
         $this->error = $error;
+
+        parent::__construct($node);
     }
 
     public function build()

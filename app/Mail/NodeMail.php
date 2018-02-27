@@ -2,17 +2,15 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Libraries\Utility;
+use App\Node;
 
 class NodeMail extends BaseMail
 {
     protected $retryUrl;
 
-    public function __construct()
+    public function __construct(Node $node)
     {
-        $this->retryUrl = Utility::generateUrl('node/' . $this->node->id . '/verify', 'frontend');
+        $this->retryUrl = Utility::generateUrl('node/' . $node->id . '/verify', 'frontend');
     }
 }

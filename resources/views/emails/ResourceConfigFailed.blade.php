@@ -4,6 +4,8 @@
 
     <p>The service could not be created</p>
 
+    <p>The daemon config does not match the expected values. See the reason bellow</p>
+
     <h3>Reason:</h3>
 
     <ul class="errors">

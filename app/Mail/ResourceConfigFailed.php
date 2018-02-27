@@ -2,24 +2,23 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Node;
 
-class ResourceConfigFailed extends Mailable
+class ResourceConfigFailed extends BaseMail
 {
-    use Queueable, SerializesModels;
-
     private $errors;
+    private $node;
+
     /**
      * Create a new message instance.
      *
-     * @return void
+     * @param Node $node
+     * @param array $errors
      */
-    public function __construct(array $errors)
+    public function __construct(Node $node, array $errors)
     {
         $this->errors = $errors;
+        $this->node = $node;
     }
 
     /**

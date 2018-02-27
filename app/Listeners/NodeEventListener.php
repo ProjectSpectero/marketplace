@@ -4,19 +4,22 @@ namespace App\Listeners;
 
 use App\Constants\Events;
 use App\Constants\HTTPProxyMode;
+use App\Constants\NodeStatus;
 use App\Constants\ServiceType;
 use App\Events\NodeEvent;
 use App\Libraries\HTTPProxyManager;
 use App\Libraries\NodeManager;
 use App\Libraries\Utility;
 use App\Mail\NodeVerificationFailed;
+use App\Mail\NodeVerificationSuccessful;
 use App\Mail\ProxyVerificationFailed;
 use App\Mail\ResourceConfigFailed;
 use App\Service;
 use App\ServiceIPAddress;
+use DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
-use Validator;
+use Illuminate\Validation\Validator;
 
 class NodeEventListener extends BaseListener
 {
@@ -33,8 +36,10 @@ class NodeEventListener extends BaseListener
     /**
      * Handle the event.
      *
-     * @param  NodeEvent  $event
+     * @param  NodeEvent $event
      * @return void
+     * @throws \Exception
+     * @throws \Throwable
      */
     public function handle(NodeEvent $event)
     {
@@ -48,6 +53,10 @@ class NodeEventListener extends BaseListener
         switch ($event->type)
         {
             case Events::NODE_CREATED:
+                // Let's first check if the node is actually in NEED of verification. We don't do anything if it's confirmed.
+                if ($node->status == NodeStatus::CONFIRMED)
+                    return;
+
                 // Great, let's actually attempt to discover this node's services
                 /*
                  * Flow:
@@ -67,7 +76,11 @@ class NodeEventListener extends BaseListener
                 $node->loaded_config = json_encode($data['systemConfig']);
                 $node->saveOrFail();
 
+                $userEmail = $node->user->email;
+
                 unset($data['systemConfig']);
+
+                $serviceCollection = [];
 
                 // Now let us iterate and validate each service is really what it claims to be.
                 foreach ($data['services'] as $service => $resource)
@@ -91,39 +104,47 @@ class NodeEventListener extends BaseListener
                             if ($validator->fails())
                             {
                                 $errors = $validator->errors()->getMessages();
-                                Mail::to($node->user->email)->queue(new ResourceConfigFailed($errors));
+                                // Needs details on what the node was (preferably a link) along with a link to retrying the verification after fixing it
+                                Mail::to($userEmail)->queue(new ResourceConfigFailed($node, $errors));
                                 break;
                             }
 
+                            $newService = new Service();
+                            $newService->node_id = $node->id;
+                            $newService->type = $service;
+                            $newService->config = json_encode($config);
+                            $newService->connection_resource = json_encode($resource['connectionResource']);
+
                             $proxyManager = new HTTPProxyManager();
                             list($authKey, $password) = explode(':', $node->access_token, 2);
+
+                            $outgoingIpCollection = [];
+
                             foreach ($resource['connectionResource']['accessReference'] as $index => $reference)
                             {
                                 list($ip, $port) = explode(':', $reference, 2);
-                                $verified = $proxyManager->verify($ip, $ip, $port, $authKey, $password);
+                                $outgoingIp = $proxyManager->discover($ip, $port, $authKey, $password);
 
-                                if (!$verified)
+                                if ($outgoingIp == false)
                                 {
-                                    Mail::to($node->user->email)->queue(new ProxyVerificationFailed());
+                                    Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, $ip, "Resolution: could not resolve outgoing IP for proxy $ip:$port."));
                                     break;
                                 }
+
+                                if (in_array($outgoingIp, $outgoingIpCollection))
+                                {
+                                    // Duplicate, proxies NEED to have unique IPs.
+                                    Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, $ip, "Duplicate: the outgoing IP of $outgoingIp has been seen before."));
+                                    break;
+                                }
+
+                                $outgoingIpCollection[] = $outgoingIp;
                             }
 
-                            $newService = new Service();
-                            $servicesData[] = [
-                                'node_id' => $node->id,
-                                'type' => $service,
-                                'config' => json_encode($config),
-                                'connection_resource' => json_encode($resource['connectionResource'])
+                            $serviceCollection[] = [
+                                'service' => $newService,
+                                'ips' => $outgoingIpCollection
                             ];
-
-                            $servicesIpData[] = [
-                                'ip' => $ip,
-                                'type' => $service,
-                                'service_id' => $newService->id,
-                            ];
-
-
 
                             /*
                              * TODO: if invalid, email user why and bail.
@@ -139,10 +160,38 @@ class NodeEventListener extends BaseListener
                     }
                 }
 
-                DB::transaction(function() use ($servicesData, $servicesIpData) {
-                    \DB::table('services')->insert($servicesData);
-                    \DB::table('service_ip_address')->insert($servicesIpData);
+                // We need to mark the node for a re-verify if anything goes wrong here (automated)
+                DB::transaction(function() use ($serviceCollection, $node)
+                {
+                    foreach ($serviceCollection as $holder)
+                    {
+                        /** @var Service $service */
+                        $service = $holder['service'];
+
+                        /** @var array $ipCollection */
+                        $ipCollection = $holder['ips'];
+
+                        $service->saveOrFail();
+
+                        // NOW, $service has an ID associated.
+
+                        foreach ($ipCollection as $ip)
+                        {
+                            $persistedIp = new ServiceIPAddress();
+                            $persistedIp->ip = $ip;
+                            $persistedIp->type = $service->type;
+                            $persistedIp->service_id = $service->id;
+                            $persistedIp->saveOrFail();
+                        }
+
+                    }
+
+                    // If everything went well, node is now confirmed.
+                    $node->status = NodeStatus::CONFIRMED;
+                    $node->saveOrFail();
                 });
+
+                Mail::to($userEmail)->queue(new NodeVerificationSuccessful($node));
                 
                 break;
             case Events::NODE_UPDATED:

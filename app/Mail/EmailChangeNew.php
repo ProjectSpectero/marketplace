@@ -21,6 +21,8 @@ class EmailChangeNew extends BaseMail
 
     /**
      * EmailChangeNew constructor.
+     * @param User $user
+     * @param String $verifyToken
      */
     public function __construct(User $user, String $verifyToken)
     {
@@ -32,7 +34,7 @@ class EmailChangeNew extends BaseMail
     {
         $url = Utility::generateUrl('verify/' . $this->user->email . '/' . $this->verifyToken, 'frontend');
 
-        return $this->subject("Email successfully changed")
+        return $this->subject($this->formatTitle("Your e-mail address was successfully changed"))
             ->view('emails.EmailChangeNew', [
                 'verifyUrl' => $url,
             ]);

@@ -16,6 +16,7 @@ class EmailChangeOld extends BaseMail
 
     /**
      * EmailChangeOld constructor.
+     * @param String $email
      */
     public function __construct(String $email)
     {
@@ -24,7 +25,7 @@ class EmailChangeOld extends BaseMail
 
     public function build()
     {
-        return $this->subject('Your email has been changed')
+        return $this->subject($this->formatTitle('Your e-mail address has been changed'))
             ->view('emails.EmailChangeOld', [
                 'newEmail' => $this->newEmail
             ]);

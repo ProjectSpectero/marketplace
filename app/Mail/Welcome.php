@@ -1,13 +1,12 @@
 <?php
 
-
 namespace App\Mail;
-
 
 class Welcome extends BaseMail
 {
     public function build()
     {
-        return $this->view('emails.Welcome');
+        return $this->subject($this->formatTitle("Welcome!"))
+            ->view('emails.Welcome');
     }
 }

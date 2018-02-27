@@ -2,23 +2,27 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Node;
 
-class ProxyVerificationFailed extends Mailable
+class ProxyVerificationFailed extends BaseMail
 {
-    use Queueable, SerializesModels;
+
+    private $ip;
+    private $node;
+    private $error;
 
     /**
      * Create a new message instance.
      *
-     * @return void
+     * @param Node $node
+     * @param String $ip
+     * @param String $error
      */
-    public function __construct()
+    public function __construct(Node $node, String $ip, String $error = "")
     {
-        //
+        $this->node = $node;
+        $this->ip = $ip;
+        $this->error = $error;
     }
 
     /**
@@ -28,7 +32,9 @@ class ProxyVerificationFailed extends Mailable
      */
     public function build()
     {
-        return $this->subject('Proxy Verification Failed')
+        // TODO: dress this up to be a proper, hierarchical node related error message. Provide link to re-verify in there to retry.
+
+        return $this->subject($this->formatTitle('Node verification failed (svc: proxy) (#' . $this->node->id . ')'))
             ->view('emails.ProxyVerificationFailed');
     }
 }

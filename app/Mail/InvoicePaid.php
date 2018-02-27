@@ -2,24 +2,17 @@
 
 namespace App\Mail;
 
-use App\Http\Controllers\V1\InvoiceController;
 use App\Invoice;
 use App\Libraries\Utility;
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class InvoicePaid extends Mailable
+class InvoicePaid extends BaseMail
 {
-    use Queueable, SerializesModels;
-
     private $invoice;
 
     /**
      * Create a new message instance.
      *
-     * @return void
+     * @param Invoice $invoice
      */
     public function __construct(Invoice $invoice)
     {
@@ -33,12 +26,9 @@ class InvoicePaid extends Mailable
      */
     public function build()
     {
-        $invoiceController = new InvoiceController();
-        $invoice = $invoiceController->renderInvoice($this->invoice);
-
         $invoiceUrl = Utility::generateUrl('invoice/' . $this->invoice->id . '/render', 'frontend');
 
-        return $this->subject('Thank you for your purchase')
+        return $this->subject($this->formatTitle('Thank you for your payment'))
             ->view('PaidInvoice', [
                 'invoiceUrl' => $invoiceUrl,
                 'transaction' => $this->invoice->transactions->first()

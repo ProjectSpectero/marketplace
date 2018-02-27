@@ -4,21 +4,15 @@ namespace App\Mail;
 
 use App\Libraries\Utility;
 use App\Order;
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class OrderCreated extends Mailable
+class OrderCreated extends BaseMail
 {
-    use Queueable, SerializesModels;
-
     private $order;
 
     /**
      * Create a new message instance.
      *
-     * @return void
+     * @param Order $order
      */
     public function __construct(Order $order)
     {
@@ -33,7 +27,7 @@ class OrderCreated extends Mailable
     public function build()
     {
         $url = Utility::generateUrl('order/' . $this->order->id, 'frontend');
-        return $this->subject('Thank you for your order')
+        return $this->subject($this->formatTitle("Order confirmation (#" . $this->order->id . ')'))
             ->view('emails.OrderCreated', [
                 'url' => $url,
                 'order' => $this->order

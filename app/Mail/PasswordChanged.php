@@ -12,7 +12,8 @@ class PasswordChanged extends BaseMail
     /**
      * Create a new message instance.
      *
-     * @return void
+     * @param String $password
+     * @param String $ip
      */
     public function __construct(String $password, String $ip)
     {
@@ -27,7 +28,7 @@ class PasswordChanged extends BaseMail
      */
     public function build()
     {
-        return $this->subject('Your password has been changed')
+        return $this->subject($this->formatTitle('Your password has been changed'))
             ->view('emails.PasswordChanged', [
                 'newPassword' => $this->password,
                 'requestIp' => $this->ip,

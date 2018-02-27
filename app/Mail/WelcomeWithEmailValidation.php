@@ -24,7 +24,7 @@ class WelcomeWithEmailValidation extends BaseMail
 
         $url = Utility::generateUrl('verify/' . $this->user->email . '/' . $this->verifyToken, 'frontend');
 
-        return $this->subject('Welcome')
+        return $this->subject($this->formatTitle('Welcome!'))
             ->view('emails.WelcomeWithEmailValidation', [
                 'verifyUrl' => $url,
             ]);

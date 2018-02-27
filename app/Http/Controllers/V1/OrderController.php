@@ -50,7 +50,15 @@ class OrderController extends CRUDController
                 if ($order->status != OrderStatus::ACTIVE)
                     throw new UserFriendlyException(Errors::ORDER_NOT_ACTIVE_YET);
 
+                $connectionResources = [];
                 // TODO: return the connection_resource from every node (either standalone, or part of groups) that are a part of this order, alongside order->accessor
+                foreach ($order->lineItems as $item)
+                {
+                    $connectionResources[] = $this->getConnectionResources($item);
+                }
+
+                return $this->respond($connectionResources);
+
 
             default:
                 return $this->respond($order->toArray());
@@ -267,6 +275,33 @@ class OrderController extends CRUDController
        event(new BillingEvent(Events::ORDER_CREATED, $order));
 
        return $this->respond($order->toArray());
+    }
+
+    private function getConnectionResources(OrderLineItem $item)
+    {
+        $connectionResources = [];
+
+        switch ($item->type)
+        {
+            case OrderResourceType::NODE:
+                $node = Node::find($item->resource);
+                foreach ($node->services as $service)
+                {
+                    $connectionResources[] = $service->connection_resource;
+                }
+                break;
+            case OrderResourceType::NODE_GROUP:
+                $nodeGroup = NodeGroup::find($item->resource);
+                foreach ($nodeGroup->nodes as $node)
+                {
+                    foreach ($node->services as $service)
+                    {
+                        $connectionResources[] = $service->connection_resource;
+                    }
+                }
+        }
+
+        return $connectionResources;
     }
 
 }

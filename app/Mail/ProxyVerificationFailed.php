@@ -5,7 +5,7 @@ namespace App\Mail;
 use App\Libraries\Utility;
 use App\Node;
 
-class ProxyVerificationFailed extends BaseMail
+class ProxyVerificationFailed extends NodeMail
 {
 
     private $ip;
@@ -24,7 +24,6 @@ class ProxyVerificationFailed extends BaseMail
         $this->node = $node;
         $this->ip = $ip;
         $this->error = $error;
-        $this->retryUrl = Utility::generateUrl('node/proxy', 'frontend');
     }
 
     /**

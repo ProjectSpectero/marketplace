@@ -7,7 +7,7 @@ namespace App\Mail;
 use App\Libraries\Utility;
 use App\Node;
 
-class NodeVerificationFailed extends BaseMail
+class NodeVerificationFailed extends NodeMail
 {
 
     private $error;

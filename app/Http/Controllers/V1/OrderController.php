@@ -46,6 +46,12 @@ class OrderController extends CRUDController
         {
             case 'invoices':
                 return PaginationManager::paginate($request, Invoice::findForOrder($order)->noEagerLoads());
+            case 'resources':
+                if ($order->status != OrderStatus::ACTIVE)
+                    throw new UserFriendlyException(Errors::ORDER_NOT_ACTIVE_YET);
+
+                // TODO: return the connection_resource from every node (either standalone, or part of groups) that are a part of this order, alongside order->accessor
+
             default:
                 return $this->respond($order->toArray());
         }
@@ -145,6 +151,7 @@ class OrderController extends CRUDController
         $order->status = OrderStatus::AUTOMATED_FRAUD_CHECK;
         $order->term = $term;
         $order->due_next = $dueNext;
+        $order->accessor = Utility::getRandomString() . ':' . Utility::getRandomString();
         $order->saveOrFail();
 
         $this->populateLineItems($items, $order, true, $dueNext);
@@ -208,9 +215,6 @@ class OrderController extends CRUDController
             $lineItem->resource = $resource->id;
             $lineItem->quantity = $quantity;
             $lineItem->amount = $resource->price;
-
-            // User's id number + this (below) will become their login credentials for this line item if the order is fulfilled.
-            $lineItem->access_password = Utility::getRandomString();
 
             $amount += $resource->price * $quantity;
 

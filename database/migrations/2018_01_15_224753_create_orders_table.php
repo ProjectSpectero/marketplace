@@ -24,6 +24,7 @@ class CreateOrdersTable extends Migration
             $table->date('due_next'); // Take today() + add term to it to calculate this once payment is received
             $table->integer('last_invoice_id');
             $table->mediumText('notes');
+            $table->string('accessor', 512);
             $table->timestamps();
 
             $table->index([ 'subscription_reference', 'subscription_provider' ], 'reference_provider_index');

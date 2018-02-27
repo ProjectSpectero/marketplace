@@ -107,24 +107,21 @@ class NodeEventListener extends BaseListener
                                     Mail::to($node->user->email)->queue(new ProxyVerificationFailed());
                                     break;
                                 }
-
-                                $newService = new Service();
-                                $servicesData[] = [
-                                    'id' => $newService->id,
-                                    'node_id' => $node->id,
-                                    'type' => $service,
-                                    'config' => json_encode($config),
-                                    'connection_resource' => json_encode($resource['connectionResource'])
-                                ];
-
-                                $serviceIpAddr = new ServiceIPAddress();
-                                $servicesIpData[] = [
-                                    'id' => $serviceIpAddr->id,
-                                    'ip' => $ip,
-                                    'type' => $service,
-                                    'service_id' => $newService->id,
-                                ];
                             }
+
+                            $newService = new Service();
+                            $servicesData[] = [
+                                'node_id' => $node->id,
+                                'type' => $service,
+                                'config' => json_encode($config),
+                                'connection_resource' => json_encode($resource['connectionResource'])
+                            ];
+
+                            $servicesIpData[] = [
+                                'ip' => $ip,
+                                'type' => $service,
+                                'service_id' => $newService->id,
+                            ];
 
 
 
@@ -142,10 +139,11 @@ class NodeEventListener extends BaseListener
                     }
                 }
 
-                \DB::table('services')->insert($servicesData);
-                \DB::table('service_ip_address')->insert($servicesIpData);
-
-
+                DB::transaction(function() use ($servicesData, $servicesIpData) {
+                    \DB::table('services')->insert($servicesData);
+                    \DB::table('service_ip_address')->insert($servicesIpData);
+                });
+                
                 break;
             case Events::NODE_UPDATED:
                 break;

@@ -20,7 +20,7 @@ use DB;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
+use Validator;
 
 class NodeEventListener extends BaseListener
 {

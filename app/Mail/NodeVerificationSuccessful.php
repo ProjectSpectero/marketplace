@@ -4,6 +4,7 @@
 namespace App\Mail;
 
 
+use App\Libraries\Utility;
 use App\Node;
 
 class NodeVerificationSuccessful extends BaseMail

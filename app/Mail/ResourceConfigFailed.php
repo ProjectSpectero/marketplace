@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Libraries\Utility;
 use App\Node;
 
 class ResourceConfigFailed extends BaseMail
@@ -19,6 +20,7 @@ class ResourceConfigFailed extends BaseMail
     {
         $this->errors = $errors;
         $this->node = $node;
+        $this->retryUrl = Utility::generateUrl('node/resource', 'frontend');
     }
 
     /**
@@ -30,7 +32,8 @@ class ResourceConfigFailed extends BaseMail
     {
         return $this->subject('Resource configuration failed')
             ->view('emails.ResourceConfigFailed', [
-                'errors' => $this->errors
+                'errors' => $this->errors,
+                'retryUrl' => $this->retryUrl
             ]);
     }
 }

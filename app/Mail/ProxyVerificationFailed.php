@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Libraries\Utility;
 use App\Node;
 
 class ProxyVerificationFailed extends BaseMail
@@ -23,6 +24,7 @@ class ProxyVerificationFailed extends BaseMail
         $this->node = $node;
         $this->ip = $ip;
         $this->error = $error;
+        $this->retryUrl = Utility::generateUrl('node/proxy', 'frontend');
     }
 
     /**
@@ -35,6 +37,8 @@ class ProxyVerificationFailed extends BaseMail
         // TODO: dress this up to be a proper, hierarchical node related error message. Provide link to re-verify in there to retry.
 
         return $this->subject($this->formatTitle('Node verification failed (svc: proxy) (#' . $this->node->id . ')'))
-            ->view('emails.ProxyVerificationFailed');
+            ->view('emails.ProxyVerificationFailed', [
+                'retryUrl' => $this->retryUrl
+                ]);
     }
 }

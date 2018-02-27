@@ -30,7 +30,7 @@ class NodeVerificationFailed extends BaseMail
             ->view('emails.NodeVerificationFailed', [
                 'node' => $this->node,
                 'error' => $this->error,
-                'retryUrl' => Utility::generateUrl('node/' . $this->node->id . '/verify', 'frontend')
+                'retryUrl' => $this->retryUrl
             ]);
     }
 }

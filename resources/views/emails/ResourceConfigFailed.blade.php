@@ -1,13 +1,19 @@
-<p>The service could not be created</p>
+@extends ('emails.layouts.NodeError', ['retryUrl' => $retryUrl])
 
-<h3>Reason:</h3>
+@section ('error')
 
-<ul class="errors">
-@foreach ($errors as $error)
+    <p>The service could not be created</p>
 
-    @foreach ($error as $message)
-            <li>{{$message}}</li>
+    <h3>Reason:</h3>
+
+    <ul class="errors">
+    @foreach ($errors as $error)
+
+        @foreach ($error as $message)
+                <li>{{$message}}</li>
+        @endforeach
+
     @endforeach
+    </ul>
 
-@endforeach
-</ul>
+@endsection

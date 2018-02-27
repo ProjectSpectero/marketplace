@@ -34,6 +34,7 @@ class InvoicePaid extends BaseMail
         return $this->subject($this->formatTitle('Thank you for your payment'))
             ->view('emails.PaidInvoice', [
                 'invoiceUrl' => $invoiceUrl,
+                'invoice' => $this->invoice,
                 'transaction' => $this->transaction
             ]);
     }

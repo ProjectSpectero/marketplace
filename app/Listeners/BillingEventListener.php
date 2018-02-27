@@ -62,7 +62,7 @@ class BillingEventListener extends BaseListener
 
                             $user = $invoice->user;
 
-                            Mail::to($user->email)->queue(new InvoicePaid($invoice));
+                            Mail::to($user->email)->queue(new InvoicePaid($invoice, $object));
 
                             // TODO: perform order activation here
                         }

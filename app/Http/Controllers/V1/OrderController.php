@@ -287,7 +287,10 @@ class OrderController extends CRUDController
                 $node = Node::find($item->resource);
                 foreach ($node->services as $service)
                 {
-                    $connectionResources[] = $service->connection_resource;
+                    $connectionResources[] = [
+                            'name' => $service->type,
+                            'resource' => $service->connection_resource
+                        ];
                 }
                 break;
             case OrderResourceType::NODE_GROUP:
@@ -296,7 +299,10 @@ class OrderController extends CRUDController
                 {
                     foreach ($node->services as $service)
                     {
-                        $connectionResources[] = $service->connection_resource;
+                        $connectionResources[] = [
+                            'name' => $service->type,
+                            'resource' => $service->connection_resource
+                        ];
                     }
                 }
         }

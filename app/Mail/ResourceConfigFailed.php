@@ -20,6 +20,8 @@ class ResourceConfigFailed extends NodeMail
     {
         $this->errors = $errors;
         $this->node = $node;
+
+        parent::__construct($node);
     }
 
     /**

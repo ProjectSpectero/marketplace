@@ -21,9 +21,12 @@ class ProxyVerificationFailed extends NodeMail
      */
     public function __construct(Node $node, String $ip, String $error = "")
     {
+
         $this->node = $node;
         $this->ip = $ip;
         $this->error = $error;
+
+        parent::__construct($node);
     }
 
     /**
@@ -37,7 +40,8 @@ class ProxyVerificationFailed extends NodeMail
 
         return $this->subject($this->formatTitle('Node verification failed (svc: proxy) (#' . $this->node->id . ')'))
             ->view('emails.ProxyVerificationFailed', [
-                'retryUrl' => $this->retryUrl
+                'retryUrl' => $this->retryUrl,
+                'error' => $this->error,
                 ]);
     }
 }

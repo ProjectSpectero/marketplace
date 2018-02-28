@@ -11,7 +11,7 @@ class Order extends BaseModel
 {
 
     protected $with = [ 'lineItems', 'lastInvoice' ];
-    protected $hidden = [ 'notes', 'user_id', 'subscription_reference', 'subscription_provider' ];
+    protected $hidden = [ 'notes', 'user_id', 'subscription_reference', 'subscription_provider', 'accessor' ];
 
     public $searchAble = ['due_next', 'status', 'term'];
 

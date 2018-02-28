@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Libraries\Utility;
 
 $factory->define(App\OrderLineItem::class, function (Faker\Generator $faker) {
     return [
@@ -19,6 +20,7 @@ $factory->define(App\Order::class, function (Faker\Generator $faker) {
         'status' => \App\Constants\OrderStatus::ACTIVE,
         'subscription_reference' => \App\Libraries\Utility::getRandomString(),
         'subscription_provider' => array_random(\App\Constants\PaymentProcessor::getConstants()),
+        'accessor' => Utility::getRandomString() . ':' . Utility::getRandomString()
     ];
 });
 

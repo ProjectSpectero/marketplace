@@ -34,7 +34,8 @@ class ResourceConfigFailed extends NodeMail
         return $this->subject('Resource configuration failed')
             ->view('emails.ResourceConfigFailed', [
                 'errors' => $this->errors,
-                'retryUrl' => $this->retryUrl
+                'retryUrl' => $this->retryUrl,
+                'node' => $this->node
             ]);
     }
 }

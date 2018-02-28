@@ -1,9 +1,6 @@
-@extends ('emails.layouts.NodeError', ['retryUrl' => $retryUrl])
+@extends ('emails.layouts.NodeError', [ 'retryUrl' => $retryUrl, 'node' => $node ])
 
 @section ('error')
-
-    <p>Proxy verification failed</p>
-
+    <p>One or more proxies configured in the HTTPProxy service failed validation.</p>
     <p>Reason: <span> {{ $error }} </span></p>
-
 @endsection

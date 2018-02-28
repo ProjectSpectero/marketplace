@@ -46,19 +46,22 @@ class OrderController extends CRUDController
         {
             case 'invoices':
                 return PaginationManager::paginate($request, Invoice::findForOrder($order)->noEagerLoads());
+
             case 'resources':
                 if ($order->status != OrderStatus::ACTIVE)
                     throw new UserFriendlyException(Errors::ORDER_NOT_ACTIVE_YET);
 
-                $connectionResources = [];
+                $resources = [];
                 // TODO: return the connection_resource from every node (either standalone, or part of groups) that are a part of this order, alongside order->accessor
                 foreach ($order->lineItems as $item)
-                {
-                    $connectionResources[] = $this->getConnectionResources($item);
-                }
+                    $resources[] = $this->getConnectionResources($item);
 
-                return $this->respond($connectionResources);
+                $out = [
+                    'accessor' => $order->accessor,
+                    'resources' => $resources
+                ];
 
+                return $this->respond($out);
 
             default:
                 return $this->respond($order->toArray());
@@ -279,7 +282,14 @@ class OrderController extends CRUDController
 
     private function getConnectionResources(OrderLineItem $item)
     {
-        $connectionResources = [];
+        $connectionResources = [
+            'id' => $item->id,
+            'resource' => [
+                'id' => $item->resource,
+                'type' => $item->type,
+                'reference' => []
+            ]
+        ];
 
         switch ($item->type)
         {
@@ -287,8 +297,8 @@ class OrderController extends CRUDController
                 $node = Node::find($item->resource);
                 foreach ($node->services as $service)
                 {
-                    $connectionResources[] = [
-                            'name' => $service->type,
+                    $connectionResources['resource']['reference'][] = [
+                            'type' => $service->type,
                             'resource' => $service->connection_resource
                         ];
                 }
@@ -299,8 +309,8 @@ class OrderController extends CRUDController
                 {
                     foreach ($node->services as $service)
                     {
-                        $connectionResources[] = [
-                            'name' => $service->type,
+                        $connectionResources['resource']['reference'][] = [
+                            'type' => $service->type,
                             'resource' => $service->connection_resource
                         ];
                     }

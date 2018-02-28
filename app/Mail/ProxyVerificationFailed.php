@@ -40,6 +40,7 @@ class ProxyVerificationFailed extends NodeMail
 
         return $this->subject($this->formatTitle('Node verification failed (svc: proxy) (#' . $this->node->id . ')'))
             ->view('emails.ProxyVerificationFailed', [
+                'node' => $this->node,
                 'retryUrl' => $this->retryUrl,
                 'error' => $this->error,
                 ]);

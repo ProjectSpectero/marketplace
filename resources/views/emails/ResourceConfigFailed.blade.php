@@ -1,10 +1,7 @@
-@extends ('emails.layouts.NodeError', ['retryUrl' => $retryUrl])
+@extends ('emails.layouts.NodeError', [ 'retryUrl' => $retryUrl, 'node' => $node ])
 
 @section ('error')
-
-    <p>The service could not be created</p>
-
-    <p>The daemon config does not match the expected values. See the reason bellow</p>
+    <p>The daemon config does not match the expected values. Details:</p>
 
     <h3>Reason:</h3>
 
@@ -17,5 +14,4 @@
 
     @endforeach
     </ul>
-
 @endsection

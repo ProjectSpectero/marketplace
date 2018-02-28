@@ -3,6 +3,7 @@
 $factory->define(App\Node::class, function (Faker\Generator $faker) {
     return [
         'ip' => $faker->ipv4,
+        'friendly_name' => $faker->colorName,
         'port' => $faker->randomNumber(4),
         'protocol' => 'HTTP',
         'access_token' => 'cloudUser' . ':' . \App\Libraries\Utility::getRandomString(),

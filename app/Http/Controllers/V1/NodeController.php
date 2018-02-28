@@ -16,6 +16,7 @@ use App\Events\NodeEvent;
 use App\Libraries\PaginationManager;
 use App\Node;
 use App\Libraries\SearchManager;
+use App\Service;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -38,6 +39,11 @@ class NodeController extends CRUDController
         {
             case 'orders':
                 return PaginationManager::paginate($request, $node->getOrders()->noEagerLoads());
+            case 'services':
+                return PaginationManager::paginate($request, Service::where('node_id', $node->id));
+            case 'ips':
+                $ipAddresses = $this->getServiceIpAddresses($node);
+                return $this->respond($ipAddresses);
             default:
                 return $this->respond($node->toArray());
         }
@@ -132,6 +138,17 @@ class NodeController extends CRUDController
         $node->delete();
         event(new NodeEvent(Events::NODE_DELETED, $node));
         return $this->respond(null, [], Messages::USER_DESTROYED, ResponseType::NO_CONTENT);
+    }
+
+    private function getServiceIpAddresses(Node $node)
+    {
+        $services = $node->services;
+        $ipAddresses = [];
+
+        foreach ($services as $service)
+            $ipAddresses[] = $service->ipAddresses;
+
+        return $ipAddresses;
     }
 
 }

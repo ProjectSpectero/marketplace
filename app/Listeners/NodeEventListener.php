@@ -119,6 +119,13 @@ class NodeEventListener extends BaseListener
                             $proxyManager = new HTTPProxyManager();
                             list($authKey, $password) = explode(':', $node->access_token, 2);
 
+                            if ((strpos($authKey, '@') != false) || (strpos($password, '@') != false))
+                            {
+                                Mail::to($userEmail)->
+                                    queue(new ProxyVerificationFailed($node, $node->ip, "Invalid credentials. '@' isn't allowed"));
+                                return;
+                            }
+
                             $outgoingIpCollection = [];
 
                             foreach ($resource['connectionResource']['accessReference'] as $index => $reference)

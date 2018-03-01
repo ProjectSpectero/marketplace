@@ -20,20 +20,27 @@ class GeoIPManager
             $cityReader = new Reader($path . '/GeoLite2-City.mmdb');
             $cityRecord = $cityReader->city($ip);
 
+            $city = $cityRecord->city->name;
+            $isoCode = $cityRecord->country->isoCode;
+        }
+        catch (AddressNotFoundException $silenced)
+        {
+            $city = null;
+            $isoCode = null;
+        }
+
+        try
+        {
             $asnReader = new Reader($path . '/GeoLite2-ASN.mmdb');
             $asnRecord = $asnReader->asn($ip);
+
+            $asn = $asnRecord->autonomousSystemNumber;
         }
-        catch (AddressNotFoundException $exception)
+        catch (AddressNotFoundException $silenced)
         {
-            Utility::generateResponse(null, [], Errors::IP_ADDRESS_NOT_FOUND, ResponseType::NOT_FOUND);
+            $asn = null;
         }
-
-
-
-        $city = $cityRecord->city->name;
-        $isoCode = $cityRecord->country->isoCode;
-        $asn = $asnRecord->autonomousSystemNumber;
-
+        
         return [
             'city' => $city,
             'cc' => $isoCode,

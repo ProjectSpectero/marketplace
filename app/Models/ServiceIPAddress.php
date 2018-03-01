@@ -2,11 +2,10 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
-
 class ServiceIPAddress extends BaseModel
 {
     protected $table = 'service_ip_address';
+    protected $hidden = [ 'updated_at' ];
 
     public function service ()
     {

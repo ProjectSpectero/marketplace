@@ -14,12 +14,13 @@ return [
         'numeric' => \App\Constants\Errors::FIELD_MAXLENGTH . '::attribute::max',
         'string' => \App\Constants\Errors::FIELD_MAXLENGTH . '::attribute::max',
     ],
-    'country' => \App\Constants\Errors::FIELD_COUNTRY . '::attribute:',
-    'boolean' => \App\Constants\Errors::FIELD_BOOLEAN . '::attribute:',
-    'in' => \App\Constants\Errors::FIELD_IN . '::attribute:',
+    'country' => \App\Constants\Errors::FIELD_COUNTRY . '::attribute',
+    'boolean' => \App\Constants\Errors::FIELD_BOOLEAN . '::attribute',
+    'in' => \App\Constants\Errors::FIELD_IN . '::attribute',
     'between' => [
         'string' => \App\Constants\Errors::FIELD_BETWEEN . '::attribute::min::max',
         'numeric' => \App\Constants\Errors::FIELD_BETWEEN . '::attribute::min::max',
     ],
-    'equals' => \App\Constants\Errors::FIELD_EQUALS . '::attribute:',
+    'equals' => \App\Constants\Errors::FIELD_EQUALS . '::attribute',
+    'regex' => \App\Constants\Errors::FIELD_REGEX . '::attribute'
 ];

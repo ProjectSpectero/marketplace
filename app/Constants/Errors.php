@@ -83,4 +83,5 @@ class Errors extends Holder
     const FIELD_IN = 'FIELD_IN';
     const FIELD_BETWEEN = 'FIELD_BETWEEN';
     const FIELD_EQUALS = 'FIELD_EQUALS';
+    const FIELD_REGEX = 'FIELD_REGEX';
 }

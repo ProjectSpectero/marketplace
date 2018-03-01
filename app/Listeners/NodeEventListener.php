@@ -7,6 +7,7 @@ use App\Constants\HTTPProxyMode;
 use App\Constants\NodeStatus;
 use App\Constants\ServiceType;
 use App\Events\NodeEvent;
+use App\Libraries\GeoIPManager;
 use App\Libraries\HTTPProxyManager;
 use App\Libraries\NodeManager;
 use App\Libraries\Utility;
@@ -47,9 +48,6 @@ class NodeEventListener extends BaseListener
         $node = $event->node;
         $oldState = Utility::getPreviousModel($event->dataBag);
         $error = Utility::getError($event->dataBag);
-
-        $servicesData = array();
-        $servicesIpData = array();
 
         switch ($event->type)
         {
@@ -155,22 +153,17 @@ class NodeEventListener extends BaseListener
                                 'ips' => $outgoingIpCollection
                             ];
 
-                            /*
-                             * TODO: if invalid, email user why and bail.
-                             * if valid, see https://paste.ee/p/rW4G6#61DhWNCU1JtXz6GHouDQxJfndTtsLefy for schema
-                             * verify resource->connectionResource->accessReference (all on a loop) with the HTTPProxyManager, they ALL need to pass validation. If failed, again, mail user why
-                             * If that passes, create a new service with these details. See migration for schema, self explanatory. Apply json_encode when needed
-                             * Then create ServiceIPAddresses (one for each accessReference ip), see migration for schema again
-                             */
-
                             break;
                         case ServiceType::OpenVPN:
                             break;
                     }
                 }
 
+                // Let's discover some fundamentals about the IP itself
+                $geoData = GeoIPManager::resolve($node->ip);
+
                 // We need to mark the node for a re-verify if anything goes wrong here (automated)
-                DB::transaction(function() use ($serviceCollection, $node)
+                DB::transaction(function() use ($serviceCollection, $node, $geoData)
                 {
                     foreach ($serviceCollection as $holder)
                     {
@@ -195,6 +188,10 @@ class NodeEventListener extends BaseListener
                     }
 
                     // If everything went well, node is now confirmed.
+                    $node->cc = $geoData['cc'];
+                    $node->asn = $geoData['asn'];
+                    $node->city = $geoData['city'];
+
                     $node->status = NodeStatus::CONFIRMED;
                     $node->saveOrFail();
                 });

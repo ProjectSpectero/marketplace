@@ -76,11 +76,11 @@ class NodeController extends CRUDController
             'protocol' => [ 'required', Rule::in(Protocols::getConstants())],
             'ip' => 'sometimes|ip',
             'port' => 'required|integer|min:1024|max:65534',
-            'access_token' => 'required|min:5|max:72|regex:/[a-zA-Z0-9-_]+:.+$/',
+            'access_token' => 'required|min:5|max:72|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
             'install_id' => 'required|alpha_dash|size:36'
         ];
 
-        //Puposefully not validating unique:nodes,install_id so we can return a 409/conflict instead to signal to the daemon that you're already registered
+        // Purposefully not validating unique:nodes,install_id so we can return a 409/conflict instead to signal to the daemon that you're already registered
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
         $ipAddress = $request->input('ip', $request->ip());

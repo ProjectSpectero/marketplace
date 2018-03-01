@@ -16,7 +16,8 @@
         "srmklive/paypal": "^1.5",
         "illuminate/mail": "^5.5",
         "nordsoftware/lumen-cors": "^2.2",
-        "cartalyst/stripe-laravel": "7.0.*"
+        "cartalyst/stripe-laravel": "7.0.*",
+        "geoip2/geoip2": "~2.0"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

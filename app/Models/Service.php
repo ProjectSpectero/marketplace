@@ -2,13 +2,13 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
-
 class Service extends BaseModel
 {
+    protected $hidden = [ 'updated_at' ];
+
     public function node ()
     {
-        return $this->hasOne(Node::class);
+        return $this->belongsTo(Node::class);
     }
 
     public function ipAddresses ()

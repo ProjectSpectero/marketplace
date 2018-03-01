@@ -5,7 +5,7 @@ $factory->define(App\Node::class, function (Faker\Generator $faker) {
         'ip' => $faker->ipv4,
         'friendly_name' => $faker->colorName,
         'port' => $faker->randomNumber(4),
-        'protocol' => 'HTTP',
+        'protocol' => 'http',
         'access_token' => 'cloudUser' . ':' . \App\Libraries\Utility::getRandomString(),
         'install_id' => $faker->sha256,
         'status' => array_random(\App\Constants\NodeStatus::getConstants()),

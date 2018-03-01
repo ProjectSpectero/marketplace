@@ -15,6 +15,7 @@ use App\Mail\NodeVerificationFailed;
 use App\Mail\NodeVerificationSuccessful;
 use App\Mail\ProxyVerificationFailed;
 use App\Mail\ResourceConfigFailed;
+use App\Node;
 use App\Service;
 use App\ServiceIPAddress;
 use DB;
@@ -33,6 +34,12 @@ class NodeEventListener extends BaseListener
     public function __construct()
     {
         //
+    }
+
+    private function updateNodeStatus (Node $node, String $newStatus)
+    {
+        $node->status = $newStatus;
+        $node->saveOrFail();
     }
 
     /**
@@ -105,6 +112,7 @@ class NodeEventListener extends BaseListener
                                 $errors = $validator->errors()->getMessages();
                                 // Needs details on what the node was (preferably a link) along with a link to retrying the verification after fixing it
                                 Mail::to($userEmail)->queue(new ResourceConfigFailed($node, $errors));
+                                $this->updateNodeStatus($node, NodeStatus::UNCONFIRMED);
                                 return;
                             }
 
@@ -135,6 +143,7 @@ class NodeEventListener extends BaseListener
                                 if ($outgoingIp == false)
                                 {
                                     Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, $ip, "Resolution: could not resolve outgoing IP for proxy $ip:$port."));
+                                    $this->updateNodeStatus($node, NodeStatus::UNCONFIRMED);
                                     return;
                                 }
 
@@ -142,6 +151,7 @@ class NodeEventListener extends BaseListener
                                 {
                                     // Duplicate, proxies NEED to have unique IPs.
                                     Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, $ip, "Duplicate: the outgoing IP of $outgoingIp has been seen before."));
+                                    $this->updateNodeStatus($node, NodeStatus::UNCONFIRMED);
                                     return;
                                 }
 

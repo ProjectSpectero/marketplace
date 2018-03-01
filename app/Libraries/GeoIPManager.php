@@ -4,22 +4,37 @@
 namespace App\Libraries;
 
 
+use App\Constants\Errors;
+use App\Constants\ResponseType;
+use GeoIp2\Database\Reader;
+use GeoIp2\Exception\AddressNotFoundException;
+use MaxMind\Db\Reader\InvalidDatabaseException;
+
 class GeoIPManager
 {
     public static function resolve (String $ip) : array
     {
-        /*
-         * TODO: use the 3 maxmind databases to resolve and populate the array below. If error, return "null" for that field instead (but the key MUST exist)
-         * Those 3 DBs are:
-         * GeoLite2-ASN.mmdb  GeoLite2-City.mmdb  GeoLite2-Country.mmdb
-         * You can DL them off https://dev.maxmind.com/geoip/geoip2/geolite2/
-         * These files should be in GEO_DB_DIR=resources/geoip (defined in your env file)
-         * Extension to use is https://maxmind.github.io/GeoIP2-php/ (already added to project), locally install the MaxMind C extension too (
-         */
+        try
+        {
+            $cityReader = new Reader(env('GEO_DB_DIR') . '/GeoLite2-City.mmdb');
+            $cityRecord = $cityReader->city($ip);
+
+            $asnReader = new Reader(env('GEO_DB_DIR') . '/GeoLite2-ASN.mmdb');
+            $asnRecord = $asnReader->asn($ip);
+        }
+        catch (AddressNotFoundException $exception)
+        {
+            Utility::generateResponse(null, [], Errors::IP_ADDRESS_NOT_FOUND, ResponseType::NOT_FOUND);
+        }
+
+        $city = $cityRecord->city->name;
+        $isoCode = $cityRecord->country->isoCode;
+        $asn = $asnRecord->autonomousSystemNumber;
+
         return [
-            'city' => "Narnia",
-            'cc' => "RU",
-            'asn' => 12345
+            'city' => $city,
+            'cc' => $isoCode,
+            'asn' => $asn
         ];
     }
 

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Constants\Errors;
 use App\Constants\Messages;
 use App\Constants\OrderStatus;
 use App\Constants\ResponseType;
+use App\Errors\UserFriendlyException;
 use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
 use App\Node;
@@ -103,6 +105,9 @@ class NodeGroupController extends CRUDController
         // A node group for which at least one active order exists cannot be destroyed. Cancel the order first.
         if ($nodeGroup->getOrders(OrderStatus::ACTIVE)->count() != 0)
             throw new UserFriendlyException(Errors::ORDERS_EXIST, ResponseType::FORBIDDEN);
+
+        if (!is_null($nodeGroup->nodes->first()))
+            throw new UserFriendlyException(Errors::HAS_NODES, ResponseType::FORBIDDEN);
 
         $nodeGroup->delete();
 

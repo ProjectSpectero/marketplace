@@ -59,6 +59,7 @@ class Errors extends Holder
     const COULD_NOT_REFUND_NON_CREDIT_TXN = 'COULD_NOT_REFUND_NON_CREDIT_TXN';
     const SERVICE_OVERDUE = 'SERVICE_OVERDUE';
     const ORDERS_EXIST = 'ORDERS_EXIST';
+    const HAS_NODES = 'HAS_NODES';
     const ORDER_NOT_ACTIVE_YET = 'ORDER_NOT_ACTIVE_YET';
 
     // Billing and payment processing

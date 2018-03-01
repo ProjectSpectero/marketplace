@@ -14,18 +14,21 @@ class GeoIPManager
 {
     public static function resolve (String $ip) : array
     {
+        $path = base_path() . '/' . env('GEO_DB_DIR');
         try
         {
-            $cityReader = new Reader(env('GEO_DB_DIR') . '/GeoLite2-City.mmdb');
+            $cityReader = new Reader($path . '/GeoLite2-City.mmdb');
             $cityRecord = $cityReader->city($ip);
 
-            $asnReader = new Reader(env('GEO_DB_DIR') . '/GeoLite2-ASN.mmdb');
+            $asnReader = new Reader($path . '/GeoLite2-ASN.mmdb');
             $asnRecord = $asnReader->asn($ip);
         }
         catch (AddressNotFoundException $exception)
         {
             Utility::generateResponse(null, [], Errors::IP_ADDRESS_NOT_FOUND, ResponseType::NOT_FOUND);
         }
+
+
 
         $city = $cityRecord->city->name;
         $isoCode = $cityRecord->country->isoCode;

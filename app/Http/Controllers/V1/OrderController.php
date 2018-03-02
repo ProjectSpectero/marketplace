@@ -8,6 +8,7 @@ use App\Constants\Events;
 use App\Constants\InvoiceStatus;
 use App\Constants\Messages;
 use App\Constants\NodeMarketModel;
+use App\Constants\NodeSyncStatus;
 use App\Constants\OrderResourceType;
 use App\Constants\OrderStatus;
 use App\Constants\PaymentProcessor;
@@ -226,6 +227,7 @@ class OrderController extends CRUDController
             $lineItem->resource = $resource->id;
             $lineItem->quantity = $quantity;
             $lineItem->amount = $resource->price;
+            $lineItem->sync_status = NodeSyncStatus::PENDING_SYNC;
 
             $amount += $resource->price * $quantity;
 

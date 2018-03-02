@@ -21,6 +21,11 @@ class CreateOrderLineItemsTable extends Migration
             $table->string('type');
             $table->string('resource');
             $table->integer('quantity');
+            $table->string('sync_status');
+
+            $table->timestamp('sync_timestamp')
+                ->nullable();
+
             $table->decimal('amount', 13, 4);
             $table->timestamps();
         });

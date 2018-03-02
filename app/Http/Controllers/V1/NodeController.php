@@ -8,6 +8,7 @@ use App\Constants\Errors;
 use App\Constants\Events;
 use App\Constants\Messages;
 use App\Constants\NodeStatus;
+use App\Constants\NodeSyncStatus;
 use App\Constants\OrderResourceType;
 use App\Constants\OrderStatus;
 use App\Constants\Protocols;
@@ -18,7 +19,9 @@ use App\Libraries\PaginationManager;
 use App\Node;
 use App\Libraries\SearchManager;
 use App\Order;
+use App\OrderLineItem;
 use App\Service;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,7 +54,7 @@ class NodeController extends CRUDController
                 break;
             case 'config-pull':
                 $activeEngagements = $node->getEngagements(OrderStatus::ACTIVE)
-                    ->get([ 'order_line_items.id', 'orders.accessor' ]);
+                    ->get([ 'order_line_items.id', 'orders.accessor', 'order_line_items.sync_timestamp' ]);
 
                 $data = [];
                 foreach ($activeEngagements as $engagement)
@@ -65,10 +68,17 @@ class NodeController extends CRUDController
                         $password = Hash::make($password);
 
                         $data[] = [
-                            'engagementId' => $engagement->id,
+                            'engagement_id' => $engagement->id,
                             'username' => $username,
-                            'password' => $password
+                            'password' => $password,
+                            'sync_timestamp' => $engagement->sync_timestamp
                         ];
+
+                        $lineItem = OrderLineItem::findOrFail($engagement->id);
+                        $lineItem->sync_status = NodeSyncStatus::SYNCED;
+                        $lineItem->sync_timestamp = Carbon::now();
+
+                        $lineItem->saveOrFail();
                     }
                 }
                 break;

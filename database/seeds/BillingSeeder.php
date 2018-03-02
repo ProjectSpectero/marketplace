@@ -37,7 +37,7 @@ class BillingSeeder extends Seeder
             $lineItem->saveOrFail();
 
             $invoice = new \App\Invoice();
-            $invoice->id = mt_rand(1, 10000);
+            $invoice->id = mt_rand(1, 100000);
             $invoice->order_id = $order->id;
             $invoice->user_id = $order->user_id;
             $invoice->amount = ($amountOne + $amountTwo) * $quantity;

@@ -95,8 +95,8 @@ class MarketplaceController extends Controller
                     break;
 
                 case 'nodes.market_model':
-                    if ($operator !== '=' && $operator !== NodeMarketModel::UNLISTED
-                    && ! in_array($value, NodeMarketModel::getConstants()))
+                    if ($operator !== '=' || $operator !== NodeMarketModel::UNLISTED
+                    || ! in_array($value, NodeMarketModel::getConstants()))
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
                     $query->where($field, $operator, $value);

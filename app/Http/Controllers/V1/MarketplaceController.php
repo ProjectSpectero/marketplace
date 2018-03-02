@@ -103,14 +103,37 @@ class MarketplaceController extends Controller
                     break;
 
                 case 'nodes.city':
-                    if ($operator !== '=')
+                    if ($operator !== '=' || Utility::alphaDashRule($value))
+                        throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
+                    $query->where($field, $operator, $value);
+                    break;
 
-//                    "field": "nodes.city",
-//                    "operator": "=", <-- ONLY supported value(s)
-//                    "value": "Seattle" <-- Alpha-Dash String only.
+                case 'nodes.cc':
+                    if (!is_array($value) || sizeof($value) < 1)
+                        throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
-                // TODO: write parsers for the rest
+                    $query->whereIn($field, $value);
+                    break;
+
+                case 'nodes.service_type':
+                    if (!is_array($value) || sizeof($value) < 1
+                        || !in_array($value, ServiceType::getConstants()) || $operator !== '=')
+                        throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
+
+                    foreach ($value as $serviceType)
+                        $query->where($field, $operator, $serviceType);
+
+                    break;
+
+                case 'service.ips.count':
+                    if (!in_array($operator, ['=', '>=', '>']) || !is_int($value))
+                        throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
+
+                    $query->select($field)->selectRaw('count(*)')
+                        ->havingRaw('count(*) ' . $operator . ' ' . $value);
+                    break;
+
 
             }
         }
@@ -128,9 +151,5 @@ class MarketplaceController extends Controller
 
         return null;
     }
-
-    public function alpha_dash(String $str)
-    {
-        return ( ! preg_match("/^([-a-z0-9_])+$/i", $str)) ? FALSE : TRUE;
-    }
 }
+

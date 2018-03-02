@@ -102,6 +102,14 @@ class MarketplaceController extends Controller
                     $query->where($field, $operator, $value);
                     break;
 
+                case 'nodes.city':
+                    if ($operator !== '=')
+
+
+//                    "field": "nodes.city",
+//                    "operator": "=", <-- ONLY supported value(s)
+//                    "value": "Seattle" <-- Alpha-Dash String only.
+
                 // TODO: write parsers for the rest
 
             }
@@ -119,5 +127,10 @@ class MarketplaceController extends Controller
         */
 
         return null;
+    }
+
+    public function alpha_dash(String $str)
+    {
+        return ( ! preg_match("/^([-a-z0-9_])+$/i", $str)) ? FALSE : TRUE;
     }
 }

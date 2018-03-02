@@ -86,6 +86,7 @@ class Errors extends Holder
     const FIELD_BETWEEN = 'FIELD_BETWEEN';
     const FIELD_EQUALS = 'FIELD_EQUALS';
     const FIELD_REGEX = 'FIELD_REGEX';
+    const FIELD_INVALID = 'FIELD_INVALID';
 
     const IP_ADDRESS_NOT_FOUND = 'IP_ADDRESS_NOT_FOUND';
 }

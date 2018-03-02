@@ -8,6 +8,7 @@ use App\Constants\Errors;
 use App\Constants\Events;
 use App\Constants\Messages;
 use App\Constants\NodeStatus;
+use App\Constants\OrderResourceType;
 use App\Constants\OrderStatus;
 use App\Constants\Protocols;
 use App\Constants\ResponseType;
@@ -16,10 +17,12 @@ use App\Events\NodeEvent;
 use App\Libraries\PaginationManager;
 use App\Node;
 use App\Libraries\SearchManager;
+use App\Order;
 use App\Service;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class NodeController extends CRUDController
@@ -35,6 +38,8 @@ class NodeController extends CRUDController
         $node = Node::findOrFail($id);
         $this->authorizeResource($node);
 
+        $data = null;
+
         switch ($action)
         {
             case 'orders':
@@ -42,11 +47,38 @@ class NodeController extends CRUDController
             case 'services':
                 return PaginationManager::paginate($request, Service::where('node_id', $node->id));
             case 'ips':
-                $ipAddresses = $this->getServiceIpAddresses($node);
-                return $this->respond($ipAddresses);
+                $data = $this->getServiceIpAddresses($node);
+                break;
+            case 'config-pull':
+                $activeEngagements = $node->getEngagements(OrderStatus::ACTIVE)
+                    ->get([ 'order_line_items.id', 'orders.accessor' ]);
+
+                $data = [];
+                foreach ($activeEngagements as $engagement)
+                {
+                    $accessor = $engagement->accessor;
+                    if ($accessor != null)
+                    {
+                        list($username, $password) = explode(':', $accessor);
+
+                        // TODO: take the node's configured BCrypt strength into account eventually while doing this
+                        $password = Hash::make($password);
+
+                        $data[] = [
+                            'engagementId' => $engagement->id,
+                            'username' => $username,
+                            'password' => $password
+                        ];
+                    }
+                }
+                break;
+            case 'config-full':
+                break;
             default:
-                return $this->respond($node->toArray());
+                $data = $node->toArray();
         }
+
+        return $this->respond($data);
     }
 
     public function index(Request $request) : JsonResponse

@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Constants\OrderResourceType;
 use App\Models\Traits\HasOrders;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -92,5 +93,14 @@ class Node extends BaseModel
     public function getOrders (String $status = null)
     {
         return $this->genericGetOrders($this, $status);
+    }
+
+    public function getEngagements (String $status)
+    {
+        return $this->join('order_line_items', 'nodes.id', '=', 'order_line_items.resource')
+            ->join('orders', 'orders.id', '=', 'order_line_items.order_id')
+            ->where('order_line_items.type', OrderResourceType::NODE)
+            ->where('order_line_items.resource', $this->id)
+            ->where('orders.status', $status);
     }
 }

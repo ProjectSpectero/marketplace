@@ -40,7 +40,7 @@ class GeoIPManager
         {
             $asn = null;
         }
-        
+
         return [
             'city' => $city,
             'cc' => $isoCode,

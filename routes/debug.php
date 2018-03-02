@@ -16,9 +16,8 @@ use App\Mail\InvoicePaid;
 $router->group(['prefix' => 'debug', 'namespace' => 'V1' ], function($api)
 {
     /** @var \Laravel\Lumen\Routing\Router $api */
-    $api->get('/test', function ()
+    $api->get('/test', function (\Illuminate\Http\Request $request)
     {
-        $invoice = Invoice::find(6914);
-        return new InvoicePaid($invoice);
+
     });
 });

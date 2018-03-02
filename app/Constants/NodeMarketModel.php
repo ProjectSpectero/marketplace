@@ -10,4 +10,12 @@ class NodeMarketModel extends Holder
     const MANAGED = "MANAGED";
     const LISTED_SHARED = "LISTED_SHARED";
     const LISTED_DEDICATED = "LISTED_DEDICATED";
+
+    public static function getConstraints()
+    {
+        return [
+            'LISTED_SHARED',
+            'LISTED_DEDICATED'
+        ];
+    }
 }

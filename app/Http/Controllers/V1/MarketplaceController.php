@@ -102,7 +102,38 @@ class MarketplaceController extends Controller
                     $query->where($field, $operator, $value);
                     break;
 
-                // TODO: write parsers for the rest
+                case 'nodes.city':
+                    if ($operator !== '=' || Utility::alphaDashRule($value))
+                        throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
+
+                    $query->where($field, $operator, $value);
+                    break;
+
+                case 'nodes.cc':
+                    if (!is_array($value) || sizeof($value) < 1)
+                        throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
+
+                    $query->whereIn($field, $value);
+                    break;
+
+                case 'nodes.service_type':
+                    if (!is_array($value) || sizeof($value) < 1
+                        || !in_array($value, ServiceType::getConstants()) || $operator !== '=')
+                        throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
+
+                    foreach ($value as $serviceType)
+                        $query->where($field, $operator, $serviceType);
+
+                    break;
+
+                case 'service.ips.count':
+                    if (!in_array($operator, ['=', '>=', '>']) || !is_int($value))
+                        throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
+
+                    $query->select($field)->selectRaw('count(*)')
+                        ->havingRaw('count(*) ' . $operator . ' ' . $value);
+                    break;
+
 
             }
         }
@@ -121,3 +152,4 @@ class MarketplaceController extends Controller
         return null;
     }
 }
+

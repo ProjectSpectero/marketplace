@@ -128,4 +128,10 @@ class Utility
         }
     }
 
+
+    public static function alphaDashRule(String $str)
+    {
+        return ( ! preg_match("/^([-a-z])+$/i", $str)) ? FALSE : TRUE;
+    }
+
 }

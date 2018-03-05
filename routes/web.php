@@ -29,8 +29,8 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->post('password-reset', 'PasswordResetController@generateToken');
         $api->get('password-reset/{token}', 'PasswordResetController@callback');
 
-        $api->post('unauth/node', 'UnauthenticatednodeController@store');
-        $api->get('unauth/node/{id}/{action}', 'UnauthenticatednodeController@show');
+        $api->post('unauth/node', 'UnauthenticatedNodeController@create');
+        $api->get('unauth/node/{id}/{action}', 'UnauthenticatedNodeController@handleConfigPush');
     });
 
     $api->group(['as' => 'AuthRequired', 'middleware' => ['auth:api']], function ($api)

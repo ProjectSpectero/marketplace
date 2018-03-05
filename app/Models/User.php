@@ -72,10 +72,10 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
             ->first();
     }
 
-    public function findByNodeKey (String $nodeKey, bool $throwsException = false)
+    public static function findByNodeKey (String $nodeKey, bool $throwsException = false)
     {
         /** @var Builder $predicate */
-        $predicate = $this->where('node_key', $nodeKey);
+        $predicate = self::where('node_key', $nodeKey);
         return $throwsException ? $predicate->firstOrFail() : $predicate->first();
     }
 }

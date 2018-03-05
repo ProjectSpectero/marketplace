@@ -8,6 +8,7 @@ use App\Constants\Errors;
 use App\Constants\ResponseType;
 use App\Constants\UserStatus;
 use App\Errors\UserFriendlyException;
+use App\Node;
 use App\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -50,7 +51,7 @@ class UnauthenticatedNodeController extends V1Controller
             throw new UserFriendlyException(Errors::IDENTITY_MISMATCH, ResponseType::FORBIDDEN);
 
 
-        $this->controller->show($request, $id, $action);
+        return $this->controller->show($request, $id, $action);
 
     }
 
@@ -65,6 +66,7 @@ class UnauthenticatedNodeController extends V1Controller
         try
         {
             $user = User::findByNodeKey($data['node_key'], true);
+            \Auth::setUser($user);
         }
         catch (ModelNotFoundException $silenced)
         {

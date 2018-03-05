@@ -14,7 +14,7 @@ class NodesTableSeeder extends Seeder
         factory(App\Node::class, 100)->create();
         factory(App\NodeGroup::class, 25)->create();
 
-        foreach (\App\Node::all()->random(10) as $node)
+        foreach (\App\Node::all()->random(40) as $node)
         {
             $node->group_id = null;
             $node->save();

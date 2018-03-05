@@ -24,6 +24,7 @@ class NodesTableSeeder extends Seeder
         {
             foreach ($group->nodes as $node)
             {
+                $this->createServices($node);
                 if ($group->user_id != $node->user_id)
                 {
                     $node->user_id = $group->user_id;
@@ -31,5 +32,32 @@ class NodesTableSeeder extends Seeder
                 }
             }
         }
+    }
+
+    private function createServices(\App\Node $node)
+    {
+        for ($i = 0; $i < 3; $i++)
+        {
+            $service = new \App\Service();
+            $service->node_id = $node->id;
+            $service->type = \App\Constants\ServiceType::HTTPProxy;
+            $service->config = json_encode($node->friendly_name);
+            $service->connection_resource = json_encode($node->ip);
+
+            $service->saveOrFail();
+
+            $this->createServiceIPs($service, $node);
+        }
+
+    }
+
+    private function createServiceIPs(\App\Service $service, \App\Node$node)
+    {
+        $ip = new \App\ServiceIPAddress();
+        $ip->ip = $node->ip;
+        $ip->type = \App\Constants\ServiceType::HTTPProxy;
+        $ip->service_id = $service->id;
+
+        $ip->saveOrFail();
     }
 }

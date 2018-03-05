@@ -22,7 +22,7 @@ class NodesTableSeeder extends Seeder
 
         foreach (\App\NodeGroup::all() as $group)
         {
-            foreach ($group->nodes() as $node)
+            foreach ($group->nodes as $node)
             {
                 if ($group->user_id != $node->user_id)
                 {

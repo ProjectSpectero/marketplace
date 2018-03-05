@@ -43,7 +43,7 @@ class Authenticate
             return Utility::generateResponse(null, [ Errors::UNAUTHORIZED ], null, 'v1', ResponseType::NOT_AUTHORIZED);
 
         $error = Utility::resolveStatusError($request->user());
-        if (! empty($error) || $request->has('X-SPC-INTERNAL-USER'))
+        if (! empty($error))
             return Utility::generateResponse(null, [ $error ], Errors::REQUEST_FAILED, 'v1',
                                                     ResponseType::FORBIDDEN);
 

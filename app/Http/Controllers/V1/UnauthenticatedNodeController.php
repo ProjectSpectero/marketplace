@@ -66,7 +66,6 @@ class UnauthenticatedNodeController extends V1Controller
         try
         {
             $user = User::findByNodeKey($data['node_key'], true);
-            \Auth::setUser($user);
         }
         catch (ModelNotFoundException $silenced)
         {
@@ -80,6 +79,8 @@ class UnauthenticatedNodeController extends V1Controller
         {
             return $user;
         });
+
+        \Auth::setUser($user);
 
         return $request;
     }

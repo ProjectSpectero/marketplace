@@ -104,10 +104,14 @@ class NodeController extends CRUDController
         return PaginationManager::paginate($request, $queryBuilder);
     }
 
-    public function self(Request $request)
+    public function self(Request $request, String $action = null)
     {
         $user = $request->user();
         $queryBuilder = SearchManager::process($request, 'node')->where('user_id', $user->id);
+
+        if ($action != null && $action == 'uncategorized')
+            $queryBuilder->where('group_id', null);
+
         return PaginationManager::paginate($request, $queryBuilder);
     }
 

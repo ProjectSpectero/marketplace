@@ -5,6 +5,7 @@ namespace App\Http\Controllers\V1;
 
 
 use App\Constants\Errors;
+use App\Constants\ResponseType;
 use App\Constants\UserStatus;
 use App\Errors\UserFriendlyException;
 use App\User;
@@ -39,6 +40,15 @@ class UnauthenticatedNodeController extends V1Controller
         ];
         $this->validate($request, $rules);
         $data = $this->cherryPick($request, $rules);
+
+        $node = Node::findOrFail($id);
+
+        if ($node->user_id != $req->user()->id)
+            throw new UserFriendlyException(Errors::UNAUTHORIZED, ResponseType::FORBIDDEN);
+
+        if ($node->install_id != $data['identity'])
+            throw new UserFriendlyException(Errors::IDENTITY_MISMATCH, ResponseType::FORBIDDEN);
+
 
         $this->controller->show($request, $id, $action);
 

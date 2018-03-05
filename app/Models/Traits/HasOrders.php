@@ -21,12 +21,12 @@ trait HasOrders
         $constraints = [];
 
         if ($status != null)
-            $constraints[] = [ 'status', $status ];
+            $constraints[] = [ 'orders.status', $status ];
 
-        $constraints[] = ['order_line_items.type', OrderResourceType::NODE];
-        $constraints[] = ['order_line_items.resource', $model->id];
+        $constraints[] = [ 'order_line_items.type', $resourceType ];
+        $constraints[] = [ 'order_line_items.resource', $model->id ];
 
-        return Order::join('order_line_items', 'orders.id', '=', 'order_line_items.id')
+        return Order::join('order_line_items', 'order_line_items.order_id', '=', 'orders.id')
             ->select('orders.*')
             ->where($constraints);
     }

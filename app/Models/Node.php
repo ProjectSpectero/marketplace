@@ -92,7 +92,7 @@ class Node extends BaseModel
 
     public function getOrders (String $status = null)
     {
-        return $this->genericGetOrders($this, $status);
+        return $this->genericGetOrders($this, $status, OrderResourceType::NODE);
     }
 
     public function getEngagements (String $status)

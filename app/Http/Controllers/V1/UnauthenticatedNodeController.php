@@ -44,7 +44,7 @@ class UnauthenticatedNodeController extends V1Controller
 
         $node = Node::findOrFail($id);
 
-        if ($node->user_id != $req->user()->id)
+        if ($node->user_id != $req->user()->id || ! in_array($action, [ 'config-pull', 'config-full']))
             throw new UserFriendlyException(Errors::UNAUTHORIZED, ResponseType::FORBIDDEN);
 
         if ($node->install_id != $data['identity'])

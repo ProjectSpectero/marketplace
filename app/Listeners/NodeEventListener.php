@@ -75,6 +75,11 @@ class NodeEventListener extends BaseListener
                  */
                 $manager = new NodeManager($node);
                 $data = $manager->discover(true);
+
+                // If this happens, the verification failed event has already been fired. We can just gracefully quit.
+                if ($data == null)
+                    return;
+
                 // OK, we managed to talk to the daemon and got the data.
                 // If we got here, it also means that the daemon's configs are as we expect it to be (otherwise NODE_VERIFICATION_FAILED has been fired)
 

@@ -37,7 +37,7 @@ class UnauthenticatedNodeController extends V1Controller
     {
         $req = $this->prepareRequest($request);
         $rules = [
-            'identity' => 'required|alpha_dash'
+            'install_id' => 'required|alpha_dash'
         ];
         $this->validate($request, $rules);
         $data = $this->cherryPick($request, $rules);

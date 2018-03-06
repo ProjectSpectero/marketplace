@@ -158,6 +158,9 @@ class NodeEventListener extends BaseListener
                                 $outgoingIpCollection[] = $outgoingIp;
                             }
 
+                            // No further use, get rid of it to conserve memory.
+                            unset($outgoingIpCollection);
+
                             $serviceCollection[] = $service;
 
                             break;

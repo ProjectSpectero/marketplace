@@ -36,11 +36,20 @@ class NodesTableSeeder extends Seeder
 
     private function createServices(\App\Node $node)
     {
-        for ($i = 0; $i < 3; $i++)
+        for ($i = 0; $i < 4; $i++)
         {
+            if ($i == 0)
+                $type = \App\Constants\ServiceType::HTTPProxy;
+            elseif ($i == 1)
+                $type = \App\Constants\ServiceType::OpenVPN;
+            elseif ($i == 2)
+                $type = \App\Constants\ServiceType::ShadowSOCKS;
+            else
+                $type = \App\Constants\ServiceType::SSHTunnel;
+
             $service = new \App\Service();
             $service->node_id = $node->id;
-            $service->type = \App\Constants\ServiceType::getConstants()[$i];
+            $service->type = $type;
             $service->config = json_encode($node->friendly_name);
             $service->connection_resource = json_encode($node->ip);
 

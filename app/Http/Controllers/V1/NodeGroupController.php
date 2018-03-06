@@ -4,6 +4,7 @@ namespace App\Http\Controllers\V1;
 
 use App\Constants\Errors;
 use App\Constants\Messages;
+use App\Constants\NodeMarketModel;
 use App\Constants\OrderStatus;
 use App\Constants\ResponseType;
 use App\Errors\UserFriendlyException;
@@ -14,6 +15,7 @@ use App\NodeGroup;
 use App\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class NodeGroupController extends CRUDController
 {
@@ -66,24 +68,32 @@ class NodeGroupController extends CRUDController
 
     public function update(Request $request, int $id): JsonResponse
     {
+        /** @var NodeGroup $nodeGroup */
+        $nodeGroup = NodeGroup::findOrFail($id);
+        $this->authorizeResource($nodeGroup);
+
         $rules = [
-            'friendly_name' => 'required',
-            'status' => 'required',
-            'market_model' => 'required',
-            'price' => 'required'
+            'friendly_name' => 'sometimes|alpha_dash',
+            'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstants()) ],
+            'price' => 'required_with:market_model|numeric|min:5'
         ];
 
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
-        $nodeGroup = NodeGroup::findOrFail($id);
-
-        $this->authorizeResource($nodeGroup);
+        if ($request->has('market_model') && $nodeGroup->market_model != $input['market_model'])
+        {
+            // Indicating that this is an update
+            if ($nodeGroup->getOrders(OrderStatus::ACTIVE)->count() > 0)
+                throw new UserFriendlyException(Errors::HAS_ACTIVE_ORDERS);
+        }
 
         foreach ($input as $key => $value)
-            $nodeGroup->$key = $value;
-
-        $nodeGroup->user_id = $request->user()->id;
+        {
+            // Why this check? Because we have fields that are /sometimes/ required.
+            if ($request->has($key))
+                $nodeGroup->$key = $value;
+        }
 
         $nodeGroup->saveOrFail();
 

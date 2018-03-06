@@ -50,8 +50,16 @@ class NodesTableSeeder extends Seeder
             $service = new \App\Service();
             $service->node_id = $node->id;
             $service->type = $type;
-            $service->config = json_encode($node->friendly_name);
-            $service->connection_resource = json_encode($node->ip);
+            $service->config = json_encode([
+                'Key' => null,
+                'DatabaseFile' => 'DatabasePath/db.sqlite',
+                "PasswordCostTimeThreshold" => 100.0,
+                "SpaCacheTime" => 1,
+            ]);
+            $service->connection_resource = json_encode([
+                'accessReference' => $node->ip,
+                'accessConfig' => \App\Libraries\Utility::getRandomString()
+            ]);
 
             $service->saveOrFail();
 

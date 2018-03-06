@@ -75,15 +75,23 @@ class NodeEventListener extends BaseListener
                  */
                 $manager = new NodeManager($node);
                 $data = $manager->discover(true);
+                $userEmail = $node->user->email;
 
                 // If this happens, the verification failed event has already been fired. We can just gracefully quit.
-                if ($data == null || empty($data['services']))
+                if ($data == null)
                     return;
+
+                if (empty($data['services']))
+                {
+                    Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, 'Service discovery: no services could be found'));
+                    $node->status = NodeStatus::UNCONFIRMED;
+                    $node->saveOrFail();
+
+                    return;
+                }
 
                 // OK, we managed to talk to the daemon and got the data.
                 // If we got here, it also means that the daemon's configs are as we expect it to be (otherwise NODE_VERIFICATION_FAILED has been fired)
-
-                $userEmail = $node->user->email;
 
                 $serviceCollection = [];
 

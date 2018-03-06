@@ -18,7 +18,6 @@ use App\Mail\ResourceConfigFailed;
 use App\Node;
 use App\NodeIPAddress;
 use App\Service;
-use App\ServiceIPAddress;
 use DB;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Mail;

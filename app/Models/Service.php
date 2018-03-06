@@ -10,9 +10,4 @@ class Service extends BaseModel
     {
         return $this->belongsTo(Node::class);
     }
-
-    public function ipAddresses ()
-    {
-        return $this->hasMany(ServiceIPAddress::class);
-    }
 }

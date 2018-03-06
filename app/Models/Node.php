@@ -103,4 +103,9 @@ class Node extends BaseModel
             ->where('order_line_items.resource', $this->id)
             ->where('orders.status', $status);
     }
+
+    public function ipAddresses ()
+    {
+        return $this->hasMany(NodeIPAddress::class);
+    }
 }

@@ -9,7 +9,6 @@ use App\Constants\Events;
 use App\Constants\Messages;
 use App\Constants\NodeStatus;
 use App\Constants\NodeSyncStatus;
-use App\Constants\OrderResourceType;
 use App\Constants\OrderStatus;
 use App\Constants\Protocols;
 use App\Constants\ResponseType;
@@ -18,7 +17,6 @@ use App\Events\NodeEvent;
 use App\Libraries\PaginationManager;
 use App\Node;
 use App\Libraries\SearchManager;
-use App\Order;
 use App\OrderLineItem;
 use App\Service;
 use Carbon\Carbon;
@@ -50,7 +48,7 @@ class NodeController extends CRUDController
             case 'services':
                 return PaginationManager::paginate($request, Service::where('node_id', $node->id));
             case 'ips':
-                $data = $this->getServiceIpAddresses($node);
+                $data = $node->ipAddresses()->get()->toArray();
                 break;
             case 'config-pull':
                 $activeEngagements = $node->getEngagements(OrderStatus::ACTIVE)
@@ -205,16 +203,4 @@ class NodeController extends CRUDController
         event(new NodeEvent(Events::NODE_DELETED, $node));
         return $this->respond(null, [], Messages::USER_DESTROYED, ResponseType::NO_CONTENT);
     }
-
-    private function getServiceIpAddresses(Node $node)
-    {
-        $services = $node->services;
-        $ipAddresses = [];
-
-        foreach ($services as $service)
-            $ipAddresses[] = $service->ipAddresses;
-
-        return $ipAddresses;
-    }
-
 }

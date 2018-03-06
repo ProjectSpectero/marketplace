@@ -71,9 +71,6 @@ class MarketplaceController extends Controller
         $query->where('nodes.market_model', '!=', NodeMarketModel::UNLISTED)
             ->where('nodes.status', NodeStatus::CONFIRMED);
 
-        // Tracker so we don't join the services table multiple times
-        $servicesJoined = false;
-
         foreach ($request->get('rules', []) as $rule)
         {
             $value = $rule['value'];
@@ -124,11 +121,7 @@ class MarketplaceController extends Controller
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
                     // Join, because now it's needed.
-                    if (! $servicesJoined)
-                    {
-                        $query->join('services', 'services.node_id', '=', 'nodes.id');
-                        $servicesJoined = true;
-                    }
+                    $query->join('services', 'services.node_id', '=', 'nodes.id');
 
                     foreach ($value as $serviceType)
                     {
@@ -145,13 +138,6 @@ class MarketplaceController extends Controller
                 case 'nodes.ip_count':
                     if (! in_array($operator, ['=', '>=', '>']) || ! is_numeric($value))
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
-
-                    // Join, because now it's needed.
-                    if (! $servicesJoined)
-                    {
-                        $query->join('services', 'services.node_id', '=', 'nodes.id');
-                        $servicesJoined = true;
-                    }
 
                     $query->join('node_ip_addresses', 'node_ip_addresses.node_id', '=', 'nodes.id');
 

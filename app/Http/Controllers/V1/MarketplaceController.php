@@ -6,6 +6,7 @@ use App\Constants\Errors;
 use App\Constants\NodeMarketModel;
 use App\Constants\NodeStatus;
 use App\Errors\UserFriendlyException;
+use function GuzzleHttp\default_ca_bundle;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -59,14 +60,6 @@ class MarketplaceController extends Controller
 
     public function search(Request $request)
     {
-        $fields = ['market_model', 'price', 'asn', 'city', 'cc'];
-        $price = $request->get('price');
-        $operator = $request->get('operator');
-        $asn = $request->get('asn');
-        $city = $request->get('city');
-        $cc = $request->get('cc');
-        $service_types = $request->get('service_types');
-        $numberOfIPs = $request->get('no_of_ips');
 
         $query = \DB::table('nodes')
             ->join('services', 'services.node_id', '=', 'nodes.id')
@@ -95,7 +88,7 @@ class MarketplaceController extends Controller
                     break;
 
                 case 'nodes.market_model':
-                    if ($operator !== '=' || $operator !== NodeMarketModel::UNLISTED
+                    if ($operator !== '=' || $value == NodeMarketModel::UNLISTED
                     || ! in_array($value, NodeMarketModel::getConstants()))
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
@@ -133,10 +126,15 @@ class MarketplaceController extends Controller
                     $query->select($field)->selectRaw('count(*)')
                         ->havingRaw('count(*) ' . $operator . ' ' . $value);
                     break;
+                default:
+                    dd($field);
+                    break;
 
 
             }
         }
+
+        return $query->get();
 
         /*
             ->where('asn', $asn)

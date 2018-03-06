@@ -121,7 +121,8 @@ class MarketplaceController extends Controller
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
                     // Join, because now it's needed.
-                    $query->join('services', 'services.node_id', '=', 'nodes.id');
+                    $query->leftJoin('services', 'services.node_id', '=', 'nodes.id');
+                    $query->selectRaw('count(services.id), nodes.* from nodes');
 
                     foreach ($value as $serviceType)
                     {
@@ -139,7 +140,7 @@ class MarketplaceController extends Controller
                     if (! in_array($operator, ['=', '>=', '>']) || ! is_numeric($value))
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
-                    $query->join('node_ip_addresses', 'node_ip_addresses.node_id', '=', 'nodes.id');
+                    $query->leftJoin('node_ip_addresses', 'node_ip_addresses.node_id', '=', 'nodes.id');
 
                     $query->havingRaw('count(node_ip_addresses.id) > ' . $value);
                     break;

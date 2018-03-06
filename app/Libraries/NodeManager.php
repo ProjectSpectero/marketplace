@@ -86,7 +86,7 @@ class NodeManager
             throw new FatalException(implode(PHP_EOL, $validator->errors()->toArray()));
 
         if($this->identity != $result['identity'])
-            throw new FatalException();
+            throw new FatalException('Identity mismatch: expected ' . $this->identity . ', but got ' . $result['identity']);
 
         return $result;
     }

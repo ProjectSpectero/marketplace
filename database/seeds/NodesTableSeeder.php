@@ -57,8 +57,11 @@ class NodesTableSeeder extends Seeder
                 "SpaCacheTime" => 1,
             ]);
             $service->connection_resource = json_encode([
-                'accessReference' => $node->ip,
-                'accessConfig' => \App\Libraries\Utility::getRandomString()
+                'accessReference' => [
+                    $node->ip
+                ],
+                'accessConfig' => \App\Libraries\Utility::getRandomString(),
+                'accessCredentials' => array_random(['SPECTERO_USERNAME_PASSWORD', $node->access_token])
             ]);
 
             $service->saveOrFail();

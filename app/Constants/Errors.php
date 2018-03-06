@@ -63,6 +63,7 @@ class Errors extends Holder
     const SERVICE_OVERDUE = 'SERVICE_OVERDUE';
     const ORDERS_EXIST = 'ORDERS_EXIST';
     const HAS_NODES = 'HAS_NODES';
+    const HAS_ACTIVE_ORDERS = 'HAS_ACTIVE_ORDERS';
     const ORDER_NOT_ACTIVE_YET = 'ORDER_NOT_ACTIVE_YET';
 
     // Billing and payment processing

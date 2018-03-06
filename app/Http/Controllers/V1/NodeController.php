@@ -170,8 +170,15 @@ class NodeController extends CRUDController
             'price' => 'required'
         ];
 
+        $reverifyRules = [
+            'ip', 'port', 'access_token', 'protocol'
+        ];
+
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
+
+        if (in_array('market_model', $request->all()))
+            throw new UserFriendlyException(Errors::HAS_ACTIVE_ORDERS);
 
         $node = Node::findOrFail($id);
 
@@ -180,7 +187,8 @@ class NodeController extends CRUDController
         foreach ($input as $key => $value)
             $node->$key = $value;
 
-        $node->status = NodeStatus::UNCONFIRMED;
+        if (!empty(array_intersect($request->all(), $reverifyRules)))
+            $node->status = NodeStatus::UNCONFIRMED;
 
         $node->saveOrFail();
 

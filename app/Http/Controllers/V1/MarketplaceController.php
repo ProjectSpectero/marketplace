@@ -5,7 +5,9 @@ namespace App\Http\Controllers\V1;
 use App\Constants\Errors;
 use App\Constants\NodeMarketModel;
 use App\Constants\NodeStatus;
+use App\Constants\ServiceType;
 use App\Errors\UserFriendlyException;
+use App\Libraries\Utility;
 use function GuzzleHttp\default_ca_bundle;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -96,7 +98,7 @@ class MarketplaceController extends Controller
                     break;
 
                 case 'nodes.city':
-                    if ($operator !== '=' || Utility::alphaDashRule($value))
+                    if ($operator !== '=' || ! Utility::alphaDashRule($value))
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
                     $query->where($field, $operator, $value);
@@ -110,8 +112,8 @@ class MarketplaceController extends Controller
                     break;
 
                 case 'nodes.service_type':
-                    if (!is_array($value) || sizeof($value) < 1
-                        || !in_array($value, ServiceType::getConstants()) || $operator !== '=')
+                    if (! is_array($value) || count($value) == 0
+                        || $operator !== 'ALL')
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
                     foreach ($value as $serviceType)
@@ -120,7 +122,7 @@ class MarketplaceController extends Controller
                     break;
 
                 case 'service.ips.count':
-                    if (!in_array($operator, ['=', '>=', '>']) || !is_int($value))
+                    if (! in_array($operator, ['=', '>=', '>']) || ! is_numeric($value))
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
                     $query->select($field)->selectRaw('count(*)')
@@ -134,7 +136,7 @@ class MarketplaceController extends Controller
             }
         }
 
-        return $query->get();
+        return $query->toSql();
 
         /*
             ->where('asn', $asn)

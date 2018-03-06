@@ -72,6 +72,8 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->get('order/self', 'OrderController@self');
         \App\Libraries\Utility::defineResourceRoute('order', 'OrderController', $api, []);
 
+        $api->get('engagement/{id}', 'EngagementController@show');
+
         // Node group resource routes
         $api->get('node_group/self', 'NodeGroupController@self');
         $api->post('node_group/assign', 'NodeGroupController@assign');

@@ -12,6 +12,9 @@ $factory->define(App\Node::class, function (Faker\Generator $faker) {
         'user_id' => $faker->numberBetween(6, 10),
         'price' => $faker->numberBetween(5, 100),
         'market_model' => array_random(\App\Constants\NodeMarketModel::getConstants()),
-        'group_id' => $faker->numberBetween(1, 5)
+        'group_id' => $faker->numberBetween(1, 5),
+        'asn' => $faker->numberBetween(1, 65534),
+        'city' => $faker->city,
+        'cc' => $faker->countryCode
     ];
 });

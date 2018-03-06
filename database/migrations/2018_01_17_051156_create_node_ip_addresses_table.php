@@ -13,15 +13,14 @@ class CreateServiceIpAddressTable extends Migration
      */
     public function up()
     {
-        Schema::create('service_ip_address', function (Blueprint $table)
+        Schema::create('node_ip_addresses', function (Blueprint $table)
         {
             $table->increments('id');
             $table->string('ip');
-            $table->string('type');
-            $table->integer('service_id');
-            $table->unique(['ip', 'service_id'], 'unique_ip_service_id_index');
+            $table->integer('node_id');
+            $table->unique(['ip', 'node_id'], 'unique_ip_node_id_index');
             $table->index('ip', 'ip_index');
-            $table->index('service_id', 'service_id_index');
+            $table->index('node_id', 'node_id_index');
             $table->timestamps();
         });
     }

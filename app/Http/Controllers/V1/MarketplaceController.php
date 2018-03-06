@@ -7,7 +7,9 @@ use App\Constants\NodeMarketModel;
 use App\Constants\NodeStatus;
 use App\Constants\ServiceType;
 use App\Errors\UserFriendlyException;
+use App\Libraries\PaginationManager;
 use App\Libraries\Utility;
+use App\Node;
 use function GuzzleHttp\default_ca_bundle;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -63,9 +65,14 @@ class MarketplaceController extends Controller
     public function search(Request $request)
     {
 
-        $query = \DB::table('nodes')
-            ->join('services', 'services.node_id', '=', 'nodes.id')
-            ->join('service_ip_address', 'service_ip_address.service_id', '=', 'services.id');
+        $query = Node::query();
+
+        // Never pick up on unlisted nodes, and only return nodes that are verified/confirmed.
+        $query->where('nodes.market_model', '!=', NodeMarketModel::UNLISTED)
+            ->where('nodes.status', NodeStatus::CONFIRMED);
+
+        // Tracker so we don't join the services table multiple times
+        $servicesJoined = false;
 
         foreach ($request->get('rules', []) as $rule)
         {
@@ -116,40 +123,50 @@ class MarketplaceController extends Controller
                         || $operator !== 'ALL')
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
+                    // Join, because now it's needed.
+                    if (! $servicesJoined)
+                    {
+                        $query->join('services', 'services.node_id', '=', 'nodes.id');
+                        $servicesJoined = true;
+                    }
+
                     foreach ($value as $serviceType)
-                        $query->where($field, $operator, $serviceType);
+                    {
+                        // SQLI prevention, we have a raw call below.
+                        // This is a classic example of a set within sets query
+                        if (! in_array($serviceType, ServiceType::getConstants()))
+                            throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
+
+                        $query->havingRaw('sum(services.type = "' . $serviceType . '") > 0');
+                    }
 
                     break;
 
-                case 'service.ips.count':
+                case 'nodes.ip_count':
                     if (! in_array($operator, ['=', '>=', '>']) || ! is_numeric($value))
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
-                    $query->select($field)->selectRaw('count(*)')
-                        ->havingRaw('count(*) ' . $operator . ' ' . $value);
+                    // Join, because now it's needed.
+                    if (! $servicesJoined)
+                    {
+                        $query->join('services', 'services.node_id', '=', 'nodes.id');
+                        $servicesJoined = true;
+                    }
+
+                    $query->join('node_ip_addresses', 'node_ip_addresses.node_id', '=', 'nodes.id');
+
+                    $query->havingRaw('count(node_ip_addresses.id) > ' . $value);
                     break;
                 default:
-                    dd($field);
+                    throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
                     break;
-
-
             }
         }
 
-        return $query->toSql();
+        $query->groupBy([ 'nodes.id' ]);
+        dd($query->toSql(), $query->get()->toArray());
 
-        /*
-            ->where('asn', $asn)
-            ->where('city', $city)
-            ->whereIn('cc', $cc)
-            ->whereIn('services.type', $service_types);
-
-            // This is wrong, and we CAN NOT filter in PHP. EVERYTHING needs to come from SQL, cannot sustain loops on these tables (too much data eventually). See requirement again.
-            if ($node->count() > $numberOfIPs)
-                return $node->get($fields);
-        */
-
-        return null;
+        return PaginationManager::paginate($request, $query);
     }
 }
 

@@ -40,23 +40,22 @@ class NodesTableSeeder extends Seeder
         {
             $service = new \App\Service();
             $service->node_id = $node->id;
-            $service->type = \App\Constants\ServiceType::HTTPProxy;
+            $service->type = \App\Constants\ServiceType::getConstants()[$i];
             $service->config = json_encode($node->friendly_name);
             $service->connection_resource = json_encode($node->ip);
 
             $service->saveOrFail();
 
-            $this->createServiceIPs($service, $node);
+            $this->createNodeIPs($service, $node);
         }
 
     }
 
-    private function createServiceIPs(\App\Service $service, \App\Node$node)
+    private function createNodeIPs(\App\Service $service, \App\Node$node)
     {
-        $ip = new \App\ServiceIPAddress();
+        $ip = new \App\NodeIPAddress();
         $ip->ip = $node->ip;
-        $ip->type = \App\Constants\ServiceType::HTTPProxy;
-        $ip->service_id = $service->id;
+        $ip->node_id = $node->id;
 
         $ip->saveOrFail();
     }

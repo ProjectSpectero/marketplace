@@ -16,6 +16,7 @@ use App\Mail\NodeVerificationSuccessful;
 use App\Mail\ProxyVerificationFailed;
 use App\Mail\ResourceConfigFailed;
 use App\Node;
+use App\NodeIPAddress;
 use App\Service;
 use App\ServiceIPAddress;
 use DB;
@@ -83,13 +84,7 @@ class NodeEventListener extends BaseListener
                 // OK, we managed to talk to the daemon and got the data.
                 // If we got here, it also means that the daemon's configs are as we expect it to be (otherwise NODE_VERIFICATION_FAILED has been fired)
 
-                // Let's save them.
-                $node->loaded_config = json_encode($data['systemConfig']);
-                $node->saveOrFail();
-
                 $userEmail = $node->user->email;
-
-                unset($data['systemConfig']);
 
                 $serviceCollection = [];
 
@@ -163,10 +158,7 @@ class NodeEventListener extends BaseListener
                                 $outgoingIpCollection[] = $outgoingIp;
                             }
 
-                            $serviceCollection[] = [
-                                'service' => $newService,
-                                'ips' => $outgoingIpCollection
-                            ];
+                            $serviceCollection[] = $service;
 
                             break;
                         case ServiceType::OpenVPN:
@@ -178,31 +170,30 @@ class NodeEventListener extends BaseListener
                 $geoData = GeoIPManager::resolve($node->ip);
 
                 // We need to mark the node for a re-verify if anything goes wrong here (automated)
-                DB::transaction(function() use ($serviceCollection, $node, $geoData)
+                DB::transaction(function() use ($serviceCollection, $node, $data, $geoData)
                 {
                     foreach ($serviceCollection as $holder)
                     {
                         /** @var Service $service */
-                        $service = $holder['service'];
+                        $service = $holder;
+                        $service->saveOrFail();
 
                         /** @var array $ipCollection */
-                        $ipCollection = $holder['ips'];
-
-                        $service->saveOrFail();
+                        $ipCollection = $data['ipAddresses'];
 
                         // NOW, $service has an ID associated.
 
                         foreach ($ipCollection as $ip)
                         {
-                            $persistedIp = new ServiceIPAddress();
+                            $persistedIp = new NodeIPAddress();
                             $persistedIp->ip = $ip;
-                            $persistedIp->type = $service->type;
-                            $persistedIp->service_id = $service->id;
+                            $persistedIp->node_id = $node->id;
                             $persistedIp->saveOrFail();
                         }
                     }
 
                     // If everything went well, node is now confirmed.
+                    $node->loaded_config = json_encode($data['systemConfig']);
                     $node->cc = $geoData['cc'];
                     $node->asn = $geoData['asn'];
                     $node->city = $geoData['city'];

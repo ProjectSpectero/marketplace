@@ -106,6 +106,7 @@ class NodeManager
             $systemConfig = $this->getAndValidateSystemDescriptor();
 
             $ret['systemConfig'] = $systemConfig;
+            $ret['ipAddresses'] = $this->discoverIPAddresses();
 
             $services = $this->discoverServices()['result'];
             foreach ($services as $service => $state)

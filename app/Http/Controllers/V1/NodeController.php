@@ -167,8 +167,7 @@ class NodeController extends CRUDController
             'protocol' => 'required',
             'friendly_name' => 'required',
             'market_model' => 'required',
-            'price' => 'required',
-            'group_id' => 'required'
+            'price' => 'required'
         ];
 
         $this->validate($request, $rules);
@@ -180,6 +179,8 @@ class NodeController extends CRUDController
 
         foreach ($input as $key => $value)
             $node->$key = $value;
+
+        $node->status = NodeStatus::UNCONFIRMED;
 
         $node->saveOrFail();
 

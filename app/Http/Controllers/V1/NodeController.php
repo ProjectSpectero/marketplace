@@ -167,7 +167,8 @@ class NodeController extends CRUDController
             'protocol' => 'required',
             'friendly_name' => 'required',
             'market_model' => 'required',
-            'price' => 'required'
+            'price' => 'required',
+            'group_id' => 'required'
         ];
 
         $this->validate($request, $rules);

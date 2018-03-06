@@ -122,7 +122,6 @@ class MarketplaceController extends Controller
 
                     // Join, because now it's needed.
                     $query->leftJoin('services', 'services.node_id', '=', 'nodes.id');
-                    $query->selectRaw('count(services.id), nodes.* from nodes');
 
                     foreach ($value as $serviceType)
                     {

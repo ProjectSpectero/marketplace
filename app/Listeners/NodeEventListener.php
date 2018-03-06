@@ -77,7 +77,7 @@ class NodeEventListener extends BaseListener
                 $data = $manager->discover(true);
 
                 // If this happens, the verification failed event has already been fired. We can just gracefully quit.
-                if ($data == null)
+                if ($data == null || empty($data['services']))
                     return;
 
                 // OK, we managed to talk to the daemon and got the data.
@@ -160,7 +160,7 @@ class NodeEventListener extends BaseListener
                             // No further use, get rid of it to conserve memory.
                             unset($outgoingIpCollection);
 
-                            $serviceCollection[] = $service;
+                            $serviceCollection[] = $newService;
 
                             break;
                         case ServiceType::OpenVPN:

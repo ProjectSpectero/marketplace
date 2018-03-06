@@ -84,7 +84,7 @@ class NodeEventListener extends BaseListener
                 if (empty($data['services']))
                 {
                     Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, 'Service discovery: no services could be found'));
-                    $node->status = NodeStatus::UNCONFIRMED;
+                    $this->updateNodeStatus($node, NodeStatus::UNCONFIRMED);
                     $node->saveOrFail();
 
                     return;

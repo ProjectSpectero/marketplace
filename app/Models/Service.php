@@ -4,7 +4,7 @@ namespace App;
 
 class Service extends BaseModel
 {
-    protected $hidden = [ 'updated_at' ];
+    protected $hidden = [ 'updated_at', 'config', 'connection_resource' ];
 
     public function node ()
     {

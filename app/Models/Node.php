@@ -19,6 +19,10 @@ class Node extends BaseModel
         'port', 'protocol', 'install_id', 'access_token', 'updated_at', 'loaded_config'
     ];
 
+    protected $with = [
+        'services'
+    ];
+
     public $searchAble = [
         'ip', 'install_id', 'friendly_name', 'cc', 'asn'
     ];

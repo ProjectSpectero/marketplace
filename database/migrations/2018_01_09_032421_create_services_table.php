@@ -22,6 +22,9 @@ class CreateServicesTable extends Migration
 
             $table->string('type');
 
+            // The marketplace filter uses this
+            $table->index('type', 'service_type_index');
+
             // One node may only have one instance of a specific service type
             $table->unique([ 'node_id', 'type' ], 'node_id_type_index');
 

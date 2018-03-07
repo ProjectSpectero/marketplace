@@ -18,6 +18,7 @@ class CreatePromoCodesTable extends Migration
             $table->string('code');
             $table->integer('group_id');
             $table->boolean('onetime');
+            $table->decimal('amount', 13, 4);
             $table->timestamps();
         });
     }

@@ -88,5 +88,9 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
 
         $api->post('marketplace/search', 'MarketplaceController@search');
         \App\Libraries\Utility::defineResourceRoute('engagement', 'EngagementController', $api, []);
+
+        \App\Libraries\Utility::defineResourceRoute('promo_code', 'PromoCodeController', $api, []);
+
+        \App\Libraries\Utility::defineResourceRoute('promo_group', 'PromoGroupController', $api, []);
     });
 });

@@ -68,8 +68,10 @@ class MarketplaceController extends Controller
         $query = Node::query();
 
         // Never pick up on unlisted nodes, and only return nodes that are verified/confirmed.
+        // Don't return nodes that are a part of a group.
         $query->where('nodes.market_model', '!=', NodeMarketModel::UNLISTED)
-            ->where('nodes.status', NodeStatus::CONFIRMED);
+            ->where('nodes.status', NodeStatus::CONFIRMED)
+            ->where('nodes.group_id', null);
 
         foreach ($request->get('rules', []) as $rule)
         {
@@ -130,7 +132,7 @@ class MarketplaceController extends Controller
                         if (! in_array($serviceType, ServiceType::getConstants()))
                             throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
-                        $query->havingRaw('sum(services.type = "' . $serviceType . '") > 0');
+                        $query->havingRaw(sprintf('sum(services.type="%s") > 0', $serviceType));
                     }
 
                     break;
@@ -143,6 +145,7 @@ class MarketplaceController extends Controller
 
                     $query->havingRaw('count(node_ip_addresses.id) > ' . $value);
                     break;
+
                 default:
                     throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
                     break;

@@ -8,6 +8,7 @@ use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
 use App\Constants\UserRoles;
 use App\Constants\UserStatus;
+use App\Errors\UserFriendlyException;
 use App\Events\UserEvent;
 use App\Libraries\PaginationManager;
 use App\Libraries\PermissionManager;
@@ -125,6 +126,13 @@ class UserController extends CRUDController
         return $this->respond($user->toArray());
     }
 
+    /**
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
+     * @throws \App\Errors\FatalException
+     * @throws \Throwable
+     */
     public function update(Request $request, int $id): JsonResponse
     {
         /** @var User $user */
@@ -138,6 +146,7 @@ class UserController extends CRUDController
             'name' => 'sometimes|max:255',
             'email' => 'required|email|unique:users,email,' . $request->get('id'),
             'password' => 'sometimes|min:5|max:72',
+            'current_password' => 'required_with:password|min:5|max:72',
             UserMetaKeys::AddressLineOne => 'sometimes|max:255',
             UserMetaKeys::AddressLineTwo => 'sometimes|max:255',
             UserMetaKeys::City => 'sometimes|max:255',
@@ -162,11 +171,16 @@ class UserController extends CRUDController
             $user->email = $input['email'];
         }
 
-        if (isset($input['password']))
+        if ($request->has('password'))
+        {
+            if (! Hash::check($input['current_password'], $user->password))
+                throw new UserFriendlyException(Errors::CURRENT_PASSWORD_MISMATCH, ResponseType::FORBIDDEN);
+
             $user->password = Hash::make($input['password']);
+        }
 
         // Remove the ones that go into the original model
-        unset($input['name'], $input['email'], $input['password']);
+        unset($input['name'], $input['email'], $input['password'], $input['current_password']);
 
         foreach ($input as $key => $value)
         {

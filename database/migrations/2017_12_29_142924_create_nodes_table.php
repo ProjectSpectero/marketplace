@@ -36,11 +36,17 @@ class CreateNodesTable extends Migration
             $table->integer('group_id')
                 ->nullable();
 
+            // Why so many indexes? We look things up on the marketplace / node search based on any one or more of these.
             $table->unique('ip', "unique_ip_index");
             $table->unique('install_id', 'unique_install_id_index');
             $table->unique([ 'access_token', 'install_id' ], 'unique_token_install_id_index');
             $table->unique([ 'ip', 'install_id' ], 'unique_ip_install_id_index');
-            $table->index('group_id', 'node_group_id');
+
+            $table->index('group_id', 'node_group_id_index');
+            $table->index('market_model', 'node_market_model_index');
+            $table->index('status', 'node_status_index');
+            $table->index('city', 'node_city_index');
+            $table->index('cc', 'node_country_index');
         });
     }
 

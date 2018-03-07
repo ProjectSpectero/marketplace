@@ -118,7 +118,7 @@ class StripeProcessor extends BasePaymentProcessor
 
         if ($save)
         {
-            $cardIdentifier = $charge['source']['brand'] . ' ' . $charge['source']['last4'];
+            $cardIdentifier = $charge['source']['brand'] . ' ' . $charge['source']['last4'] . ' ' . $charge['source']['exp_month'] . '/' . $charge['source']['exp_year'];
             UserMeta::addOrUpdateMeta($user, UserMetaKeys::StoredCardIdentifier, $cardIdentifier);
         }
 

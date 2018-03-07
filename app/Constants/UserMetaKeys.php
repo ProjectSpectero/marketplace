@@ -35,8 +35,7 @@ class UserMetaKeys extends Holder
             self::PhoneNumber,
             self::TaxIdentification,
             self::Organization,
-            self::TwoFactorEnabled,
-            self::StoredCardIdentifier,
+            self::TwoFactorEnabled
         ];
     }
 }

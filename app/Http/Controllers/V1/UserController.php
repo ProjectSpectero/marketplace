@@ -16,6 +16,7 @@ use App\Libraries\Utility;
 use App\User;
 use App\UserMeta;
 use App\Constants\Messages;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,10 +35,20 @@ class UserController extends CRUDController
     public function self (Request $request) : JsonResponse
     {
         $user = $request->user();
+        $card = UserMeta::loadMeta($user, UserMetaKeys::StoredCardIdentifier);
+        $cardInfo = [
+            'brand' => null,
+            'last4' => null,
+            'expires' => null
+        ];
 
-        return $this->respond(
-            array_merge($user->toArray(),UserMeta::getUserPublicMeta($user))
-        );
+        if ($card != null && ! $card instanceof Builder)
+            list($cardInfo['brand'], $cardInfo['last4'], $cardInfo['expires']) = explode(' ', $card->meta_value, 3);
+
+        $data = array_merge($user->toArray(), UserMeta::getUserPublicMeta($user));
+        $data['card'] = $cardInfo;
+
+        return $this->respond($data);
     }
 
     public function index(Request $request) : JsonResponse

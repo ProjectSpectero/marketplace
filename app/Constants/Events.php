@@ -22,4 +22,5 @@ class Events extends Holder
 
     const BILLING_TRANSACTION_ADDED = 'billing.txn.added';
     const ORDER_CREATED = 'billing.order.created';
+    const ORDER_REVERIFY = 'billing.order.reverify';
 }

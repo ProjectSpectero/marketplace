@@ -179,7 +179,6 @@ class OrderController extends CRUDController
         {
             $type = $item['type'];
             $quantity = 1;
-            $amount = 0.0;
 
             switch($type)
             {
@@ -227,9 +226,8 @@ class OrderController extends CRUDController
             $lineItem->resource = $resource->id;
             $lineItem->quantity = $quantity;
             $lineItem->amount = $resource->price;
+            $lineItem->status = OrderStatus::PENDING;
             $lineItem->sync_status = NodeSyncStatus::PENDING_SYNC;
-
-            $amount += $resource->price * $quantity;
 
             $lineItem->saveOrFail();
 
@@ -238,18 +236,7 @@ class OrderController extends CRUDController
 
         if ($createInvoice)
         {
-            $invoice = new Invoice();
-            $invoice->order_id = $orderId;
-            $invoice->user_id = $order->user_id;
-            $invoice->amount = $amount;
-            $invoice->tax = TaxationManager::getTaxAmount($order);
-            $invoice->status = InvoiceStatus::UNPAID;
-            $invoice->due_date = $dueNext;
-
-            // TODO: Default into USD for now, we'll fix this later
-            $invoice->currency = Currency::USD;
-
-            $invoice->saveOrFail();
+            $invoice = BillingUtils::createInvoice($order, $dueNext);
 
             $order->last_invoice_id = $invoice->id;
             $order->saveOrFail();

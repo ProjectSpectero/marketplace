@@ -23,7 +23,6 @@ class PermissionManager
         $orderResource = $resources['order'];
         $invoiceResource = $resources['invoice'];
         $nodeGroupResource = $resources['node_group'];
-        $engagementResource = $resources['engagement'];
 
         switch ($role)
         {
@@ -83,11 +82,6 @@ class PermissionManager
                         $nodeGroupResource . '.' . CRUDActions::UPDATE,
                         $nodeGroupResource . '.' . CRUDActions::DESTROY,
                         $nodeGroupResource . '.' . 'assign'
-                    ]);
-
-                Bouncer::allow($user)
-                    ->to([
-                        $engagementResource . '.' . CRUDActions::SHOW,
                     ]);
                 break;
 

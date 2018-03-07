@@ -11,7 +11,9 @@ use App\Constants\PaymentType;
 use App\Events\BillingEvent;
 use App\Invoice;
 use App\Libraries\AccountingManager;
+use App\Libraries\BillingUtils;
 use App\Libraries\FraudCheckManager;
+use App\Libraries\TaxationManager;
 use App\Libraries\Utility;
 use App\Mail\InvoicePaid;
 use App\Mail\OrderCreated;
@@ -98,6 +100,41 @@ class BillingEventListener extends BaseListener
                 Mail::to($user->email)->queue(new OrderCreated($order));
 
             break;
+
+            case Events::ORDER_REVERIFY:
+                // The object is an order in this case
+                /** @var Order $order */
+                $order = $event->data;
+
+                // The first thing we do is fix the invoice if it needs fixing, this is mostly called when an engagement / the whole order is cancelled.
+                // Cancel the invoice too if order gets cancelled.
+                /** @var Invoice $lastInvoice */
+                $lastInvoice = $order->lastInvoice;
+                if ($order->status == OrderStatus::CANCELLED && $lastInvoice->status != InvoiceStatus::PAID)
+                {
+                    $lastInvoice->status = InvoiceStatus::CANCELLED;
+                    $lastInvoice->saveOrFail();
+                    return;
+                }
+
+                // Let's verify that the amount is correct (perhaps partial cancellation)
+
+                $amount = BillingUtils::getOrderDueAmount($order);
+                $tax = TaxationManager::getTaxAmount($order, $amount);
+                $amount += $tax;
+
+                // TODO: make this currency aware, currently we're operating on the assumption that everything is USD.
+                // We ONLY make changes if invoice isn't paid. Otherwise it'll be picked up from the next one.
+
+                if ($lastInvoice->status != InvoiceStatus::PAID && $lastInvoice->amount != $amount)
+                {
+                    $lastInvoice->amount = $amount;
+                    $lastInvoice->tax = $tax;
+
+                    $lastInvoice->saveOrFail();
+                }
+
+                break;
 
 
         }

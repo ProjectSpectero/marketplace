@@ -7,5 +7,4 @@ return [
     'invoice' => 'invoice',
     'node_group' => 'node_group',
     'transaction' => 'transaction',
-    'engagement' => 'engagement'
 ];

@@ -193,10 +193,11 @@ class NodeController extends CRUDController
         {
             // Why this check? Because we have fields that are /sometimes/ required.
             if ($request->has($key))
+            {
                 $node->$key = $value;
-
-            if (in_array($key, $reverifyRules))
-                $node->status = NodeStatus::PENDING_VERIFICATION;
+                if (in_array($key, $reverifyRules))
+                    $node->status = NodeStatus::PENDING_VERIFICATION;
+            }
         }
 
         $node->saveOrFail();

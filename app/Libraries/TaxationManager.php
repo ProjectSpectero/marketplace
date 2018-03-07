@@ -13,7 +13,7 @@ class TaxationManager
         return 0;
     }
 
-    public static function getTaxAmount (Order $order)
+    public static function getTaxAmount (Order $order, float $subTotals)
     {
         return 0;
     }

@@ -89,5 +89,6 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         \App\Libraries\Utility::defineResourceRoute('transaction', 'TransactionController', $api, []);
 
         $api->post('marketplace/search', 'MarketplaceController@search');
+        \App\Libraries\Utility::defineResourceRoute('engagement', 'EngagementController', $api, []);
     });
 });

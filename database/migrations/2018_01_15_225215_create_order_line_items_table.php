@@ -21,7 +21,10 @@ class CreateOrderLineItemsTable extends Migration
             $table->string('type');
             $table->string('resource');
             $table->integer('quantity');
-            $table->string('sync_status');
+
+            $table->string('status'); // Set this with the OrderStatus constants
+
+            $table->string('sync_status'); // Set this with the OrderSyncStatus constants
 
             $table->timestamp('sync_timestamp')
                 ->nullable();

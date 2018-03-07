@@ -4,12 +4,21 @@
 namespace App\Libraries;
 
 
+use App\Constants\Currency;
 use App\Constants\Errors;
+use App\Constants\InvoiceStatus;
+use App\Constants\OrderResourceType;
+use App\Constants\OrderStatus;
 use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
 use App\Errors\UserFriendlyException;
+use App\Invoice;
+use App\Node;
+use App\NodeGroup;
+use App\Order;
 use App\User;
 use App\UserMeta;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class BillingUtils
@@ -72,5 +81,51 @@ class BillingUtils
         $formattedUserAddress .= PHP_EOL . $details['country'];
 
         return $formattedUserAddress;
+    }
+
+    public static function getOrderDueAmount (Order $order) : float
+    {
+        // Let's figure out the amount.
+        $items = $order->lineItems
+            ->where('status', '!=', OrderStatus::CANCELLED)
+            ->get();
+
+        $amount = 0.0;
+        foreach ($items as $item)
+        {
+            $resourceType = $item->type;
+            if ($resourceType == OrderResourceType::NODE)
+                $resource = Node::find($item->resource);
+            else
+                $resource = NodeGroup::find($item->resource);
+
+            if ($resource != null)
+                $amount += $item->quantity * $resource->price;
+        }
+
+        return $amount;
+    }
+    public static function createInvoice (Order $order, Carbon $dueNext) : Invoice
+    {
+        $invoice = new Invoice();
+        $invoice->order_id = $order->id;
+        $invoice->user_id = $order->user_id;
+
+
+        $amount = static::getOrderDueAmount($order);
+        $tax = TaxationManager::getTaxAmount($order, $amount);
+        $amount += $tax;
+
+        $invoice->amount = $amount;
+        $invoice->tax = $tax;
+        $invoice->status = InvoiceStatus::UNPAID;
+        $invoice->due_date = $dueNext;
+
+        // TODO: Default into USD for now, we'll fix this later
+        $invoice->currency = Currency::USD;
+
+        $invoice->saveOrFail();
+
+        return $invoice;
     }
 }

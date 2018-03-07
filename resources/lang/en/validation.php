@@ -7,11 +7,11 @@ return [
     'alpha_num' => \App\Constants\Errors::FIELD_ALPHANUM . '::attribute:',
     'alpha_dash' => \App\Constants\Errors::FIELD_ALPHADASH . '::attribute:',
     'min' => [
-        'numeric' => \App\Constants\Errors::FIELD_MINLENGTH . '::attribute::min',
+        'numeric' => \App\Constants\Errors::FIELD_MINVALUE . '::attribute::min',
         'string' => \App\Constants\Errors::FIELD_MINLENGTH . '::attribute::min',
     ],
     'max' => [
-        'numeric' => \App\Constants\Errors::FIELD_MAXLENGTH . '::attribute::max',
+        'numeric' => \App\Constants\Errors::FIELD_MAXVALUE . '::attribute::max',
         'string' => \App\Constants\Errors::FIELD_MAXLENGTH . '::attribute::max',
     ],
     'country' => \App\Constants\Errors::FIELD_COUNTRY . '::attribute',

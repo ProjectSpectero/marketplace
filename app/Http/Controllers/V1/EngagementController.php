@@ -41,7 +41,7 @@ class EngagementController extends CRUDController
         if ($lineItem->status != OrderStatus::ACTIVE)
             throw new UserFriendlyException(Errors::ORDER_NOT_ACTIVE_YET);
 
-        $lineItem->status == OrderStatus::CANCELLED;
+        $lineItem->status = OrderStatus::CANCELLED;
         $lineItem->saveOrFail();
 
         event(new BillingEvent(Events::ORDER_REVERIFY, $lineItem->order));

@@ -87,8 +87,7 @@ class BillingUtils
     {
         // Let's figure out the amount.
         $items = $order->lineItems
-            ->where('status', '!=', OrderStatus::CANCELLED)
-            ->get();
+            ->where('status', '!=', OrderStatus::CANCELLED);
 
         $amount = 0.0;
         foreach ($items as $item)

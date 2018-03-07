@@ -7,6 +7,7 @@ namespace App\Http\Controllers\V1;
 use App\Constants\Errors;
 use App\Constants\Events;
 use App\Constants\Messages;
+use App\Constants\NodeMarketModel;
 use App\Constants\NodeStatus;
 use App\Constants\NodeSyncStatus;
 use App\Constants\OrderStatus;
@@ -120,7 +121,7 @@ class NodeController extends CRUDController
             'protocol' => [ 'required', Rule::in(Protocols::getConstants())],
             'ip' => 'sometimes|ip',
             'port' => 'required|integer|min:1024|max:65534',
-            'access_token' => 'required|min:5|max:72|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
+            'access_token' => 'required|min:5|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
             'install_id' => 'required|alpha_dash|size:36'
         ];
 
@@ -160,14 +161,18 @@ class NodeController extends CRUDController
 
     public function update(Request $request, int $id): JsonResponse
     {
+        /** @var Node $node */
+        $node = Node::findOrFail($id);
+        $this->authorizeResource($node);
+
         $rules = [
-            'ip' => 'required',
-            'port' => 'required',
-            'access_token' => 'required',
-            'protocol' => 'required',
-            'friendly_name' => 'required',
-            'market_model' => 'required',
-            'price' => 'required'
+            'protocol' => [ 'required', Rule::in(Protocols::getConstants()) ],
+            'ip' => 'required|ip',
+            'port' => 'required|integer|min:1024|max:65534',
+            'access_token' => 'sometimes|min:5|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
+            'friendly_name' => 'sometimes|alpha_dash',
+            'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstants()) ],
+            'price' => 'required_with:market_model|numeric|min:5'
         ];
 
         $reverifyRules = [
@@ -177,21 +182,26 @@ class NodeController extends CRUDController
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
-        if (in_array('market_model', $request->all()))
-            throw new UserFriendlyException(Errors::HAS_ACTIVE_ORDERS);
-
-        $node = Node::findOrFail($id);
-
-        $this->authorizeResource($node);
+        if ($request->has('market_model') && $node->market_model != $input['market_model'])
+        {
+            // Indicating that this is an update
+            if ($node->getOrders(OrderStatus::ACTIVE)->count() > 0)
+                throw new UserFriendlyException(Errors::HAS_ACTIVE_ORDERS);
+        }
 
         foreach ($input as $key => $value)
-            $node->$key = $value;
+        {
+            // Why this check? Because we have fields that are /sometimes/ required.
+            if ($request->has($key))
+                $node->$key = $value;
+        }
 
-        if (!empty(array_intersect($request->all(), $reverifyRules)))
-            $node->status = NodeStatus::UNCONFIRMED;
+        if (! empty(array_intersect($request->all(), $reverifyRules)))
+            $node->status = NodeStatus::PENDING_VERIFICATION;
 
         $node->saveOrFail();
 
+        event(new NodeEvent(Events::NODE_REVERIFY, $node));
         return $this->respond($node->toArray(), [], Messages::NODE_UPDATED);
     }
 

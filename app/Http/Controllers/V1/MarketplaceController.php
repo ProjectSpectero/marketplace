@@ -143,7 +143,7 @@ class MarketplaceController extends Controller
 
                     $query->leftJoin('node_ip_addresses', 'node_ip_addresses.node_id', '=', 'nodes.id');
 
-                    $query->havingRaw('count(node_ip_addresses.id) > ' . $value);
+                    $query->havingRaw('count(node_ip_addresses.id) ' . $operator . ' ' . $value);
                     break;
 
                 default:

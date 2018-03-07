@@ -21,6 +21,13 @@ class CreateTableUsers extends Migration
             $table->string('status'); // Do not set without the constants array
             $table->string('node_key');
             $table->string('password');
+
+            $table->decimal('credit', 13, 4)
+                ->default(0);
+
+            $table->string('credit_currency')
+                ->default(\App\Constants\Currency::USD); // Set with the Currency constant, defaults to USD.
+
             $table->softDeletes();
             $table->timestamps();
 

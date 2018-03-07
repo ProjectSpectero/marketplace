@@ -17,6 +17,8 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
 {
     use HasApiTokens, Authenticatable, Authorizable, HasRolesAndAbilities, SoftDeletes;
 
+    protected $casts = [ 'credit' => 'float' ];
+
     /**
      * The attributes that are mass assignable.
      *

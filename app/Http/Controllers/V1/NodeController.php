@@ -196,7 +196,7 @@ class NodeController extends CRUDController
                 $node->$key = $value;
         }
 
-        if (! empty(array_intersect($request->all(), $reverifyRules)))
+        if (count(array_intersect($request->all(), $reverifyRules)))
             $node->status = NodeStatus::PENDING_VERIFICATION;
 
         $node->saveOrFail();

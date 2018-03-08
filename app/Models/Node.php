@@ -99,13 +99,19 @@ class Node extends BaseModel
         return $this->genericGetOrders($this, $status, OrderResourceType::NODE);
     }
 
-    public function getEngagements (String $status)
+    public function getEngagements (String $status = null)
     {
-        return $this->join('order_line_items', 'nodes.id', '=', 'order_line_items.resource')
+        $query = OrderLineItem::join('nodes', 'nodes.id', '=', 'order_line_items.resource')
             ->join('orders', 'orders.id', '=', 'order_line_items.order_id')
             ->where('order_line_items.type', OrderResourceType::NODE)
-            ->where('order_line_items.resource', $this->id)
-            ->where('orders.status', $status);
+            ->where('order_line_items.resource', $this->id);
+
+        if ($status != null)
+            $query->where('orders.status', $status);
+
+        $query->select([ 'order_line_items.*' ]);
+
+        return $query;
     }
 
     public function ipAddresses ()

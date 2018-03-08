@@ -11,9 +11,11 @@ class BillingSeeder extends Seeder
      */
     public function run()
     {
-        factory(App\Order::class, 30)->create();
+        factory(App\Order::class, 100)->create();
         foreach (App\Order::noEagerLoads()->get() as $order)
         {
+            $timestamp = \Carbon\Carbon::now();
+
             $amountOne = mt_rand(1, 100);
             $amountTwo = mt_rand(1, 100);
             $quantity = mt_rand(1, 5);
@@ -22,18 +24,24 @@ class BillingSeeder extends Seeder
             $lineItem->description = "Example line item 1";
             $lineItem->order_id = $order->id;
             $lineItem->type = \App\Constants\OrderResourceType::NODE;
-            $lineItem->resource = mt_rand(1, 25);
+            $lineItem->resource = mt_rand(1, 100);
             $lineItem->quantity = $quantity;
             $lineItem->amount = $amountOne;
+            $lineItem->status = array_rand([ \App\Constants\OrderStatus::ACTIVE, \App\Constants\OrderStatus::PENDING ]);
+            $lineItem->sync_status = array_rand(\App\Constants\NodeSyncStatus::getConstants());
+            $lineItem->sync_timestamp = $timestamp;
             $lineItem->saveOrFail();
 
             $lineItem = new \App\OrderLineItem();
             $lineItem->description = "Example line item 2";
             $lineItem->order_id = $order->id;
             $lineItem->type = \App\Constants\OrderResourceType::NODE_GROUP;
-            $lineItem->resource = mt_rand(1, 5);
+            $lineItem->resource = mt_rand(1, 25);
             $lineItem->quantity = $quantity;
             $lineItem->amount = $amountTwo;
+            $lineItem->status = array_rand([ \App\Constants\OrderStatus::ACTIVE, \App\Constants\OrderStatus::PENDING ]);
+            $lineItem->sync_status = array_rand(\App\Constants\NodeSyncStatus::getConstants());
+            $lineItem->sync_timestamp = $timestamp;
             $lineItem->saveOrFail();
 
             $invoice = new \App\Invoice();

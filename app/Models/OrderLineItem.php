@@ -2,11 +2,10 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
-
 class OrderLineItem extends BaseModel
 {
-    protected $casts = ['amount' => 'float', 'resource' => 'integer'];
+    protected $casts = [ 'amount' => 'float', 'resource' => 'integer' ];
+    protected $hidden = [ 'updated_at', 'sync_timestamp' ];
 
     public function order()
     {

@@ -44,8 +44,8 @@ class NodeController extends CRUDController
 
         switch ($action)
         {
-            case 'orders':
-                return PaginationManager::paginate($request, $node->getOrders()->noEagerLoads());
+            case 'engagements':
+                return PaginationManager::paginate($request, $node->getEngagements()->noEagerLoads());
             case 'services':
                 return PaginationManager::paginate($request, Service::where('node_id', $node->id));
             case 'ips':

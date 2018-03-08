@@ -20,4 +20,19 @@ class NodeGroup extends BaseModel
     {
         return $this->genericGetOrders($this, $status, OrderResourceType::NODE_GROUP);
     }
+
+    public function getEngagements (String $status = null)
+    {
+        $query = OrderLineItem::join('node_groups', 'node_groups.id', '=', 'order_line_items.resource')
+            ->join('orders', 'orders.id', '=', 'order_line_items.order_id')
+            ->where('order_line_items.type', OrderResourceType::NODE_GROUP)
+            ->where('order_line_items.resource', $this->id);
+
+        if ($status != null)
+            $query->where('orders.status', $status);
+
+        $query->select([ 'order_line_items.*' ]);
+
+        return $query;
+    }
 }

@@ -126,13 +126,14 @@ class NodeGroupController extends CRUDController
 
     public function show (Request $request, int $id, String $action = null) : JsonResponse
     {
+        /** @var NodeGroup $nodeGroup */
         $nodeGroup = NodeGroup::findOrFail($id);
         $this->authorizeResource($nodeGroup);
 
         switch ($action)
         {
-            case 'orders':
-                return PaginationManager::paginate($request, $nodeGroup->getOrders()->noEagerLoads());
+            case 'engagements':
+                return PaginationManager::paginate($request, $nodeGroup->getEngagements()->noEagerLoads());
             default:
                 return $this->respond($nodeGroup->toArray());
         }

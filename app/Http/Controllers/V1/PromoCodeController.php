@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Constants\Errors;
 use App\Constants\Messages;
 use App\Constants\ResponseType;
+use App\Errors\UserFriendlyException;
 use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
 use App\PromoCode;
+use App\PromoUsage;
+use App\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -81,7 +85,15 @@ class PromoCodeController extends CRUDController
         $promoCode = PromoCode::findOrFail($id);
         $this->authorizeResource($promoCode);
 
-        $promoCode->delete();
+        if (! empty($promoCode->usages))
+        {
+            $promoCode->enabled = false;
+            $promoCode->saveOrFail();
+
+            return $this->respond($promoCode->toArray(), [], Messages::PROMO_CODE_DISABLED);
+        }
+        else
+            $promoCode->delete();
 
         return $this->respond(null, [], Messages::PROMO_CODE_REMOVED, ResponseType::NO_CONTENT);
     }
@@ -92,6 +104,32 @@ class PromoCodeController extends CRUDController
         $this->authorizeResource($promoCode);
 
         return $this->respond($promoCode->toArray());
+    }
+
+    public function apply(Request $request)
+    {
+        $code = $request->get('code');
+        $user = $request->user();
+
+        $promoCode = PromoCode::where('code', $code)->first();
+        $usages = PromoUsage::where('code_id', $promoCode->id)->where('user_id', $user->id)->get();
+
+        if (! empty($usages) && $promoCode->onetime == true)
+            throw new UserFriendlyException(Errors::PROMO_CODE_ALREADY_USED);
+
+        $applications = $promoCode->group->applications;
+
+        if ($usages > $applications)
+            throw new UserFriendlyException(Errors::PROMO_CODE_LIMIT_REACHED);
+
+        $promoUsage = new PromoUsage();
+        $promoUsage->code_id = $promoCode->id;
+        $promoUsage->user_id = $user->id;
+        $promoUsage->saveOrFail();
+
+        \DB::table('users')->where('id', $user->id)->increment('credit', $promoCode->amount);
+
+        return $this->respond(null, [], Messages::PROMO_CODE_APPLIED);
     }
 
 }

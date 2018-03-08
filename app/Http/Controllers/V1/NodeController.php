@@ -152,6 +152,7 @@ class NodeController extends CRUDController
             $input['status'] = NodeStatus::UNCONFIRMED;
             $node = Node::create($input);
             $node->user_id = $request->user()->id;
+            $node->market_model = NodeMarketModel::UNLISTED;
             $node->saveOrFail();
         }
 
@@ -247,6 +248,9 @@ class NodeController extends CRUDController
         // A node group for which at least one active order exists cannot be destroyed. Cancel the order first.
         if ($node->getOrders(OrderStatus::ACTIVE)->count() != 0)
             throw new UserFriendlyException(Errors::ORDERS_EXIST, ResponseType::FORBIDDEN);
+
+        // Before deleting a node, we need to remove its services + ips, we also need to copy it out into our historical tracker table
+        // TODO: figure this (^) out.
 
         $node->delete();
         event(new NodeEvent(Events::NODE_DELETED, $node));

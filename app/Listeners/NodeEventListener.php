@@ -161,6 +161,11 @@ class NodeEventListener extends BaseListener
                                     return;
                                 }
 
+                                // This would mean it's an IP that our discoverer did not find, was likely manually configured into the HTTPProxy service instead.
+                                // Regardless, all good with us though, we want to know about it.
+                                if (! in_array($outgoingIp, $data['ipAddresses']))
+                                    $data['ipAddresses'][] = $outgoingIp;
+
                                 $outgoingIpCollection[] = $outgoingIp;
                             }
 
@@ -190,8 +195,7 @@ class NodeEventListener extends BaseListener
                         /** @var array $ipCollection */
                         $ipCollection = $data['ipAddresses'];
 
-                        // NOW, $service has an ID associated.
-
+                        // TODO: think about whether to ban IPv6 here. It could be an exploit to artificially inflate the count despite not being what clients are after.
                         foreach ($ipCollection as $ip)
                         {
                             $persistedIp = new NodeIPAddress();

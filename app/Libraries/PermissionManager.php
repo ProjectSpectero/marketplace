@@ -18,7 +18,6 @@ class PermissionManager
     public static function assign (User $user, String $role)
     {
         $resources = config('resources');
-        $userResource = $resources['user'];
         $nodeResource = $resources['node'];
         $orderResource = $resources['order'];
         $invoiceResource = $resources['invoice'];

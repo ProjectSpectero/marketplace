@@ -144,7 +144,7 @@ class UserController extends CRUDController
 
         $rules = [
             'name' => 'sometimes|max:255',
-            'email' => 'required|email|unique:users,email,' . $request->get('id'),
+            'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'sometimes|min:5|max:72',
             'current_password' => 'required_with:password|min:5|max:72',
             UserMetaKeys::AddressLineOne => 'sometimes|max:255',

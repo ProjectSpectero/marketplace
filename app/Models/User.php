@@ -80,4 +80,9 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
         $predicate = self::where('node_key', $nodeKey);
         return $throwsException ? $predicate->firstOrFail() : $predicate->first();
     }
+
+    public function promoUsages ()
+    {
+        return $this->hasMany(PromoUsage::class);
+    }
 }

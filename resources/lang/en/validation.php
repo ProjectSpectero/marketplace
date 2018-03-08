@@ -22,5 +22,6 @@ return [
         'numeric' => \App\Constants\Errors::FIELD_BETWEEN . '::attribute::min::max',
     ],
     'equals' => \App\Constants\Errors::FIELD_EQUALS . '::attribute',
-    'regex' => \App\Constants\Errors::FIELD_REGEX . '::attribute'
+    'regex' => \App\Constants\Errors::FIELD_REGEX . '::attribute',
+    'date_format' => \App\Constants\Errors::FIELD_INVALID . '::attribute' . ':Y-m-d',
 ];

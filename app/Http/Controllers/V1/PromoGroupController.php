@@ -4,6 +4,7 @@ namespace App\Http\Controllers\V1;
 
 use App\Constants\Messages;
 use App\Constants\ResponseType;
+use App\Errors\NotSupportedException;
 use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
 use App\PromoGroup;
@@ -32,8 +33,8 @@ class PromoGroupController extends CRUDController
         $this->authorizeResource();
 
         $rules = [
-            'name' => 'required',
-            'applications' => 'required'
+            'name' => 'required|alpha_dash',
+            'usage_limit' => 'required|integer'
         ];
 
         $this->validate($request, $rules);
@@ -41,7 +42,7 @@ class PromoGroupController extends CRUDController
 
         $promoGroup = new PromoGroup();
         $promoGroup->name = $input['name'];
-        $promoGroup->applications = $input['applications'];
+        $promoGroup->usage_limit = $input['usage_limit'];
 
         $promoGroup->saveOrFail();
 
@@ -51,15 +52,14 @@ class PromoGroupController extends CRUDController
     public function update(Request $request, int $id): JsonResponse
     {
         $rules = [
-            'name' => 'required',
-            'applications' => 'required'
+            'name' => 'required|alpha_dash',
+            'usage_limit' => 'required|integer'
         ];
 
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
         $promoGroup = PromoGroup::findOrFail($id);
-
         $this->authorizeResource($promoGroup);
 
         foreach ($input as $key => $value)
@@ -72,12 +72,19 @@ class PromoGroupController extends CRUDController
 
     public function destroy(Request $request, int $id): JsonResponse
     {
-        $promoGroup = PromoGroup::findOrFail($id);
-        $this->authorizeResource($promoGroup);
+        // TODO: Group destruction has implications, figure out what those are before allowing this.
+        // It is likely we may not be able to support it at all.
+        // Or we'll need to remove all codes that are a part of the group when this is called alongside, that's the only way to really work with it.
+        // But if we do that, PromoUsage entries now become invalid, and past usage records may not be nuked.
 
-        $promoGroup->delete();
+        throw new NotSupportedException();
 
-        return $this->respond(null, [], Messages::PROMO_GROUP_REMOVED, ResponseType::NO_CONTENT);
+        /*
+         *          $promoGroup = PromoGroup::findOrFail($id);
+                    $this->authorizeResource($promoGroup);
+                    $promoGroup->delete();
+                    return $this->respond(null, [], Messages::PROMO_GROUP_REMOVED, ResponseType::NO_CONTENT);
+         */
     }
 
     public function show(Request $request, int $id, String $action = null): JsonResponse

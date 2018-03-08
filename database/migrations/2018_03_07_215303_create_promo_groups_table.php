@@ -13,10 +13,11 @@ class CreatePromoGroupsTable extends Migration
      */
     public function up()
     {
-        Schema::create('promo_groups', function (Blueprint $table) {
+        Schema::create('promo_groups', function (Blueprint $table)
+        {
             $table->increments('id');
             $table->string('name');
-            $table->integer('applications');
+            $table->integer('usage_limit'); // This is per user. interpretation: An user may only use this many codes belonging to this group on their account. Idea is to prevent things like first time joining bonus codes from being abused.
             $table->timestamps();
         });
     }

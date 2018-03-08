@@ -9,11 +9,15 @@ use App\Errors\UserFriendlyException;
 use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
 use App\PromoCode;
+use App\PromoGroup;
 use App\PromoUsage;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+// Aware that returning 404 on a paramter not existing is shitty UX, but this is not a user endpoint for the most part.
+// Apply is the only thing users deal with, the rest are for peasants, sorry, A D M I N I S T R A T O R S.
 class PromoCodeController extends CRUDController
 {
     public function index(Request $request): JsonResponse
@@ -36,20 +40,30 @@ class PromoCodeController extends CRUDController
         $this->authorizeResource();
 
         $rules = [
-            'code' => 'required',
-            'group_id' => 'required',
-            'onetime' => 'required',
-            'amount' => 'required'
+            'code' => 'required|alpha_dash|unique:promo_codes',
+            'group_id' => 'required|integer',
+            'usage_limit' => 'required|integer',
+            'amount' => 'required|numeric',
+            'expires' => 'sometimes|date_format:Y-m-d'
         ];
 
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
+        // Let's make sure this group actually exists.
+        PromoGroup::findOrFail($input['group_id']);
+
         $promoCode = new PromoCode();
         $promoCode->code = $input['code'];
         $promoCode->group_id = $input['group_id'];
-        $promoCode->onetime = $input['onetime'];
+        $promoCode->usage_limit = $input['usage_limit'];
         $promoCode->amount = $input['amount'];
+
+        // If expiry is not given, the promo code is valid for a week only.
+        if ($request->has('expires'))
+            $promoCode->expires = $input['expires'];
+        else
+            $promoCode->expires = Carbon::now()->addDays(7);
 
         $promoCode->saveOrFail();
 
@@ -59,10 +73,11 @@ class PromoCodeController extends CRUDController
     public function update(Request $request, int $id): JsonResponse
     {
         $rules = [
-            'code' => 'required',
-            'group_id' => 'required',
-            'onetime' => 'required',
-            'amount' => 'required'
+            'code' => 'required|alpha_dash|unique:promo_codes,code,' . $id,
+            'group_id' => 'required|integer',
+            'usage_limit' => 'required|integer',
+            'amount' => 'required|numeric',
+            'expires' => 'sometimes|date_format:Y-m-d'
         ];
 
         $this->validate($request, $rules);
@@ -73,7 +88,14 @@ class PromoCodeController extends CRUDController
         $this->authorizeResource($promoCode);
 
         foreach ($input as $key => $value)
-            $promoCode->$key = $value;
+        {
+            // If sometimes rules are involved, you're expected to do this to not insert junk.
+            if ($request->has($key))
+                $promoCode->$key = $value;
+        }
+
+        // Let's make sure this group actually exists.
+        PromoGroup::findOrFail($input['group_id']);
 
         $promoCode->saveOrFail();
 
@@ -108,26 +130,64 @@ class PromoCodeController extends CRUDController
 
     public function apply(Request $request)
     {
-        $code = $request->get('code');
+        $rules = [
+            'code' => 'required|alpha_dash'
+        ];
+
+        $this->validate($request, $rules);
+        $input = $this->cherryPick($request, $rules);
+
+        /** @var PromoCode $code */
+        $code = PromoCode::where('code', $input['code'])->firstOrFail();
+
+        /** @var User $user */
         $user = $request->user();
 
-        $promoCode = PromoCode::where('code', $code)->firstOrFail();
-        $usages = PromoUsage::where('code_id', $promoCode->id)->where('user_id', $user->id)->get();
+        if ($code->enabled != true)
+            throw new UserFriendlyException(Errors::PROMO_CODE_INVALID);
 
-        if (! empty($usages) && $promoCode->onetime == true)
-            throw new UserFriendlyException(Errors::PROMO_CODE_ALREADY_USED);
+        if ($code->usage_limit <= 0)
+            throw new UserFriendlyException(Errors::PROMO_ACTIVATION_LIMIT_REACHED);
 
-        $applications = $promoCode->group->applications;
+        $currentGroup = $code->group;
+        $currentGroupActivations = 0;
 
-        if ($usages > $applications)
-            throw new UserFriendlyException(Errors::PROMO_CODE_LIMIT_REACHED);
+        foreach ($user->promoUsages as $promoUsage)
+        {
+            // Idea is to see if the user has activated a code belonging to $code's group earlier.
+            // This loop is probably fine, we don't think a user will have manay codes applied. One or two in the lifetime of the account is probably a good guess.
+            // We also validate that this SAME code has not previously been activated by them.
 
-        $promoUsage = new PromoUsage();
-        $promoUsage->code_id = $promoCode->id;
-        $promoUsage->user_id = $user->id;
-        $promoUsage->saveOrFail();
+            /** @var PromoUsage $usedCode */
+            $usedCode = $promoUsage->code;
 
-        \DB::table('users')->where('id', $user->id)->increment('credit', $promoCode->amount);
+            if ($usedCode->id == $code->id)
+                throw new UserFriendlyException(Errors::PROMO_CODE_ALREADY_USED);
+
+            if ($usedCode->code->group->id == $currentGroup->id)
+                $currentGroupActivations++;
+        }
+
+        if ($currentGroupActivations > $currentGroup->usage_limit)
+            throw new UserFriendlyException(Errors::PROMO_GROUP_LIMIT_REACHED);
+
+
+
+        // Why a txn? EVERY ONE of these updates need to succeed, otherwise our state is inconsistent.
+        \DB::transaction(function() use ($user, $code)
+        {
+            $promoUsage = new PromoUsage();
+            $promoUsage->code_id = $code->id;
+            $promoUsage->user_id = $user->id;
+            $promoUsage->saveOrFail();
+
+            // Let's reduce it by one to show that it's been activated once.
+            $code->decrement('usage_limit', 1);
+
+            // Let's add credit to the user. We can't use increment here, that only deals with ints <.<'
+            $user->credit = $user->credit + $code->amount;
+            $user->saveOrFail();
+        });
 
         return $this->respond(null, [], Messages::PROMO_CODE_APPLIED);
     }

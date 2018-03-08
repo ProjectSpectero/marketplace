@@ -17,10 +17,18 @@ class CreatePromoCodesTable extends Migration
             $table->increments('id');
             $table->string('code');
             $table->integer('group_id');
-            $table->boolean('onetime');
-            $table->boolean('enabled')->default(true);
-            $table->decimal('amount', 13, 4);
+
+            $table->integer('usage_limit'); // Code may be used this many times across all users, it's decremented once per activation.
+
+            $table->timestamp('expires'); // Activation will be denied if attempted after this date.
+
+            $table->boolean('enabled') // Allows for disabling a specific code
+                ->default(true);
+
+            $table->decimal('amount', 13, 4); // The amount the code credits into an user's account on activation, internal values ALWAYS denominated in USD.
             $table->timestamps();
+
+            $table->unique('code', 'promo_code_unique_index');
         });
     }
 

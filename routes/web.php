@@ -92,5 +92,6 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         \App\Libraries\Utility::defineResourceRoute('promo_code', 'PromoCodeController', $api, []);
 
         \App\Libraries\Utility::defineResourceRoute('promo_group', 'PromoGroupController', $api, []);
+        $api->post('promo_code/apply', 'PromoCodeController@apply');
     });
 });

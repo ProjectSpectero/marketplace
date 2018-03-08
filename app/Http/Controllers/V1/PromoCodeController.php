@@ -111,7 +111,7 @@ class PromoCodeController extends CRUDController
         $code = $request->get('code');
         $user = $request->user();
 
-        $promoCode = PromoCode::where('code', $code)->first();
+        $promoCode = PromoCode::where('code', $code)->firstOrFail();
         $usages = PromoUsage::where('code_id', $promoCode->id)->where('user_id', $user->id)->get();
 
         if (! empty($usages) && $promoCode->onetime == true)

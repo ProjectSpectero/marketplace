@@ -5,16 +5,21 @@ namespace App\Http\Controllers\V1;
 use App\Constants\Errors;
 use App\Constants\NodeMarketModel;
 use App\Constants\NodeStatus;
+use App\Constants\OrderResourceType;
+use App\Constants\OrderStatus;
+use App\Constants\ResponseType;
 use App\Constants\ServiceType;
 use App\Errors\UserFriendlyException;
 use App\Libraries\PaginationManager;
 use App\Libraries\Utility;
 use App\Node;
+use App\NodeGroup;
 use function GuzzleHttp\default_ca_bundle;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-class MarketplaceController extends Controller
+class MarketplaceController extends V1Controller
 {
     /*
      * Formal definition of the marketplace query language:
@@ -35,8 +40,8 @@ class MarketplaceController extends Controller
                 },
                 {
                     "field": "nodes.asn",
-                    "operator": "=", <-- ONLY supported value(s)
-                    "value": "9001" <-- INTEGER only.
+                    "operator": "IN",
+                    "value": [ "12345" ]
                 },
                 {
                     "field": "nodes.city",
@@ -64,18 +69,16 @@ class MarketplaceController extends Controller
 
     public function search(Request $request)
     {
-        $query = Node::query();
+        $originalQuery = Node::query();
 
         // Never pick up on unlisted nodes, and only return nodes that are verified/confirmed.
         // Don't return nodes that are a part of a group.
-        $query->where('nodes.market_model', '!=', NodeMarketModel::UNLISTED)
+        $originalQuery->where('nodes.market_model', '!=', NodeMarketModel::UNLISTED)
             ->where('nodes.status', NodeStatus::CONFIRMED);
 
-        $rules = [
-            'includeGrouped' => 'sometimes|boolean'
-        ];
-        $this->validate($request, $rules);
-        $includeGrouped = $request->has('includeGrouped') ? $request->get('includeGrouped', false) : false;
+        $query = clone $originalQuery;
+
+        $includeGrouped = $request->has('includeGrouped') ? true : false;
 
         if (! $includeGrouped)
             $query->where('nodes.group_id', null);
@@ -96,10 +99,10 @@ class MarketplaceController extends Controller
                     break;
 
                 case 'nodes.asn':
-                    if ($operator !== '=' && ! is_int($value))
+                    if ($operator !== 'IN' && ! is_array($value) && sizeof($value) < 1)
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
-                    $query->where($field, $operator, $value);
+                    $query->whereIn($field, $value);
                     break;
 
                 case 'nodes.market_model':
@@ -160,12 +163,50 @@ class MarketplaceController extends Controller
         }
 
         $query->groupBy([ 'nodes.id' ]);
-        $query->select([ 'nodes.*' ]);
+        $query->select(Node::$publicFields)
+            ->noEagerLoads();
 
-        // TODO: loop through all results returned by the paginator, and enforce that LISTED_DEDICATED with active orders is NOT being passed through.
-        dd($query->toSql(), $query->get()->toArray());
+        $results = PaginationManager::internalPaginate($request, $query);
 
-        return PaginationManager::paginate($request, $query);
+        $data = [];
+
+        if ($results->total() != 0)
+        {
+            // Means we actually found something, let's go validate them.
+            foreach ($results->items() as $node)
+            {
+                $groupId = $node->group_id;
+                $resource = $node;
+                $resource->type = OrderResourceType::NODE;
+                if ($groupId != null)
+                {
+                    $resource = NodeGroup::find($groupId)->noEagerLoads()->first();
+                    if ($resource != null)
+                    {
+                        $resource->type = OrderResourceType::NODE_GROUP;
+                        $resource->node_count = $originalQuery->where('group_id', $groupId)->count();
+                    }
+
+                }
+
+                // Builder happens when the scope needs to return null, lame.
+                if ($resource != null)
+                {
+                    if ($resource instanceof Builder)
+                        continue;
+
+                    if ($resource->market_model == NodeMarketModel::LISTED_DEDICATED
+                    && $resource->getEngagements(OrderStatus::ACTIVE)->count() != 0)
+                        continue;
+                }
+                $data[] = $resource;
+            }
+        }
+
+        $paginationParameters = $results->toArray();
+        unset($paginationParameters['data']);
+
+        return $this->respond($data, [], null, ResponseType::OK, [], $paginationParameters);
     }
 }
 

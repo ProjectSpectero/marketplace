@@ -9,7 +9,8 @@ class NodeGroup extends BaseModel
 {
     use HasOrders;
 
-    protected $with = ['nodes'];
+    protected $with = [ 'nodes' ];
+    protected $hidden = [ 'user_id', 'updated_at' ];
 
     public function nodes ()
     {

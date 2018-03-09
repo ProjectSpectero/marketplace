@@ -8,6 +8,7 @@ use App\Errors\UserFriendlyException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 
 class PaginationManager
@@ -15,14 +16,9 @@ class PaginationManager
     public static function paginate(Request $request, Builder $builder) : JsonResponse
     {
         $requestedPage = $request->get('page', 1);
-        $perPage = $request->get('perPage', config('pagination.default_per_page'));
-        $maxPerPage = config('pagination.max_per_page');
 
-        $perPage = $perPage <= $maxPerPage ? $perPage : $maxPerPage;
-
-        $paginated = $builder->paginate($perPage);
-        $paginated->appends($request->query());
-        $paginatedResource = $paginated->toArray();
+        /** @var LengthAwarePaginator $paginatedResource */
+        $paginatedResource = static::internalPaginate($request, $builder)->toArray();
 
         if ($requestedPage > $paginatedResource['last_page'] && $requestedPage != 1)
             throw new UserFriendlyException(Errors::REQUESTED_PAGE_DOES_NOT_EXIST);
@@ -31,5 +27,18 @@ class PaginationManager
         unset($paginatedResource['data']);
 
         return Utility::generateResponse($data, [], null, 'v1', ResponseType::OK, [], $paginatedResource);
+    }
+
+    public static function internalPaginate (Request $request, Builder $builder)
+    {
+        $perPage = $request->get('perPage', config('pagination.default_per_page', 10));
+        $maxPerPage = config('pagination.max_per_page', 15);
+
+        $perPage = $perPage <= $maxPerPage ? $perPage : $maxPerPage;
+
+        $paginated = $builder->paginate($perPage);
+        $paginated->appends($request->query());
+
+        return $paginated;
     }
 }

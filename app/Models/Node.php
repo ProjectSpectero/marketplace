@@ -27,6 +27,10 @@ class Node extends BaseModel
         'ip', 'install_id', 'friendly_name', 'cc', 'asn'
     ];
 
+    public static $publicFields = [
+        'nodes.id', 'nodes.friendly_name', 'nodes.market_model', 'nodes.price', 'nodes.city', 'nodes.cc', 'nodes.asn', 'nodes.group_id', 'nodes.created_at'
+    ];
+
     /**
      * Scope to find the node by its install_id
      * This is an indexed query

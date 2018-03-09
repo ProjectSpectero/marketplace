@@ -15,6 +15,8 @@ class V1Controller extends Controller
 {
     public $version = 'v1';
 
+    protected $resource;
+
     /**
      * Method to use the spectero standard unified response style when returning
      * a response

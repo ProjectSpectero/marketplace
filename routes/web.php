@@ -92,5 +92,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->post('promo/code/apply', 'PromoCodeController@apply');
         \App\Libraries\Utility::defineResourceRoute('promo/code', 'PromoCodeController', $api, []);
         \App\Libraries\Utility::defineResourceRoute('promo/group', 'PromoGroupController', $api, []);
+
+        $api->post('credit/invoice', 'PaymentController@generateCreditInvoice', $api, []);
     });
 });

@@ -4,9 +4,14 @@
 namespace App\Http\Controllers\V1;
 
 
+use App\Constants\Currency;
 use App\Constants\Errors;
 use App\Constants\InvoiceStatus;
+use App\Constants\InvoiceType;
 use App\Constants\Messages;
+use App\Constants\NodeMarketModel;
+use App\Constants\OrderResourceType;
+use App\Constants\OrderStatus;
 use App\Constants\PaymentProcessor;
 use App\Constants\PaymentType;
 use App\Constants\ResponseType;
@@ -14,17 +19,26 @@ use App\Errors\FatalException;
 use App\Errors\NotSupportedException;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
+use App\Libraries\Payment\AccountCreditProcessor;
 use App\Libraries\Payment\IPaymentProcessor;
 use App\Libraries\Payment\PaypalProcessor;
 use App\Libraries\Payment\StripeProcessor;
+use App\Node;
+use App\NodeGroup;
 use App\Order;
 use App\Transaction;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PaymentController extends V1Controller
 {
+
+    public function __construct()
+    {
+        $this->resource = 'transaction';
+    }
 
     public function process (Request $request, String $processor, int $invoiceId) : JsonResponse
     {
@@ -34,9 +48,50 @@ class PaymentController extends V1Controller
         if ($invoice->status !== InvoiceStatus::UNPAID)
             throw new UserFriendlyException(Errors::INVOICE_ALREADY_PAID, ResponseType::BAD_REQUEST);
 
-        // TODO: before proceeding further, check that if the invoice has an order associated with it
-        // All the desired items of that order are still available to be purchased
-        // If not, invoice and order should both be cancelled, with an explanation sent to the user.
+        // Credit-add invoices are ONLY payable with Paypal, we will NOT charge cards to add-credit (lowers liability).
+        if ($invoice->type == InvoiceType::CREDIT)
+        {
+            switch ($processor)
+            {
+                case strtolower(PaymentProcessor::PAYPAL):
+                    break;
+
+                default:
+                    throw new UserFriendlyException(Errors::GATEWAY_DISABLED_FOR_PURPOSE, ResponseType::FORBIDDEN);
+            }
+        }
+
+        // Before proceeding further, we need to check that if the invoice has an order associated with it, and all line items are currently available for purchase.
+        $order = $invoice->order;
+
+        // This is not supposed to happen, if it does we gotta catch and bail appropriately.
+        if ($order == null && $invoice->type == InvoiceType::STANDARD)
+            throw new UserFriendlyException(Errors::PAYMENT_FAILED);
+
+        foreach ($order->lineItems as $item)
+        {
+            switch ($item->type)
+            {
+                case OrderResourceType::NODE:
+                    $resource = Node::find($item->resource);
+                    break;
+                case OrderResourceType::NODE_GROUP:
+                    $resource = NodeGroup::find($item->resource);
+                    break;
+                default:
+                    $resource = null;
+            }
+
+            if ($resource == null)
+                throw new UserFriendlyException(Errors::PAYMENT_FAILED);
+
+            if ($resource->market_model == NodeMarketModel::LISTED_DEDICATED)
+            {
+                // We check that a dedicated node with orders isn't being provisioned again here, that would be a breach of trust.
+                if($resource->getOrders(OrderStatus::ACTIVE)->count() != 0)
+                    throw new UserFriendlyException(Errors::ORDER_CONTAINS_UNAVAILABLE_RESOURCE, ResponseType::FORBIDDEN);
+            }
+        }
 
         $paymentProcessor = $this->resolveProcessor($processor, $request);
         $rules = $paymentProcessor->getValidationRules('process');
@@ -72,7 +127,7 @@ class PaymentController extends V1Controller
      */
     public function refund (Request $request, int $transactionId) : JsonResponse
     {
-        $this->authorizeResource();
+        $this->authorizeResource(null, 'transaction.refund');
 
         $rules = [
             'amount' => 'required'
@@ -123,6 +178,26 @@ class PaymentController extends V1Controller
         return $this->respond(null, [], Messages::SAVED_DATA_CLEARED, ResponseType::NO_CONTENT);
     }
 
+    public function generateCreditInvoice (Request $request) : JsonResponse
+    {
+        $rules = [
+            'amount' => 'required|numeric|min:' . env('LOWEST_ALLOWED_PAYMENT', 5) . '|max:' . env('CREDIT_ADD_LIMIT', 100)
+        ];
+        $this->validate($request, $rules);
+        $input = $this->cherryPick($request, $rules);
+
+        $invoice = new Invoice();
+        $invoice->user_id = $request->user()->id;
+        $invoice->amount = $input['amount'];
+        $invoice->currency = Currency::USD; // TODO: Eventually make this use the user's saved currency identifier
+        $invoice->type = InvoiceType::CREDIT;
+        $invoice->status = InvoiceStatus::UNPAID;
+        $invoice->due_date = Carbon::now();
+        $invoice->saveOrFail();
+
+        return $this->respond($invoice->toArray());
+    }
+
     private function resolveProcessor (String $processor, Request $request) : IPaymentProcessor
     {
         switch (strtolower($processor))
@@ -132,6 +207,9 @@ class PaymentController extends V1Controller
 
             case strtolower(PaymentProcessor::STRIPE):
                 return new StripeProcessor($request);
+
+            case strtolower(PaymentProcessor::ACCOUNT_CREDIT):
+                return new AccountCreditProcessor($request);
 
             default:
                 throw new FatalException(Errors::COULD_NOT_RESOLVE_PAYMENT_PROCESSOR);

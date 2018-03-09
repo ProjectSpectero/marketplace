@@ -9,6 +9,7 @@ use App\Constants\Errors;
 use App\Constants\InvoiceStatus;
 use App\Constants\OrderResourceType;
 use App\Constants\OrderStatus;
+use App\Constants\PaymentType;
 use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
 use App\Errors\UserFriendlyException;
@@ -83,6 +84,10 @@ class BillingUtils
         return $formattedUserAddress;
     }
 
+    /**
+     * @param Order $order
+     * @return float
+     */
     public static function getOrderDueAmount (Order $order) : float
     {
         // Let's figure out the amount.
@@ -104,6 +109,13 @@ class BillingUtils
 
         return $amount;
     }
+
+    /**
+     * @param Order $order
+     * @param Carbon $dueNext
+     * @return Invoice
+     * @throws \Throwable
+     */
     public static function createInvoice (Order $order, Carbon $dueNext) : Invoice
     {
         $invoice = new Invoice();
@@ -126,5 +138,18 @@ class BillingUtils
         $invoice->saveOrFail();
 
         return $invoice;
+    }
+
+    /**
+     * @param Invoice $invoice
+     * @return mixed
+     */
+    public static function getInvoiceDueAmount (Invoice $invoice)
+    {
+        $amount = $invoice->amount - $invoice->transactions
+                ->where('type', PaymentType::CREDIT)
+                ->sum('amount');
+
+        return $amount;
     }
 }

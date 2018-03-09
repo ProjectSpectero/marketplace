@@ -6,6 +6,7 @@ namespace App\Listeners;
 
 use App\Constants\Events;
 use App\Constants\InvoiceStatus;
+use App\Constants\InvoiceType;
 use App\Constants\OrderStatus;
 use App\Constants\PaymentType;
 use App\Events\BillingEvent;
@@ -18,6 +19,7 @@ use App\Libraries\Utility;
 use App\Mail\InvoicePaid;
 use App\Mail\OrderCreated;
 use App\Order;
+use App\User;
 use Illuminate\Support\Facades\Mail;
 
 class BillingEventListener extends BaseListener
@@ -56,15 +58,25 @@ class BillingEventListener extends BaseListener
                 switch ($object->type)
                 {
                     case PaymentType::CREDIT:
-                        if ($invoice->amount - $invoice->transactions->sum('amount') <= 0)
+                        if (BillingUtils::getInvoiceDueAmount($invoice) <= 0)
                         {
                             // Invoice can now be marked as paid, activate any associated orders
                             $invoice->status = InvoiceStatus::PAID;
                             $invoice->saveOrFail();
 
+                            /** @var User $user */
                             $user = $invoice->user;
 
                             Mail::to($user->email)->queue(new InvoicePaid($invoice, $object));
+
+                            if ($invoice->type == InvoiceType::CREDIT)
+                            {
+                                // Well now, user paid a credit add invoice. Let's add him his credit, shall we?
+                                // TODO: make this multi-currency aware someday.
+                                $user->credit = $user->credit + $invoice->amount; // Currency is assumed to be USD
+                                $user->saveOrFail();
+
+                            }
 
                             // TODO: perform order activation here
                         }

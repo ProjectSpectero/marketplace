@@ -52,6 +52,7 @@ class BillingSeeder extends Seeder
             $invoice->currency = \App\Constants\Currency::USD;
             $invoice->status = \App\Constants\InvoiceStatus::UNPAID;
             $invoice->due_date = \Carbon\Carbon::now();
+            $invoice->type = \App\Constants\InvoiceType::STANDARD;
             $invoice->saveOrFail();
 
             $order->last_invoice_id = $invoice->id;

@@ -64,7 +64,6 @@ class MarketplaceController extends Controller
 
     public function search(Request $request)
     {
-
         $query = Node::query();
 
         // Never pick up on unlisted nodes, and only return nodes that are verified/confirmed.
@@ -72,7 +71,11 @@ class MarketplaceController extends Controller
         $query->where('nodes.market_model', '!=', NodeMarketModel::UNLISTED)
             ->where('nodes.status', NodeStatus::CONFIRMED);
 
-        $includeGrouped = $request->has('includeGrouped') ? true : false;
+        $rules = [
+            'includeGrouped' => 'sometimes|boolean'
+        ];
+        $this->validate($request, $rules);
+        $includeGrouped = $request->has('includeGrouped') ? $request->get('includeGrouped', false) : false;
 
         if (! $includeGrouped)
             $query->where('nodes.group_id', null);
@@ -159,6 +162,7 @@ class MarketplaceController extends Controller
         $query->groupBy([ 'nodes.id' ]);
         $query->select([ 'nodes.*' ]);
 
+        // TODO: loop through all results returned by the paginator, and enforce that LISTED_DEDICATED with active orders is NOT being passed through.
         dd($query->toSql(), $query->get()->toArray());
 
         return PaginationManager::paginate($request, $query);

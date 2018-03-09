@@ -24,12 +24,12 @@ class Invoice extends BaseModel
         return $this->hasMany(Transaction::class);
     }
 
-    public function user ()
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public static function findForOrder (Order $order)
+    public static function findForOrder(Order $order)
     {
         return static::where('order_id', $order->id);
     }

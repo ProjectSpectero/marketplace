@@ -16,7 +16,10 @@ class CreateInvoicesTable extends Migration
         Schema::create('invoices', function (Blueprint $table)
         {
             $table->increments('id');
-            $table->integer('order_id');
+
+            $table->integer('order_id')
+                ->nullable();
+
             $table->integer('user_id'); // Can be derived from order_id, but this allows for { orderless invoices | authorization based on user }
             $table->decimal('amount', 13, 4);
             $table->decimal('tax', 13, 4);
@@ -24,11 +27,16 @@ class CreateInvoicesTable extends Migration
             $table->string('currency')
                 ->default(\App\Constants\Currency::USD);
 
+            $table->string('type'); // Set with InvoiceType ONLY.
+
             $table->string('status');
             $table->date('due_date');
 
             $table->mediumText('notes')
                 ->nullable();
+
+            $table->index([ 'order_id'], 'order_to_invoice_idx');
+            $table->index([ 'user_id'], 'user_to_invoice_idx');
 
             $table->timestamps();
         });

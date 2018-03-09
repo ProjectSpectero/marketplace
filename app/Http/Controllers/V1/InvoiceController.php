@@ -134,9 +134,8 @@ class InvoiceController extends CRUDController
             case 'transactions':
                 return PaginationManager::paginate($request, Transaction::findForInvoice($invoice)->noEagerLoads());
             case 'due':
-                $amount = $invoice->amount - $invoice->transactions
-                        ->where('type', PaymentType::CREDIT)
-                        ->sum('amount');
+                $amount = BillingUtils::getInvoiceDueAmount($invoice);
+
                 if ($amount < 0)
                     $amount = 0;
 

@@ -14,6 +14,11 @@ class NodesTableSeeder extends Seeder
         factory(App\Node::class, 100)->create();
         factory(App\NodeGroup::class, 25)->create();
 
+        foreach (\App\Node::all() as $node)
+        {
+            $this->createServices($node);
+        }
+
         foreach (\App\Node::all()->random(40) as $node)
         {
             $node->group_id = null;
@@ -24,7 +29,6 @@ class NodesTableSeeder extends Seeder
         {
             foreach ($group->nodes as $node)
             {
-                $this->createServices($node);
                 if ($group->user_id != $node->user_id)
                 {
                     $node->user_id = $group->user_id;

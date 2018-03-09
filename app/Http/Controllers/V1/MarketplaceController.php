@@ -49,12 +49,12 @@ class MarketplaceController extends Controller
                     "value": [ "JP", "SG" ] <-- Array, min 1 element if this rule is given.
                 },
                 {
-                    "field": "service.type",
+                    "field": "nodes.service_type",
                     "operator": "IN", <-- ONLY supported value(s)
                     "value": [ "HTTPProxy", "OpenVPN" ] <-- Array only, min 1 element if this rule is given. Valid values in the ServiceType constants array. The relationship here is however not an OR, but rather an AND (i.e: node MUST have ALL of these services.)
                 },
                 {
-                    "field": "service.ips.count",
+                    "field": "nodes.ip_count",
                     "operator": "= | >= | >", <-- ONLY supported value(s)
                     "value": "9001" <-- INTEGER only.
                 }
@@ -70,8 +70,12 @@ class MarketplaceController extends Controller
         // Never pick up on unlisted nodes, and only return nodes that are verified/confirmed.
         // Don't return nodes that are a part of a group.
         $query->where('nodes.market_model', '!=', NodeMarketModel::UNLISTED)
-            ->where('nodes.status', NodeStatus::CONFIRMED)
-            ->where('nodes.group_id', null);
+            ->where('nodes.status', NodeStatus::CONFIRMED);
+
+        $includeGrouped = $request->has('includeGrouped') ? true : false;
+
+        if (! $includeGrouped)
+            $query->where('nodes.group_id', null);
 
         foreach ($request->get('rules', []) as $rule)
         {
@@ -132,7 +136,7 @@ class MarketplaceController extends Controller
                         if (! in_array($serviceType, ServiceType::getConstants()))
                             throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
-                        $query->havingRaw(sprintf('sum(services.type="%s") > 0', $serviceType));
+                        $query->havingRaw(sprintf('SUM(services.type = "%s") > 0', $serviceType));
                     }
 
                     break;
@@ -153,6 +157,8 @@ class MarketplaceController extends Controller
         }
 
         $query->groupBy([ 'nodes.id' ]);
+        $query->select([ 'nodes.*' ]);
+
         dd($query->toSql(), $query->get()->toArray());
 
         return PaginationManager::paginate($request, $query);

@@ -15,6 +15,7 @@ use App\Constants\Protocols;
 use App\Constants\ResponseType;
 use App\Errors\UserFriendlyException;
 use App\Events\NodeEvent;
+use App\HistoricResource;
 use App\Libraries\PaginationManager;
 use App\Node;
 use App\Libraries\SearchManager;
@@ -251,9 +252,20 @@ class NodeController extends CRUDController
 
         // Before deleting a node, we need to remove its services + ips, we also need to copy it out into our historical tracker table
         // TODO: figure this (^) out.
+        $this->removeNodeServicesAndIPAddresses($node);
+        HistoricResource::createCopy($node, $request->user(), ['services', 'ipAddresses']);
 
         $node->delete();
         event(new NodeEvent(Events::NODE_DELETED, $node));
         return $this->respond(null, [], Messages::USER_DESTROYED, ResponseType::NO_CONTENT);
+    }
+
+    public function removeNodeServicesAndIPAddresses(Node $node)
+    {
+        foreach ($node->services as $service)
+            $service->delete();
+
+        foreach ($node->ipAddresses as $addr)
+            $addr->delete();
     }
 }

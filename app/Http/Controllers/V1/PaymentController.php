@@ -68,28 +68,31 @@ class PaymentController extends V1Controller
         if ($order == null && $invoice->type == InvoiceType::STANDARD)
             throw new UserFriendlyException(Errors::PAYMENT_FAILED);
 
-        foreach ($order->lineItems as $item)
+        if ($invoice->type == InvoiceType::STANDARD)
         {
-            switch ($item->type)
+            foreach ($order->lineItems as $item)
             {
-                case OrderResourceType::NODE:
-                    $resource = Node::find($item->resource);
-                    break;
-                case OrderResourceType::NODE_GROUP:
-                    $resource = NodeGroup::find($item->resource);
-                    break;
-                default:
-                    $resource = null;
-            }
+                switch ($item->type)
+                {
+                    case OrderResourceType::NODE:
+                        $resource = Node::find($item->resource);
+                        break;
+                    case OrderResourceType::NODE_GROUP:
+                        $resource = NodeGroup::find($item->resource);
+                        break;
+                    default:
+                        $resource = null;
+                }
 
-            if ($resource == null)
-                throw new UserFriendlyException(Errors::PAYMENT_FAILED);
+                if ($resource == null)
+                    throw new UserFriendlyException(Errors::PAYMENT_FAILED);
 
-            if ($resource->market_model == NodeMarketModel::LISTED_DEDICATED)
-            {
-                // We check that a dedicated node with orders isn't being provisioned again here, that would be a breach of trust.
-                if($resource->getOrders(OrderStatus::ACTIVE)->count() != 0)
-                    throw new UserFriendlyException(Errors::ORDER_CONTAINS_UNAVAILABLE_RESOURCE, ResponseType::FORBIDDEN);
+                if ($resource->market_model == NodeMarketModel::LISTED_DEDICATED)
+                {
+                    // We check that a dedicated node with orders isn't being provisioned again here, that would be a breach of trust.
+                    if($resource->getOrders(OrderStatus::ACTIVE)->count() != 0)
+                        throw new UserFriendlyException(Errors::ORDER_CONTAINS_UNAVAILABLE_RESOURCE, ResponseType::FORBIDDEN);
+                }
             }
         }
 

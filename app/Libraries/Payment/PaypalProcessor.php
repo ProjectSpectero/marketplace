@@ -247,7 +247,16 @@ class PaypalProcessor extends BasePaymentProcessor
         }
         else
         {
-            $data['items'] = $this->processLineItems($invoice->order->lineItems);
+            if (! is_null($invoice->order))
+                $data['items'] = $this->processLineItems($invoice->order->lineItems);
+            else
+            {
+                $data['items'][] = [
+                    'name' => 'Invoice payment for ' . env('COMPANY_NAME') . ' Invoice #' . $invoice->id,
+                    'qty' => 1,
+                    'price' => $invoice->amount
+                ];
+            }
             $data['invoice_id'] = $invoice->id;
         }
 

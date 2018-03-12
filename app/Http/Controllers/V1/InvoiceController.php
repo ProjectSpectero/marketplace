@@ -2,25 +2,21 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Constants\Currency;
 use App\Constants\Errors;
+use App\Constants\InvoiceStatus;
+use App\Constants\InvoiceType;
 use App\Constants\Messages;
-use App\Constants\PaymentType;
 use App\Constants\ResponseType;
-use App\Constants\UserMetaKeys;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
 use App\Libraries\BillingUtils;
 use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
 use App\Transaction;
-use App\UserMeta;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\View;
-use Illuminate\Validation\Rules\In;
-use \PDF;
 
 class InvoiceController extends CRUDController
 {
@@ -154,11 +150,31 @@ class InvoiceController extends CRUDController
         return $this->renderInvoice($invoice);
     }
 
-    private function getMetaValueIfNotNull (Model $model)
+    public function generateCreditInvoice (Request $request) : JsonResponse
     {
-        if ($model != null)
-            return $model->meta_value;
+        $rules = [
+            'amount' => 'required|numeric|min:' . env('LOWEST_ALLOWED_PAYMENT', 5) . '|max:' . env('CREDIT_ADD_LIMIT', 100)
+        ];
+        $this->validate($request, $rules);
+        $input = $this->cherryPick($request, $rules);
 
-        return '';
+        $creditInvoices = Invoice::findForUser($request->user()->id)
+            ->where('type', InvoiceType::CREDIT)
+            ->where('status', InvoiceStatus::UNPAID)
+            ->get();
+
+        if (!$creditInvoices->isEmpty())
+            throw new UserFriendlyException(Errors::UNPAID_CREDIT_INVOICES_ARE_PRESENT, ResponseType::FORBIDDEN);
+
+        $invoice = new Invoice();
+        $invoice->user_id = $request->user()->id;
+        $invoice->amount = $input['amount'];
+        $invoice->currency = Currency::USD; // TODO: Eventually make this use the user's saved currency identifier
+        $invoice->type = InvoiceType::CREDIT;
+        $invoice->status = InvoiceStatus::UNPAID;
+        $invoice->due_date = Carbon::now();
+        $invoice->saveOrFail();
+
+        return $this->respond($invoice->toArray());
     }
 }

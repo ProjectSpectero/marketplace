@@ -181,34 +181,6 @@ class PaymentController extends V1Controller
         return $this->respond(null, [], Messages::SAVED_DATA_CLEARED, ResponseType::NO_CONTENT);
     }
 
-    public function generateCreditInvoice (Request $request) : JsonResponse
-    {
-        $rules = [
-            'amount' => 'required|numeric|min:' . env('LOWEST_ALLOWED_PAYMENT', 5) . '|max:' . env('CREDIT_ADD_LIMIT', 100)
-        ];
-        $this->validate($request, $rules);
-        $input = $this->cherryPick($request, $rules);
-
-        $creditInvoices = Invoice::findForUser($request->user()->id)
-            ->where('type', InvoiceType::CREDIT)
-            ->where('status', InvoiceStatus::UNPAID)
-            ->get();
-
-        if (!$creditInvoices->isEmpty())
-            throw new UserFriendlyException(Errors::UNPAID_CREDITS_ARE_PRESENT);
-
-        $invoice = new Invoice();
-        $invoice->user_id = $request->user()->id;
-        $invoice->amount = $input['amount'];
-        $invoice->currency = Currency::USD; // TODO: Eventually make this use the user's saved currency identifier
-        $invoice->type = InvoiceType::CREDIT;
-        $invoice->status = InvoiceStatus::UNPAID;
-        $invoice->due_date = Carbon::now();
-        $invoice->saveOrFail();
-
-        return $this->respond($invoice->toArray());
-    }
-
     private function resolveProcessor (String $processor, Request $request) : IPaymentProcessor
     {
         switch (strtolower($processor))

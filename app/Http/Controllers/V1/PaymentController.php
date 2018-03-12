@@ -189,6 +189,14 @@ class PaymentController extends V1Controller
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
+        $creditInvoices = Invoice::findForUser($request->user()->id)
+            ->where('type', InvoiceType::CREDIT)
+            ->where('status', InvoiceStatus::UNPAID)
+            ->get();
+
+        if (!$creditInvoices->isEmpty())
+            throw new UserFriendlyException(Errors::UNPAID_CREDITS_ARE_PRESENT);
+
         $invoice = new Invoice();
         $invoice->user_id = $request->user()->id;
         $invoice->amount = $input['amount'];

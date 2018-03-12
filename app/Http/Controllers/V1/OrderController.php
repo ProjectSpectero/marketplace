@@ -13,6 +13,7 @@ use App\Constants\OrderResourceType;
 use App\Constants\OrderStatus;
 use App\Constants\PaymentProcessor;
 use App\Constants\ResponseType;
+use App\Constants\UserRoles;
 use App\Errors\UserFriendlyException;
 use App\Events\BillingEvent;
 use App\Invoice;
@@ -150,7 +151,14 @@ class OrderController extends CRUDController
         $order = Order::findOrFail($id);
         $this->authorizeResource($order);
 
-        $order->delete;
+        if ($request->user()->isNotAn(UserRoles::ADMIN))
+        {
+            $order->status = OrderStatus::CANCELLED;
+            $order->saveOrFail();
+            event(new BillingEvent(Events::ORDER_REVERIFY, $order));
+        }
+        else
+            $order->delete;
 
         return $this->respond(null, [], Messages::ORDER_DELETED, ResponseType::NO_CONTENT);
     }

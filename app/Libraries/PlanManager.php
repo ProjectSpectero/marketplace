@@ -4,23 +4,24 @@
 namespace App\Libraries;
 
 
+use App\Constants\Errors;
 use App\Constants\OrderResourceType;
+use App\Constants\OrderStatus;
+use App\Constants\ResponseType;
 use App\Constants\SubscriptionPlan;
+use App\Errors\UserFriendlyException;
 use App\Order;
 use App\OrderLineItem;
 use App\User;
 
 class PlanManager
 {
-    private static $plans;
     private static function loadMappings ()
     {
         $pro = env('PRO_RESOURCE', "");
-        static::$plans = [
-            'pro' => []
+        $plans = [
+            SubscriptionPlan::PRO => []
         ];
-
-        $plans = static::$plans;
 
         if (! empty($pro))
         {
@@ -28,36 +29,37 @@ class PlanManager
             foreach ($elements as $element)
             {
                 list($type, $id) = explode('/', $element);
-                $plans['pro'][$type] = [];
-                $plans['pro'][$type][$id] = true; // Why this trainwreck instead of normal elements? Because it has constant time lookups.
+                $plans[SubscriptionPlan::PRO][$type] = [];
+                $plans[SubscriptionPlan::PRO][$type][$id] = true; // Why this trainwreck instead of normal elements? Because it has constant time lookups.
             }
         }
 
         return $plans;
     }
 
-    // For $plan, use the 'SubscriptionPlan' constant
     public static function isMember (User $user, String $plan, bool $throwsExceptions = false) : bool
     {
-        $plans = self::loadMappings();
+        $plans = static::loadMappings();
 
-        switch ($plan)
+        if(! isset($plans[$plan]))
+            throw new UserFriendlyException(Errors::NO_SUCH_SUBSCRIPTION_PLAN);
+
+        foreach ($plans[$plan] as $resource => $id)
         {
-            case SubscriptionPlan::PRO:
-                foreach ($plans as $membershipPlan)
-                {
-                    $hasProPlan = OrderLineItem::findForUser($user->id)
-                        ->where('type', $membershipPlan['key'])
-                        ->get();
+            $query = OrderLineItem::join('orders', 'order_line_items.order_id', '=', 'orders.id')
+                ->where('orders.status', OrderStatus::ACTIVE)
+                ->where('orders.user_id', $user->id)
+                ->where('order_line_items.type', strtoupper($resource))
+                ->where('order_line_items.resource', $id);
 
-                    if ($hasProPlan)
-                        return true;
-                }
-                break;
-            default:
-                return false;
+            if ($query->count() != 0)
+                return true;
         }
 
+        if ($throwsExceptions)
+            throw new UserFriendlyException(Errors::USER_NOT_SUBSCRIBED . ':' . $plan, ResponseType::NOT_AUTHORIZED);
+
+        return false;
     }
 
 }

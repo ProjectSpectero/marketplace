@@ -122,6 +122,16 @@ class BillingEventListener extends BaseListener
                 // Cancel the invoice too if order gets cancelled.
                 /** @var Invoice $lastInvoice */
                 $lastInvoice = $order->lastInvoice;
+
+                if ($order->status == OrderStatus::CANCELLED)
+                {
+                    foreach ($order->lineItems as $item)
+                    {
+                        $item->status = OrderStatus::CANCELLED;
+                        $item->saveOrFail();
+                    }
+                }
+
                 if ($order->status == OrderStatus::CANCELLED && $lastInvoice->status != InvoiceStatus::PAID)
                 {
                     $lastInvoice->status = InvoiceStatus::CANCELLED;

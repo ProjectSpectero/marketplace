@@ -155,10 +155,11 @@ class OrderController extends CRUDController
         {
             $order->status = OrderStatus::CANCELLED;
             $order->saveOrFail();
-            event(new BillingEvent(Events::ORDER_REVERIFY, $order));
         }
         else
             $order->delete;
+
+        event(new BillingEvent(Events::ORDER_REVERIFY, $order));
 
         return $this->respond(null, [], Messages::ORDER_DELETED, ResponseType::NO_CONTENT);
     }

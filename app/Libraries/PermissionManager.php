@@ -45,6 +45,12 @@ class PermissionManager
                              $orderResource . '.' . 'cart'
                          ]);
 
+                Bouncer::allow($user)
+                    ->toOwn(Order::class)
+                    ->to([
+                        $orderResource . '.' . CRUDActions::DESTROY
+                    ]);
+
                 // Allow user to view/update/destroy THEIR OWN nodes
                 Bouncer::allow($user)
                     ->toOwn(Node::class)

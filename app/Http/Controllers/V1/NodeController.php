@@ -250,10 +250,8 @@ class NodeController extends CRUDController
         if ($node->getOrders(OrderStatus::ACTIVE)->count() != 0)
             throw new UserFriendlyException(Errors::ORDERS_EXIST, ResponseType::FORBIDDEN);
 
-        // Before deleting a node, we need to remove its services + ips, we also need to copy it out into our historical tracker table
-        // TODO: figure this (^) out.
-        $this->removeNodeServicesAndIPAddresses($node);
         HistoricResource::createCopy($node, $request->user(), ['services', 'ipAddresses']);
+        $this->removeNodeServicesAndIPAddresses($node);
 
         $node->delete();
         event(new NodeEvent(Events::NODE_DELETED, $node));

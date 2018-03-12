@@ -157,8 +157,9 @@ class InvoiceController extends CRUDController
         ];
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
+        $user = $request->user();
 
-        $creditInvoices = Invoice::findForUser($request->user()->id)
+        $creditInvoices = Invoice::findForUser($user->id)
             ->where('type', InvoiceType::CREDIT)
             ->where('status', InvoiceStatus::UNPAID)
             ->get();
@@ -167,7 +168,7 @@ class InvoiceController extends CRUDController
             throw new UserFriendlyException(Errors::UNPAID_CREDIT_INVOICES_ARE_PRESENT, ResponseType::FORBIDDEN);
 
         $invoice = new Invoice();
-        $invoice->user_id = $request->user()->id;
+        $invoice->user_id = $user->id;
         $invoice->amount = $input['amount'];
         $invoice->currency = Currency::USD; // TODO: Eventually make this use the user's saved currency identifier
         $invoice->type = InvoiceType::CREDIT;

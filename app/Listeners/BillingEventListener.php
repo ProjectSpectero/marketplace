@@ -130,12 +130,13 @@ class BillingEventListener extends BaseListener
                         $item->status = OrderStatus::CANCELLED;
                         $item->saveOrFail();
                     }
-                }
 
-                if ($order->status == OrderStatus::CANCELLED && $lastInvoice->status != InvoiceStatus::PAID)
-                {
-                    $lastInvoice->status = InvoiceStatus::CANCELLED;
-                    $lastInvoice->saveOrFail();
+                    if ($lastInvoice->status != InvoiceStatus::PAID)
+                    {
+                        $lastInvoice->status = InvoiceStatus::CANCELLED;
+                        $lastInvoice->saveOrFail();
+                    }
+
                     return;
                 }
 

@@ -145,26 +145,6 @@ class InvoiceController extends CRUDController
         }
     }
 
-    public function renderInvoice (Invoice $invoice) : string
-    {
-        $user = $invoice->order->user;
-
-        $compiledDetails = BillingUtils::compileDetails($user);
-        $formattedUserAddress = BillingUtils::getFormattedUserAddress($compiledDetails);
-
-        $organization = $this->getMetaValueIfNotNull($compiledDetails['organization']);
-        $taxId = $this->getMetaValueIfNotNull($compiledDetails['$taxId']);
-
-        return View::make('invoice', [
-            'invoice' => $invoice,
-            'lineItems' => $invoice->order->lineItems,
-            'taxId' => $taxId,
-            'userAddress' => $formattedUserAddress,
-            'organization' => $organization,
-            'transactions' => $invoice->transactions,
-        ]);
-    }
-
     public function render (Request $request, int $id)
     {
         $invoice = Invoice::findOrFail($id);

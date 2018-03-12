@@ -201,7 +201,7 @@ class NodeEventListener extends BaseListener
                             $persistedIp = new NodeIPAddress();
                             $persistedIp->ip = $ip;
                             $persistedIp->node_id = $node->id;
-                            $persistedIp->saveOrFail();
+                            $persistedIp->saveOrFail(); // TODO: look into ensuring uniqueness BEFORE calling this, otherwise we'll need a bail mechanism built.
                         }
                     }
 

@@ -46,9 +46,6 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->get('auth/multifactor/codes', 'TwoFactorController@showUserBackupCodes');
         $api->get('auth/multifactor/codes/regenerate', 'TwoFactorController@regenerateUserBackupCodes');
 
-        // Invoice (PDF) route
-        $api->get('invoice/{id}/render', 'InvoiceController@render');
-
         // Search/Filtering routes
         $api->post('search', 'SearchController@handleSearch');
 

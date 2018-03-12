@@ -9,6 +9,7 @@ use App\Constants\ResponseType;
 use App\Errors\UserFriendlyException;
 use App\Events\BillingEvent;
 use App\Invoice;
+use App\Libraries\BillingUtils;
 use App\Libraries\Utility;
 use App\Transaction;
 
@@ -84,9 +85,7 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
     {
         $lowestAllowedAmount = env('LOWEST_ALLOWED_PAYMENT', 5);
 
-        $amount = $invoice->amount - $invoice->transactions
-                    ->where('type', PaymentType::CREDIT)
-                    ->sum('amount');
+        $amount = BillingUtils::getInvoiceDueAmount($invoice);
 
         if ($amount <= 0)
             throw new UserFriendlyException(Errors::INVOICE_ALREADY_PAID, ResponseType::BAD_REQUEST);

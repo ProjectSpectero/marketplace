@@ -2,7 +2,9 @@
 
 namespace App\Console;
 
+use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\Facades\DB;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
@@ -24,6 +26,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        //
+        $schedule->call(function () {
+            DB::table('password_recent_tokens')->where('expires', '<=', Carbon::now())->delete();
+        })->daily();
+
+        $schedule->call(function() {
+            DB::table('partial_auth')->where('expires', '<=', Carbon::now())->delete();
+        })->daily();
     }
 }

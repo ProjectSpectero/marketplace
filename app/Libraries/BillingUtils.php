@@ -96,7 +96,7 @@ class BillingUtils
 
         $amount = 0.0;
         foreach ($items as $item)
-            $amount += $item->amount;
+            $amount += $item->quantity * $item->amount;
 
         return $amount;
     }

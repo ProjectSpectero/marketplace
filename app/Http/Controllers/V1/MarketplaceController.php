@@ -16,6 +16,7 @@ use App\Node;
 use App\NodeGroup;
 use function GuzzleHttp\default_ca_bundle;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -207,6 +208,21 @@ class MarketplaceController extends V1Controller
         unset($paginationParameters['data']);
 
         return $this->respond($data, [], null, ResponseType::OK, [], $paginationParameters);
+    }
+
+    public function resource(Request $request, String $type, int $id): JsonResponse
+    {
+        switch ($type)
+        {
+            case strtolower(OrderResourceType::NODE):
+                $node = Node::findOrFail($id);
+                return $this->respond($node->toArray());
+            case strtolower(OrderResourceType::NODE_GROUP):
+                $nodeGroup = Node::findOrFail($id);
+                return $this->respond($nodeGroup->toArray());
+            default:
+                throw new UserFriendlyException(Errors::RESOURCE_NOT_FOUND);
+        }
     }
 }
 

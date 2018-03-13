@@ -1,65 +1,53 @@
 <?php
-
-
 namespace App\Libraries;
 
-
 use App\Constants\Errors;
-use App\Constants\OrderResourceType;
 use App\Constants\OrderStatus;
 use App\Constants\ResponseType;
-use App\Constants\SubscriptionPlan;
 use App\Errors\UserFriendlyException;
-use App\Order;
 use App\OrderLineItem;
 use App\User;
 
 class PlanManager
 {
-    private static function loadMappings ()
+    public static function resolveMemberships (User $user) : array
     {
-        $pro = env('PRO_RESOURCE', "");
-        $plans = [
-            SubscriptionPlan::PRO => []
-        ];
+        $plans = config('plans', []);
+        $ret = [];
 
-        if (! empty($pro))
+        foreach ($plans as $name => $plan)
         {
-            $elements = explode(',', $pro);
-            foreach ($elements as $element)
+            $resources = $plans[$name]['resources'];
+            foreach ($resources as $resource)
             {
-                list($type, $id) = explode('/', $element);
-                $plans[SubscriptionPlan::PRO][$type] = [];
-                $plans[SubscriptionPlan::PRO][$type][$id] = true; // Why this trainwreck instead of normal elements? Because it has constant time lookups.
+                $query = OrderLineItem::join('orders', 'order_line_items.order_id', '=', 'orders.id')
+                    ->where('orders.status', OrderStatus::ACTIVE)
+                    ->where('orders.user_id', $user->id)
+                    ->where('order_line_items.type', $resource['type'])
+                    ->where('order_line_items.resource', $resource['id']);
+
+                if ($query->count() != 0)
+                    $ret[$name] = $plan;
             }
         }
 
-        return $plans;
+        return $ret;
     }
-
-    public static function isMember (User $user, String $plan, bool $throwsExceptions = false) : bool
+    public static function isMember (User $user, String $plan, bool $throwsExceptions = false) : array
     {
-        $plans = static::loadMappings();
+        $plans = config('plans', []);
 
         if(! isset($plans[$plan]))
             throw new UserFriendlyException(Errors::NO_SUCH_SUBSCRIPTION_PLAN);
 
-        foreach ($plans[$plan] as $resource => $id)
-        {
-            $query = OrderLineItem::join('orders', 'order_line_items.order_id', '=', 'orders.id')
-                ->where('orders.status', OrderStatus::ACTIVE)
-                ->where('orders.user_id', $user->id)
-                ->where('order_line_items.type', strtoupper($resource))
-                ->where('order_line_items.resource', $id);
+        $membership = static::resolveMemberships($user, $throwsExceptions);
 
-            if ($query->count() != 0)
-                return true;
-        }
+        if (isset($membership[$plan]))
+            return $membership[$plan];
 
         if ($throwsExceptions)
             throw new UserFriendlyException(Errors::USER_NOT_SUBSCRIBED . ':' . $plan, ResponseType::NOT_AUTHORIZED);
 
         return false;
     }
-
 }

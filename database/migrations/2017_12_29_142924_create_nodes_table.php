@@ -36,6 +36,10 @@ class CreateNodesTable extends Migration
             $table->integer('group_id')
                 ->nullable();
 
+            $table->string('plan')
+                ->nullable();
+            $table->index('plan', 'plan_index');
+
             // Why so many indexes? We look things up on the marketplace / node search based on any one or more of these.
             $table->unique('ip', "unique_ip_index");
             $table->unique('install_id', 'unique_install_id_index');

@@ -23,6 +23,10 @@ class CreateNodeGroupsTable extends Migration
             $table->decimal('price', 13, 4);
             $table->timestamps();
 
+            $table->string('plan')
+                ->nullable();
+            $table->index('plan', 'group_plan_index');
+
             $table->index('user_id', 'user_id_index');
         });
     }

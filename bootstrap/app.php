@@ -76,6 +76,7 @@ $app->configure('pagination');
 $app->configure('paypal');
 $app->configure('services');
 $app->configure('mail');
+$app->configure('plans');
 
 $app->withFacades();
 

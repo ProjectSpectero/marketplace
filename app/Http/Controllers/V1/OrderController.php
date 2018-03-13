@@ -175,12 +175,20 @@ class OrderController extends CRUDController
         $order->accessor = Utility::getRandomString() . ':' . Utility::getRandomString();
         $order->saveOrFail();
 
-        $this->populateLineItems($items, $order, true, $dueNext);
+        $this->populateLineItems($items, $order, $term, true, $dueNext);
 
         return $order;
     }
 
-    private function populateLineItems (array $items, Order $order, bool $createInvoice = true, Carbon $dueNext = null)
+    private function cancelOrder (Order $order)
+    {
+        $order->status = OrderStatus::CANCELLED;
+        $order->saveOrFail();
+    }
+
+    private function populateLineItems (array $items, Order $order,
+                                        int $term, bool $createInvoice = true,
+                                        Carbon $dueNext = null)
     {
         $orderId = $order->id;
         $lineItems = [];
@@ -202,7 +210,11 @@ class OrderController extends CRUDController
                      * Check if node's model is UNLISTED, deny if yes
                      */
                     if ($resource->group != null)
+                    {
+                        $this->cancelOrder($order);
                         throw new UserFriendlyException(Errors::NODE_BELONGS_TO_GROUP . ':' . $resource->id);
+                    }
+
                     break;
                 case OrderResourceType::NODE_GROUP:
 
@@ -215,17 +227,52 @@ class OrderController extends CRUDController
                      */
                     break;
                 default:
+                    $this->cancelOrder($order);
                     throw new UserFriendlyException(Errors::RESOURCE_NOT_FOUND);
             }
 
             switch ($resource->market_model)
             {
                 case NodeMarketModel::UNLISTED:
+                    $this->cancelOrder($order);
                     throw new UserFriendlyException(Errors::RESOURCE_UNLISTED);
 
                 case NodeMarketModel::LISTED_DEDICATED:
                     if ($resource->getOrders(OrderStatus::ACTIVE)->count() != 0)
+                    {
+                        $this->cancelOrder($order);
                         throw new UserFriendlyException(Errors::RESOURCE_SOLD_OUT);
+                    }
+            }
+
+            // Single item price calculation
+            $plans = config('plans', []);
+            $price = $resource->price;
+            if ($term > 30)
+            {
+                $price = ($price / 30) * $term;
+
+                // Now, let's see if this shit happens to belong to some plan which has a discount.
+                if ($resource->plan != null)
+                {
+                    // Plan associated resources may NOT be combined into an order, they must be individually bought.
+                    if (count($items) !== 1)
+                    {
+                        $this->cancelOrder($order);
+                        throw new UserFriendlyException(Errors::DISCREET_ORDER_REQUIRED);
+                    }
+
+                    // Ok, apparently it does. Does this plan still exist?
+                    if (isset($plans[$resource->plan]))
+                    {
+                        $plan = $plans[$resource->plan];
+
+                        // Ok, apparently it does. Let's check if this crap qualifies for a yearly discount
+                        if ($term >= 365 && isset($plan['yearly_discount_pct']) && is_numeric($plan['yearly_discount_pct']))
+                            $price *= $plan['yearly_discount_pct'];
+                    }
+                    // If not, we do nothing. Just silently charge the shit at full price.
+                }
             }
 
             $lineItem = new OrderLineItem();
@@ -234,7 +281,7 @@ class OrderController extends CRUDController
             $lineItem->type = $type;
             $lineItem->resource = $resource->id;
             $lineItem->quantity = $quantity;
-            $lineItem->amount = $resource->price;
+            $lineItem->amount = $price;
             $lineItem->status = OrderStatus::PENDING;
             $lineItem->sync_status = NodeSyncStatus::PENDING_SYNC;
 
@@ -264,7 +311,7 @@ class OrderController extends CRUDController
             'items' => 'array|min:1',
             'items.*.type' =>  Rule::in(OrderResourceType::getConstants()),
             'items.*.id' => 'required|numeric',
-            'meta.term' => 'required|in:30'
+            'meta.term' => 'required|in:30,365'
         ];
 
        $this->validate($request, $rules);

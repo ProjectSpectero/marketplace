@@ -67,7 +67,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         \App\Libraries\Utility::defineResourceRoute('invoice', 'InvoiceController', $api, []);
 
         // Order resource routes
-        $api->get('order/self', 'OrderController@self');
+        $api->get('order/self[/{action}]', 'OrderController@self');
         \App\Libraries\Utility::defineResourceRoute('order', 'OrderController', $api, []);
 
         // Node group resource routes

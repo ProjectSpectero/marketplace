@@ -70,10 +70,15 @@ class OrderController extends CRUDController
         }
     }
 
-    public function self(Request $request)
+    public function self(Request $request, String $action = null)
     {
         $user = $request->user();
-        return PaginationManager::paginate($request, Order::findForUser($user->id));
+        $query = Order::findForUser($user->id);
+
+        if ($action != null && $action == 'active')
+            $query->where('status', OrderStatus::ACTIVE);
+
+        return PaginationManager::paginate($request, $query);
     }
 
     public function index(Request $request): JsonResponse

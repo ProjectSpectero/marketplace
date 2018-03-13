@@ -96,16 +96,7 @@ class BillingUtils
 
         $amount = 0.0;
         foreach ($items as $item)
-        {
-            $resourceType = $item->type;
-            if ($resourceType == OrderResourceType::NODE)
-                $resource = Node::find($item->resource);
-            else
-                $resource = NodeGroup::find($item->resource);
-
-            if ($resource != null)
-                $amount += $item->quantity * $resource->price;
-        }
+            $amount += $item->amount;
 
         return $amount;
     }

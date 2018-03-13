@@ -268,7 +268,8 @@ class OrderController extends CRUDController
                         $plan = $plans[$resource->plan];
 
                         // Ok, apparently it does. Let's check if this crap qualifies for a yearly discount
-                        if ($term >= 365 && isset($plan['yearly_discount_pct']) && is_numeric($plan['yearly_discount_pct']))
+                        if ($term >= 365 && isset($plan['yearly_discount_pct'])
+                            && is_numeric($plan['yearly_discount_pct']) && $plan['yearly_discount_pct'] < 1.0)
                             $price *= $plan['yearly_discount_pct'];
                     }
                     // If not, we do nothing. Just silently charge the shit at full price.

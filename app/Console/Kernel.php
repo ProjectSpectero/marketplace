@@ -59,6 +59,6 @@ class Kernel extends ConsoleKernel
                 Mail::to($order->user->email)->queue(new OrderTerminated($order));
             }
 
-        })->everyMinute();
+        })->daily();
     }
 }

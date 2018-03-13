@@ -27,7 +27,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->call(function () {
-            DB::table('password_recent_tokens')->where('expires', '<=', Carbon::now())->delete();
+            DB::table('password_reset_tokens')->where('expires', '<=', Carbon::now())->delete();
         })->daily();
 
         $schedule->call(function() {

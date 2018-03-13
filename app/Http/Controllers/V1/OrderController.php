@@ -182,6 +182,12 @@ class OrderController extends CRUDController
 
     private function cancelOrder (Order $order)
     {
+        foreach ($order->lineItems as $lineItem)
+        {
+            $lineItem->status = OrderStatus::CANCELLED;
+            $lineItem->saveOrFail();
+        }
+
         $order->status = OrderStatus::CANCELLED;
         $order->saveOrFail();
     }

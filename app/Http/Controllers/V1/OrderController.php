@@ -185,18 +185,6 @@ class OrderController extends CRUDController
         return $order;
     }
 
-    private function cancelOrder (Order $order)
-    {
-        foreach ($order->lineItems as $lineItem)
-        {
-            $lineItem->status = OrderStatus::CANCELLED;
-            $lineItem->saveOrFail();
-        }
-
-        $order->status = OrderStatus::CANCELLED;
-        $order->saveOrFail();
-    }
-
     private function populateLineItems (array $items, Order $order,
                                         int $term, bool $createInvoice = true,
                                         Carbon $dueNext = null)
@@ -222,7 +210,7 @@ class OrderController extends CRUDController
                      */
                     if ($resource->group != null)
                     {
-                        $this->cancelOrder($order);
+                        BillingUtils::cancelOrder($order);
                         throw new UserFriendlyException(Errors::NODE_BELONGS_TO_GROUP . ':' . $resource->id);
                     }
 
@@ -238,20 +226,20 @@ class OrderController extends CRUDController
                      */
                     break;
                 default:
-                    $this->cancelOrder($order);
+                    BillingUtils::cancelOrder($order);
                     throw new UserFriendlyException(Errors::RESOURCE_NOT_FOUND);
             }
 
             switch ($resource->market_model)
             {
                 case NodeMarketModel::UNLISTED:
-                    $this->cancelOrder($order);
+                    BillingUtils::cancelOrder($order);
                     throw new UserFriendlyException(Errors::RESOURCE_UNLISTED);
 
                 case NodeMarketModel::LISTED_DEDICATED:
                     if ($resource->getOrders(OrderStatus::ACTIVE)->count() != 0)
                     {
-                        $this->cancelOrder($order);
+                        BillingUtils::cancelOrder($order);
                         throw new UserFriendlyException(Errors::RESOURCE_SOLD_OUT);
                     }
             }
@@ -269,7 +257,7 @@ class OrderController extends CRUDController
                     // Plan associated resources may NOT be combined into an order, they must be individually bought.
                     if (count($items) !== 1)
                     {
-                        $this->cancelOrder($order);
+                        BillingUtils::cancelOrder($order);
                         throw new UserFriendlyException(Errors::DISCREET_ORDER_REQUIRED);
                     }
 

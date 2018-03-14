@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Constants\InvoiceStatus;
 use App\Constants\OrderStatus;
 use App\Libraries\BillingUtils;
 use App\Mail\OrderTerminated;
@@ -66,5 +67,18 @@ class Kernel extends ConsoleKernel
             ->weekly()
             ->sundays()
             ->timezone('America/Los_Angeles');
+
+        $schedule->call(function() {
+            $orders = DB::table('orders')
+                ->where('status', OrderStatus::ACTIVE)
+                ->where('due_next', '<=', Carbon::now())
+                ->get();
+
+            foreach ($orders as $order)
+            {
+                if ($order->lastInoivce == InvoiceStatus::PAID)
+                    BillingUtils::createInvoice($order, Carbon::parse($order->due_next)->addMonth());
+            }
+        });
     }
 }

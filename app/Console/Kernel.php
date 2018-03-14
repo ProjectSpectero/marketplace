@@ -61,7 +61,8 @@ class Kernel extends ConsoleKernel
 
         })->daily();
 
-        $schedule->exec('geoipupdate -d ' . base_path() . '/resources/geoip')
+        $geoIpUpdate = 'geoipupdate -d ' . base_path() . '/resources/geoip' . ' -f ' . base_path() . '/GeoIP.conf';
+        $schedule->exec($geoIpUpdate)
             ->weekly()
             ->sundays()
             ->timezone('America/Los_Angeles');

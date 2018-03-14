@@ -31,7 +31,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
 
         $api->post('unauth/node', 'UnauthenticatedNodeController@create');
         $api->get('unauth/node/{id}/{action}', 'UnauthenticatedNodeController@handleConfigPush');
-        $api->get('unauth/{type}/{id}', 'MarketplaceController@resource');
+        $api->get('market/{type}/{id}', 'MarketplaceController@resource');
     });
 
     $api->group(['as' => 'AuthRequired', 'middleware' => ['auth:api']], function ($api)

@@ -212,13 +212,14 @@ class MarketplaceController extends V1Controller
 
     public function resource(Request $request, String $type, int $id): JsonResponse
     {
+        // TODO: Figure out what to hide, and what to show.
         switch ($type)
         {
-            case strtolower(OrderResourceType::NODE):
-                $node = Node::findOrFail($id);
+            case 'node':
+                $node = Node::noEagerLoads()->findOrFail($id);
                 return $this->respond($node->toArray());
-            case strtolower(OrderResourceType::NODE_GROUP):
-                $nodeGroup = Node::findOrFail($id);
+            case 'group':
+                $nodeGroup = Node::noEagerLoads()->findOrFail($id);
                 return $this->respond($nodeGroup->toArray());
             default:
                 throw new UserFriendlyException(Errors::RESOURCE_NOT_FOUND);

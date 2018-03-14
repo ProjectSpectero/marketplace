@@ -1,2 +1,3 @@
 # These files are meant to be downloaded on deploy, and not tracked in source control.
 *.mmdb
+*.lock

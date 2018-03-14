@@ -71,13 +71,14 @@ class Kernel extends ConsoleKernel
         $schedule->call(function() {
             $orders = DB::table('orders')
                 ->where('status', OrderStatus::ACTIVE)
-                ->where('due_next', '<=', Carbon::now())
                 ->get();
 
             foreach ($orders as $order)
             {
-                if ($order->lastInoivce == InvoiceStatus::PAID)
-                    BillingUtils::createInvoice($order, Carbon::parse($order->due_next)->addMonth());
+                $due_next = Carbon::parse($order->due_next);
+                if ($due_next->subDays(env('EARLY_INVOICE_GENERATION_DAYS')) <= Carbon::now()
+                    && $order->lastInoivce == InvoiceStatus::PAID)
+                        BillingUtils::createInvoice($order, Carbon::parse($order->due_next)->addMonth());
             }
         });
     }

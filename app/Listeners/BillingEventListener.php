@@ -20,6 +20,7 @@ use App\Mail\InvoicePaid;
 use App\Mail\OrderCreated;
 use App\Order;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 
 class BillingEventListener extends BaseListener
@@ -79,6 +80,18 @@ class BillingEventListener extends BaseListener
                             }
 
                             // TODO: perform order activation here
+                            if ($invoice->order != null)
+                            {
+                                $order = $invoice->order;
+                                $order->status = OrderStatus::ACTIVE;
+                                foreach ($order->lineItems as $item)
+                                {
+                                    $item->status = OrderStatus::ACTIVE;
+                                    $item->saveOrFail();
+                                }
+                                $order->due_next = Carbon::parse($order->due_next)->addDays($order->term);
+                                $order->saveOrFail();
+                            }
                         }
                         break;
 

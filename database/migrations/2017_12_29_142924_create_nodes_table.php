@@ -26,9 +26,9 @@ class CreateNodesTable extends Migration
             $table->integer('user_id');
             $table->string('market_model'); // Do not set this without the constants array
             $table->decimal('price', 13, 4);
-            $table->integer('asn');
-            $table->string('city');
-            $table->string('cc');
+            $table->integer('asn')->nullable();;
+            $table->string('city')->nullable();;
+            $table->string('cc')->nullable();;
             $table->json('loaded_config');
             $table->timestamps();
             $table->softDeletes();

@@ -17,9 +17,9 @@ class CreateNodeIpAddressesTable extends Migration
         {
             $table->increments('id');
             $table->string('ip');
-            $table->string('city');
-            $table->string('cc');
-            $table->integer('asn');
+            $table->string('city')->nullable();
+            $table->string('cc')->nullable();;
+            $table->integer('asn')->nullable();;
             $table->integer('node_id');
 
             // TODO: uncomment this in prod, ensures no duplicates.

@@ -159,6 +159,9 @@ class InvoiceController extends CRUDController
         $input = $this->cherryPick($request, $rules);
         $user = $request->user();
 
+        if ($user->credit >= env('CREDIT_ADD_LIMIT'))
+            throw new UserFriendlyException(Errors::CREDIT_LIMIT_EXCEEDED);
+
         $creditInvoices = Invoice::findForUser($user->id)
             ->where('type', InvoiceType::CREDIT)
             ->where('status', InvoiceStatus::UNPAID)

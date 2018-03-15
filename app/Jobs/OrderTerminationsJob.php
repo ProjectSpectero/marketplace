@@ -29,11 +29,11 @@ class OrderTerminationsJob extends BaseJob
     public function handle()
     {
         $now = Carbon::now();
-        $overdueDays = env('TERMINATE_AFTER_OVERDUE_DAYS');
+        $overdueDays = env('TERMINATE_AFTER_OVERDUE_DAYS', 7);
         $orders = Order::where('status', OrderStatus::ACTIVE)
             ->whereRaw("DATEDIFF(due_next, '$now') > '$overdueDays'")
             ->get();
-        
+
         foreach ($orders as $order)
         {
             BillingUtils::cancelOrder($order);

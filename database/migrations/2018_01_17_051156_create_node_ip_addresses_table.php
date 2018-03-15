@@ -22,8 +22,7 @@ class CreateNodeIpAddressesTable extends Migration
             $table->integer('asn');
             $table->integer('node_id');
 
-            // TODO: uncomment this in prod, ensures no duplicates.
-            //$table->unique('ip', 'unique_ip_index');
+            $table->unique('ip', 'unique_ip_index');
 
             $table->index('ip', 'ip_index');
             $table->index('node_id', 'node_id_index');

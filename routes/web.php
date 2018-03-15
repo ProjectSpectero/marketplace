@@ -31,7 +31,6 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
 
         $api->post('unauth/node', 'UnauthenticatedNodeController@create');
         $api->get('unauth/node/{id}/{action}', 'UnauthenticatedNodeController@handleConfigPush');
-        $api->get('market/{type}/{id}', 'MarketplaceController@resource');
     });
 
     $api->group(['as' => 'AuthRequired', 'middleware' => ['auth:api']], function ($api)
@@ -84,7 +83,10 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->post('order/cart', 'OrderController@cart');
         \App\Libraries\Utility::defineResourceRoute('transaction', 'TransactionController', $api, []);
 
-        $api->post('marketplace/search', 'MarketplaceController@search');
+        // The Market endpoints now require auth.
+        $api->post('market/search', 'MarketplaceController@search');
+        $api->get('market/{type}/{id}', 'MarketplaceController@resource');
+
         \App\Libraries\Utility::defineResourceRoute('engagement', 'EngagementController', $api, []);
 
         $api->post('promo/code/apply', 'PromoCodeController@apply');
@@ -92,5 +94,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         \App\Libraries\Utility::defineResourceRoute('promo/group', 'PromoGroupController', $api, []);
 
         $api->post('credit/invoice', 'InvoiceController@generateCreditInvoice', $api, []);
+
+
     });
 });

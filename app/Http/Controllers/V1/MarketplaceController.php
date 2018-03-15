@@ -216,6 +216,7 @@ class MarketplaceController extends V1Controller
         }
 
         $paginationParameters = $results->toArray();
+        $paginationParameters['filtered'] = $results->total() - count($data);
         unset($paginationParameters['data']);
 
         return $this->respond($data, [], null, ResponseType::OK, [], $paginationParameters);

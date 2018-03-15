@@ -5,7 +5,7 @@ namespace App;
 class NodeIPAddress extends BaseModel
 {
     protected $table = 'node_ip_addresses';
-    protected $hidden = [ 'updated_at' ];
+    protected $hidden = [ 'node_id', 'updated_at' ];
 
     public function node ()
     {

@@ -182,12 +182,12 @@ class StripeProcessor extends BasePaymentProcessor
 
     function subscribe(Order $order): PaymentProcessorResponse
     {
-        // TODO: Implement subscribe() method.
+        throw new NotSupportedException();
     }
 
     function unSubscribe(Order $order): PaymentProcessorResponse
     {
-        // TODO: Implement unSubscribe() method.
+        throw new NotSupportedException();
     }
 
     private function resolveCustomer (User $user, String $token, bool $save = false)

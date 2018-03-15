@@ -54,7 +54,6 @@ class OrderController extends CRUDController
                     throw new UserFriendlyException(Errors::ORDER_NOT_ACTIVE_YET);
 
                 $resources = [];
-                // TODO: return the connection_resource from every node (either standalone, or part of groups) that are a part of this order, alongside order->accessor
                 foreach ($order->lineItems as $item)
                     $resources[] = $this->getConnectionResources($item);
 

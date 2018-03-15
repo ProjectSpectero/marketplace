@@ -64,19 +64,6 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
     }
 
     /**
-     * @param IPaymentProcessor $processor
-     * @param Invoice $invoice
-     * @param Transaction $transaction
-     * @param String $type
-     * @return string
-     */
-    public function getUrl (IPaymentProcessor $processor, Invoice $invoice, Transaction $transaction, String $type) : string
-    {
-        // TODO: build this
-        return "";
-    }
-
-    /**
      * @param Invoice $invoice
      * @return mixed
      * @throws UserFriendlyException

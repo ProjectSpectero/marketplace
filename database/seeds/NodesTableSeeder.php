@@ -13,6 +13,7 @@ class NodesTableSeeder extends Seeder
     {
         factory(App\Node::class, 100)->create();
         factory(App\NodeGroup::class, 25)->create();
+        factory(App\NodeIPAddress::class, 400)->create();
 
         foreach (\App\Node::all() as $node)
         {
@@ -69,18 +70,7 @@ class NodesTableSeeder extends Seeder
             ]);
 
             $service->saveOrFail();
-
-            $this->createNodeIPs($service, $node);
         }
 
-    }
-
-    private function createNodeIPs(\App\Service $service, \App\Node$node)
-    {
-        $ip = new \App\NodeIPAddress();
-        $ip->ip = $node->ip;
-        $ip->node_id = $node->id;
-
-        $ip->saveOrFail();
     }
 }

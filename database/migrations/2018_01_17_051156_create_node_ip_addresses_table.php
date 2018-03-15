@@ -17,10 +17,13 @@ class CreateNodeIpAddressesTable extends Migration
         {
             $table->increments('id');
             $table->string('ip');
+            $table->string('city');
+            $table->string('cc');
+            $table->integer('asn');
             $table->integer('node_id');
 
-            // TODO: uncomment this in prod.
-            //$table->unique(['ip', 'node_id'], 'unique_ip_node_id_index');
+            // TODO: uncomment this in prod, ensures no duplicates.
+            //$table->unique('ip', 'unique_ip_index');
 
             $table->index('ip', 'ip_index');
             $table->index('node_id', 'node_id_index');

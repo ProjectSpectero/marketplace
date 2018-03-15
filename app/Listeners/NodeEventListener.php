@@ -180,11 +180,36 @@ class NodeEventListener extends BaseListener
                     }
                 }
 
-                // Let's discover some fundamentals about the IP itself
+                $ipCollection = [];
+                foreach ($data['ipAddresses'] as $ipAddress)
+                {
+                    if (NodeIPAddress::where('ip', $ipAddress)->count())
+                    {
+                        // TODO: This IP has been seen before / belongs to another node. However, proxy verification succeeded. Send user an email asking to open a ticket.
+                        // Halt processing once done, nothing should be changed in DB until the mess is resolved.
+                        Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, "Duplicate IP of $ipAddress found elsewhere, please open a support ticket. Automatic verification not possible."));
+                        $this->updateNodeStatus($node, NodeStatus::UNCONFIRMED);
+                        return;
+                    }
+
+                    // OK bob, it doesn't exist. Let's go look stuff up
+                    $geo = GeoIPManager::resolve($ipAddress);
+                    $ipCollection[] = [
+                        'ip' => $ipAddress,
+                        'cc' => $geo['cc'],
+                        'asn' => $geo['asn'],
+                        'city' => $geo['city']
+                    ];
+                }
+
+                // Free up memory.
+                unset($data['ipAddresses']);
+
+                // Let's discover some fundamentals about the node IP itself too.
                 $geoData = GeoIPManager::resolve($node->ip);
 
                 // We need to mark the node for a re-verify if anything goes wrong here (automated)
-                DB::transaction(function() use ($serviceCollection, $node, $data, $geoData)
+                DB::transaction(function() use ($serviceCollection, $node, $ipCollection, $geoData, $data)
                 {
                     foreach ($serviceCollection as $holder)
                     {
@@ -192,15 +217,15 @@ class NodeEventListener extends BaseListener
                         $service = $holder;
                         $service->saveOrFail();
 
-                        /** @var array $ipCollection */
-                        $ipCollection = $data['ipAddresses'];
-
                         // TODO: think about whether to ban IPv6 here. It could be an exploit to artificially inflate the count despite not being what clients are after.
-                        foreach ($ipCollection as $ip)
+                        foreach ($ipCollection as $ipDetails)
                         {
                             $persistedIp = new NodeIPAddress();
-                            $persistedIp->ip = $ip;
+                            $persistedIp->ip = $ipDetails['ip'];
                             $persistedIp->node_id = $node->id;
+                            $persistedIp->cc = $ipDetails['cc'];
+                            $persistedIp->city = $ipDetails['city'];
+                            $persistedIp->asn = $ipDetails['asn'];
                             $persistedIp->saveOrFail(); // TODO: look into ensuring uniqueness BEFORE calling this, otherwise we'll need a bail mechanism built.
                         }
                     }

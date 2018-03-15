@@ -185,8 +185,6 @@ class NodeEventListener extends BaseListener
                 {
                     if (NodeIPAddress::where('ip', $ipAddress)->count())
                     {
-                        // TODO: This IP has been seen before / belongs to another node. However, proxy verification succeeded. Send user an email asking to open a ticket.
-                        // Halt processing once done, nothing should be changed in DB until the mess is resolved.
                         Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, "Duplicate IP of $ipAddress found elsewhere, please open a support ticket. Automatic verification not possible."));
                         $this->updateNodeStatus($node, NodeStatus::UNCONFIRMED);
                         return;
@@ -226,7 +224,7 @@ class NodeEventListener extends BaseListener
                             $persistedIp->cc = $ipDetails['cc'];
                             $persistedIp->city = $ipDetails['city'];
                             $persistedIp->asn = $ipDetails['asn'];
-                            $persistedIp->saveOrFail(); // TODO: look into ensuring uniqueness BEFORE calling this, otherwise we'll need a bail mechanism built.
+                            $persistedIp->saveOrFail();
                         }
                     }
 

@@ -36,8 +36,6 @@ class ProxyVerificationFailed extends NodeMail
      */
     public function build()
     {
-        // TODO: dress this up to be a proper, hierarchical node related error message. Provide link to re-verify in there to retry.
-
         return $this->subject($this->formatTitle('Node verification failed (svc: proxy) (#' . $this->node->id . ')'))
             ->view('emails.ProxyVerificationFailed', [
                 'node' => $this->node,

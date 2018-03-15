@@ -20,7 +20,6 @@ use App\Mail\InvoicePaid;
 use App\Mail\OrderCreated;
 use App\Order;
 use App\User;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 
 class BillingEventListener extends BaseListener
@@ -38,8 +37,9 @@ class BillingEventListener extends BaseListener
     /**
      * Handle the event.
      *
-     * @param  FraudCheckEvent  $event
+     * @param  FraudCheckEvent $event
      * @return void
+     * @throws \Throwable
      */
     public function handle(BillingEvent $event)
     {
@@ -68,8 +68,6 @@ class BillingEventListener extends BaseListener
                             /** @var User $user */
                             $user = $invoice->user;
 
-                            Mail::to($user->email)->queue(new InvoicePaid($invoice, $object));
-
                             if ($invoice->type == InvoiceType::CREDIT)
                             {
                                 // Well now, user paid a credit add invoice. Let's add him his credit, shall we?
@@ -79,7 +77,6 @@ class BillingEventListener extends BaseListener
 
                             }
 
-                            // TODO: perform order activation here
                             if ($invoice->order != null)
                             {
                                 $order = $invoice->order;
@@ -89,10 +86,12 @@ class BillingEventListener extends BaseListener
                                     $item->status = OrderStatus::ACTIVE;
                                     $item->saveOrFail();
                                 }
-                                $order->due_next = Carbon::parse($order->due_next)->addDays($order->term);
+                                $order->due_next = $order->due_next->addDays($order->term);
                                 $order->saveOrFail();
                             }
                         }
+                        // Acknowledgement goes out whether the invoice is paid in full or not.
+                        Mail::to($user->email)->queue(new InvoicePaid($invoice, $object));
                         break;
 
                     case PaymentType::DEBIT:

@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Invoice;
+use App\Libraries\BillingUtils;
 use App\Libraries\Utility;
 use App\Transaction;
 
@@ -35,6 +36,7 @@ class InvoicePaid extends BaseMail
             ->view('emails.PaidInvoice', [
                 'invoiceUrl' => $invoiceUrl,
                 'invoice' => $this->invoice,
+                'due' => BillingUtils::getInvoiceDueAmount($this->invoice),
                 'transaction' => $this->transaction
             ]);
     }

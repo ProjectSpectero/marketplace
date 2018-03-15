@@ -31,7 +31,7 @@ class OrderTerminationsJob extends BaseJob
         $now = Carbon::now();
         $overdueDays = env('TERMINATE_AFTER_OVERDUE_DAYS', 7);
         $orders = Order::where('status', OrderStatus::ACTIVE)
-            ->whereRaw("DATEDIFF(due_next, '$now') > '$overdueDays'")
+            ->whereRaw("TIMESTAMPDIFF(DAY, '$now', due_next) > '$overdueDays'")
             ->get();
 
         foreach ($orders as $order)

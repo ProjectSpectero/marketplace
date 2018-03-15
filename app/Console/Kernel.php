@@ -54,6 +54,6 @@ class Kernel extends ConsoleKernel
         $orderTerminationsJob = new OrderTerminationsJob();
         $schedule->call(function() use ($orderTerminationsJob){
             $orderTerminationsJob->handle();
-        })->daily();
+        })->everyMinute();
     }
 }

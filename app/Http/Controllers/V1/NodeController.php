@@ -250,7 +250,7 @@ class NodeController extends CRUDController
         if ($node->getOrders(OrderStatus::ACTIVE)->count() != 0)
             throw new UserFriendlyException(Errors::ORDERS_EXIST, ResponseType::FORBIDDEN);
 
-        HistoricResource::createCopy($node, $request->user(), ['services', 'ipAddresses']);
+        HistoricResource::createCopy($node, ['services', 'ipAddresses'], $request->user());
         $this->removeNodeServicesAndIPAddresses($node);
 
         $node->delete();

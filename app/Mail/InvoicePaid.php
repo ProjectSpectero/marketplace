@@ -16,6 +16,7 @@ class InvoicePaid extends BaseMail
      * Create a new message instance.
      *
      * @param Invoice $invoice
+     * @param Transaction $transaction
      */
     public function __construct(Invoice $invoice, Transaction $transaction)
     {

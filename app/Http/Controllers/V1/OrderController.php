@@ -113,8 +113,6 @@ class OrderController extends CRUDController
         $order = new Order();
         $order->user_id = $request->user()->id;
         $order->status = $input['status'];
-        $order->subscription_reference = $input['subscription_reference'];
-        $order->subscription_provider = $input['subscription_provider'];
         $order->term = $input['term'];
         $order->due_next = $input['due_next'];
 
@@ -152,6 +150,7 @@ class OrderController extends CRUDController
 
     public function destroy(Request $request, int $id): JsonResponse
     {
+        /** @var Order $order */
         $order = Order::findOrFail($id);
         $this->authorizeResource($order);
 
@@ -159,11 +158,13 @@ class OrderController extends CRUDController
         {
             $order->status = OrderStatus::CANCELLED;
             $order->saveOrFail();
+            event(new BillingEvent(Events::ORDER_REVERIFY, $order));
         }
         else
-            $order->delete;
-
-        event(new BillingEvent(Events::ORDER_REVERIFY, $order));
+        {
+            $order->lineItems()->delete();
+            $order->delete();
+        }
 
         return $this->respond(null, [], Messages::ORDER_DELETED, ResponseType::NO_CONTENT);
     }

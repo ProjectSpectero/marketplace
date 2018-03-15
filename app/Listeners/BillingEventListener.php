@@ -68,15 +68,6 @@ class BillingEventListener extends BaseListener
                             /** @var User $user */
                             $user = $invoice->user;
 
-                            if ($invoice->type == InvoiceType::CREDIT)
-                            {
-                                // Well now, user paid a credit add invoice. Let's add him his credit, shall we?
-                                // TODO: make this multi-currency aware someday.
-                                $user->credit = $user->credit + $invoice->amount; // Currency is assumed to be USD
-                                $user->saveOrFail();
-
-                            }
-
                             if ($invoice->order != null)
                             {
                                 $order = $invoice->order;
@@ -89,7 +80,17 @@ class BillingEventListener extends BaseListener
                                 $order->due_next = $order->due_next->addDays($order->term);
                                 $order->saveOrFail();
                             }
+
+                            // There's no partial credit add, invoice needs to be fully paid for this to happen
+                            if ($invoice->type == InvoiceType::CREDIT)
+                            {
+                                // Well now, user paid a credit add invoice. Let's add him his credit, shall we?
+                                // TODO: make this multi-currency aware someday.
+                                $user->credit = $user->credit + $object->amount; // Currency is assumed to be USD
+                                $user->saveOrFail();
+                            }
                         }
+
                         // Acknowledgement goes out whether the invoice is paid in full or not.
                         Mail::to($user->email)->queue(new InvoicePaid($invoice, $object));
                         break;
@@ -113,7 +114,10 @@ class BillingEventListener extends BaseListener
                     if (FraudCheckManager::verify($order))
                         $order->status = OrderStatus::PENDING;
                     else
+                    {
+                        // TODO: Raise the appropriate ticket to track this event.
                         $order->status = OrderStatus::MANUAL_FRAUD_CHECK;
+                    }
 
                     $order->saveOrFail();
                 }

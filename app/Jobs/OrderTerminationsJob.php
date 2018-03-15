@@ -28,18 +28,19 @@ class OrderTerminationsJob extends BaseJob
      */
     public function handle()
     {
-        $orders = Order::where('status', OrderStatus::ACTIVE)->get();
+        $now = Carbon::now();
+        $overdueDays = env('TERMINATE_AFTER_OVERDUE_DAYS');
+        $orders = Order::where('status', OrderStatus::ACTIVE)
+            ->whereRaw("DATEDIFF(due_next, '$now') > '$overdueDays'")
+            ->get();
+        
         foreach ($orders as $order)
         {
-            $due_next = Carbon::parse($order->due_next);
-            $now = Carbon::now();
-            if ( $due_next->diffInDays($now) > env('TERMINATE_AFTER_OVERDUE_DAYS')  )
-            {
-                BillingUtils::cancelOrder($order);
-                $lastInvoice = $order->lastInvoice;
-                $lastInvoice->status = OrderStatus::CANCELLED;
-                $lastInvoice->saveOrFail();
-            }
+            BillingUtils::cancelOrder($order);
+            $lastInvoice = $order->lastInvoice;
+            $lastInvoice->status = OrderStatus::CANCELLED;
+            $lastInvoice->saveOrFail();
+
             Mail::to($order->user->email)->queue(new OrderTerminated($order));
         }
     }

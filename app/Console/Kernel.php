@@ -40,11 +40,6 @@ class Kernel extends ConsoleKernel
             $periodicCleanupJob->handle();
         })->daily();
 
-        $orderTerminationsJob = new OrderTerminationsJob();
-        $schedule->call(function() use ($orderTerminationsJob){
-            $orderTerminationsJob->handle();
-        })->daily();
-
         $geoIpUpdate = 'geoipupdate -d ' . base_path() . '/resources/geoip' . ' -f ' . base_path() . '/GeoIP.conf';
         $schedule->exec($geoIpUpdate)
             ->weekly()
@@ -54,6 +49,11 @@ class Kernel extends ConsoleKernel
         $recurringInvoicesJob = new RecurringInvoiceHandlingJob();
         $schedule->call(function() use ($recurringInvoicesJob) {
             $recurringInvoicesJob->handle();
+        })->daily();
+
+        $orderTerminationsJob = new OrderTerminationsJob();
+        $schedule->call(function() use ($orderTerminationsJob){
+            $orderTerminationsJob->handle();
         })->daily();
     }
 }

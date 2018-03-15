@@ -4,6 +4,9 @@ namespace App\Console;
 
 use App\Constants\InvoiceStatus;
 use App\Constants\OrderStatus;
+use App\Jobs\OrderTerminationsJob;
+use App\Jobs\PeriodicCleanupJob;
+use App\Jobs\RecurringInvoiceHandlingJob;
 use App\Libraries\BillingUtils;
 use App\Mail\OrderTerminated;
 use App\Order;
@@ -32,34 +35,14 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->call(function () {
-            DB::table('password_reset_tokens')
-                ->where('expires', '<=', Carbon::now())
-                ->delete();
+        $periodicCleanupJob = new PeriodicCleanupJob();
+        $schedule->call(function() use ($periodicCleanupJob) {
+            $periodicCleanupJob->handle();
         })->daily();
 
-        $schedule->call(function() {
-            DB::table('partial_auth')
-                ->where('expires', '<=', Carbon::now())
-                ->delete();
-        })->daily();
-
-        $schedule->call(function() {
-            $orders = Order::where('status', OrderStatus::ACTIVE)->get();
-            foreach ($orders as $order)
-            {
-                $due_next = Carbon::parse($order->due_next);
-                $now = Carbon::now();
-                if ( $due_next->diffInDays($now) > env('TERMINATE_AFTER_OVERDUE_DAYS')  )
-                {
-                    BillingUtils::cancelOrder($order);
-                    $lastInvoice = $order->lastInvoice;
-                    $lastInvoice->status = OrderStatus::CANCELLED;
-                    $lastInvoice->saveOrFail();
-                }
-                Mail::to($order->user->email)->queue(new OrderTerminated($order));
-            }
-
+        $orderTerminationsJob = new OrderTerminationsJob();
+        $schedule->call(function() use ($orderTerminationsJob){
+            $orderTerminationsJob->handle();
         })->daily();
 
         $geoIpUpdate = 'geoipupdate -d ' . base_path() . '/resources/geoip' . ' -f ' . base_path() . '/GeoIP.conf';
@@ -68,18 +51,9 @@ class Kernel extends ConsoleKernel
             ->sundays()
             ->timezone('America/Los_Angeles');
 
-        $schedule->call(function() {
-            $orders = DB::table('orders')
-                ->where('status', OrderStatus::ACTIVE)
-                ->get();
-
-            foreach ($orders as $order)
-            {
-                $due_next = Carbon::parse($order->due_next);
-                if ($due_next->subDays(env('EARLY_INVOICE_GENERATION_DAYS')) <= Carbon::now()
-                    && $order->lastInoivce == InvoiceStatus::PAID)
-                        BillingUtils::createInvoice($order, Carbon::parse($order->due_next)->addMonth());
-            }
-        });
+        $recurringInvoicesJob = new RecurringInvoiceHandlingJob();
+        $schedule->call(function() use ($recurringInvoicesJob) {
+            $recurringInvoicesJob->handle();
+        })->daily();
     }
 }

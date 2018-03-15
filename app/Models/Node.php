@@ -28,7 +28,7 @@ class Node extends BaseModel
     ];
 
     public static $publicFields = [
-        'nodes.id', 'nodes.friendly_name', 'nodes.market_model', 'nodes.price', 'nodes.city', 'nodes.cc', 'nodes.asn', 'nodes.group_id', 'nodes.created_at'
+        'nodes.id', 'nodes.status', 'nodes.friendly_name', 'nodes.market_model', 'nodes.price', 'nodes.city', 'nodes.cc', 'nodes.asn', 'nodes.group_id', 'nodes.created_at'
     ];
 
     /**

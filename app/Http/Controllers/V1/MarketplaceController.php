@@ -14,6 +14,7 @@ use App\Libraries\PaginationManager;
 use App\Libraries\Utility;
 use App\Node;
 use App\NodeGroup;
+use App\NodeIPAddress;
 use function GuzzleHttp\default_ca_bundle;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -70,6 +71,14 @@ class MarketplaceController extends V1Controller
 
     public function search(Request $request)
     {
+        $rules = [
+            'rules' => 'sometimes|array',
+            'rules.*.field' => 'required_with:rules',
+            'rules.*.operator' => 'required_with:rules',
+            'rules.*.value' => 'required_with:rules'
+        ];
+        $this->validate($request, $rules);
+
         $originalQuery = Node::query();
 
         // Never pick up on unlisted nodes, and only return nodes that are verified/confirmed.
@@ -122,7 +131,7 @@ class MarketplaceController extends V1Controller
                     break;
 
                 case 'nodes.cc':
-                    if (!is_array($value) || sizeof($value) < 1)
+                    if (! is_array($value) || sizeof($value) < 1 || $operator !== 'IN')
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
                     $query->whereIn($field, $value);
@@ -149,7 +158,7 @@ class MarketplaceController extends V1Controller
                     break;
 
                 case 'nodes.ip_count':
-                    if (! in_array($operator, ['=', '>=', '>']) || ! is_numeric($value))
+                    if (! in_array($operator, ['=', '>=', '<=', '>', '<']) || ! is_numeric($value))
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
                     $query->leftJoin('node_ip_addresses', 'node_ip_addresses.node_id', '=', 'nodes.id');
@@ -177,17 +186,19 @@ class MarketplaceController extends V1Controller
             foreach ($results->items() as $node)
             {
                 $groupId = $node->group_id;
-                $resource = $node;
-                $resource->type = OrderResourceType::NODE;
                 if ($groupId != null)
                 {
-                    $resource = NodeGroup::find($groupId)->noEagerLoads()->first();
+                    $resource = NodeGroup::noEagerLoads()->find($groupId);
                     if ($resource != null)
                     {
+                        $resource = $this->prepareGroup($resource);
                         $resource->type = OrderResourceType::NODE_GROUP;
-                        $resource->node_count = $originalQuery->where('group_id', $groupId)->count();
                     }
-
+                }
+                else
+                {
+                    $resource = $this->prepareNode($node);
+                    $resource->type = OrderResourceType::NODE;
                 }
 
                 // Builder happens when the scope needs to return null, lame.
@@ -213,17 +224,75 @@ class MarketplaceController extends V1Controller
     public function resource(Request $request, String $type, int $id): JsonResponse
     {
         // TODO: Figure out what to hide, and what to show.
+        $data = null;
         switch ($type)
         {
             case 'node':
                 $node = Node::noEagerLoads()->findOrFail($id);
-                return $this->respond($node->toArray());
+                $data = $this->prepareNode($node);
+
+                break;
             case 'group':
-                $nodeGroup = Node::noEagerLoads()->findOrFail($id);
-                return $this->respond($nodeGroup->toArray());
+                $group = NodeGroup::noEagerLoads()->findOrFail($id);
+                $data = $this->prepareGroup($group);
+                break;
             default:
                 throw new UserFriendlyException(Errors::RESOURCE_NOT_FOUND);
         }
+
+        if ($data->market_model == NodeMarketModel::UNLISTED)
+            throw new UserFriendlyException(Errors::UNAUTHORIZED, ResponseType::FORBIDDEN);
+
+        return $this->respond($data->toArray());
+    }
+
+    // まだ心の準備ができていないからね
+    private function prepareNode (Node $node, bool $groupExceptionOverride = false)
+    {
+        if (! $groupExceptionOverride && $node->status != NodeStatus::CONFIRMED)
+        {
+            dd($node->toArray());
+            throw new UserFriendlyException(Errors::UNAUTHORIZED, ResponseType::FORBIDDEN);
+        }
+
+
+        $ipCollection = [];
+        foreach (NodeIPAddress::where('node_id', $node->id)->get() as $ip)
+        {
+            $ipCollection[] = [
+                'id' => $ip->id,
+                'asn' => $ip->asn,
+                'city' => $ip->city,
+                'cc' => $ip->cc
+            ];
+        }
+
+        $node->ip_addresses = $ipCollection;
+        $hiddenBase = [ 'ip', 'port', 'protocol', 'user_id', 'deleted_at' ];
+
+        if ($groupExceptionOverride)
+        {
+            $hiddenBase = array_merge($hiddenBase, [
+                'group_id', 'plan', 'market_model', 'price'
+            ]);
+        }
+
+        $node->makeHidden($hiddenBase);
+
+        return $node;
+    }
+
+    //俺も同じだよ
+    private function prepareGroup (NodeGroup $group)
+    {
+        $nodes = [];
+        foreach (Node::where('group_id', $group->id)->get() as $node)
+        {
+            $nodes[] = $this->prepareNode($node, true);
+        }
+        $group->nodes = $nodes;
+
+        return $group;
     }
 }
 

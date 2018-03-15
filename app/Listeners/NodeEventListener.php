@@ -185,7 +185,7 @@ class NodeEventListener extends BaseListener
                 {
                     if (NodeIPAddress::where('ip', $ipAddress)->count())
                     {
-                        Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, "Duplicate IP of $ipAddress found elsewhere, please open a support ticket. Automatic verification not possible."));
+                        Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, $node->ip, "Duplicate IP of $ipAddress found elsewhere, please open a support ticket. Automatic verification not possible."));
                         $this->updateNodeStatus($node, NodeStatus::UNCONFIRMED);
                         return;
                     }

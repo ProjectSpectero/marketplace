@@ -93,8 +93,6 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         \App\Libraries\Utility::defineResourceRoute('promo/code', 'PromoCodeController', $api, []);
         \App\Libraries\Utility::defineResourceRoute('promo/group', 'PromoGroupController', $api, []);
 
-        $api->post('credit/invoice', 'InvoiceController@generateCreditInvoice', $api, []);
-
-
+        $api->post('credit/invoice', 'InvoiceController@generateCreditInvoice');
     });
 });

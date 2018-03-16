@@ -40,15 +40,10 @@ class OrderTerminationsJob extends BaseJob
             if ($order->lastInvoice->status == InvoiceStatus::UNPAID)
             {
                 BillingUtils::cancelOrder($order);
-                $lastInvoice = $order->lastInvoice;
-                $lastInvoice->status = OrderStatus::CANCELLED;
-                $lastInvoice->saveOrFail();
+                Mail::to($order->user->email)->queue(new OrderTerminated($order));
             }
             else
                 \Log::warning("Invoice is paid but due_next its still in the past", $order->toArray());
-
-
-            Mail::to($order->user->email)->queue(new OrderTerminated($order));
         }
     }
 }

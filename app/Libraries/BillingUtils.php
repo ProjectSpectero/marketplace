@@ -152,6 +152,16 @@ class BillingUtils
             $lineItem->saveOrFail();
         }
 
+        if ($order->lastInvoice != null)
+        {
+            $lastInvoice = $order->lastInvoice;
+            if ($lastInvoice->status != InvoiceStatus::PAID)
+            {
+                $lastInvoice->status = InvoiceStatus::CANCELLED;
+                $lastInvoice->saveOrFail();
+            }
+        }
+
         $order->status = OrderStatus::CANCELLED;
         $order->saveOrFail();
     }

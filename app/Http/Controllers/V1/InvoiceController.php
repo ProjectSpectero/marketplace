@@ -159,7 +159,7 @@ class InvoiceController extends CRUDController
         $input = $this->cherryPick($request, $rules);
         $user = $request->user();
 
-        if ($user->credit + $input['amount'] >= env('CREDIT_ADD_LIMIT', 100))
+        if ($user->credit + $input['amount'] > env('CREDIT_ADD_LIMIT', 100))
             throw new UserFriendlyException(Errors::CREDIT_LIMIT_EXCEEDED);
 
         $creditInvoices = Invoice::findForUser($user->id)
@@ -188,7 +188,7 @@ class InvoiceController extends CRUDController
         $creditLimit = env('CREDIT_ADD_LIMIT', 100);
         $leftOverLimit = $creditLimit - $user->credit;
         return $this->respond([
-            'credit_limit' => $creditLimit,
+            'credit_limit' => (int) $creditLimit,
             'can_add' => $leftOverLimit,
             'currency' => $user->credit_currency
         ]);

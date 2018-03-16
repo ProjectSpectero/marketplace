@@ -17,16 +17,17 @@ class CreateOrdersTable extends Migration
         {
             $table->increments('id');
             $table->integer('user_id');
-            $table->string('status');
+            $table->string('status')->index();
             $table->string('subscription_reference');
             $table->string('subscription_provider'); // Do not set this without the PaymentProcessor class
             $table->integer('term'); // The order renews every n days, 0 means one time
-            $table->date('due_next'); // Take today() + add term to it to calculate this once payment is received
+            $table->date('due_next')->index(); // Take today() + add term to it to calculate this once payment is received
             $table->integer('last_invoice_id');
             $table->mediumText('notes');
             $table->string('accessor', 512);
             $table->timestamps();
 
+            $table->index(['status', 'due_next']);
             $table->index([ 'subscription_reference', 'subscription_provider' ], 'reference_provider_index');
         });
     }

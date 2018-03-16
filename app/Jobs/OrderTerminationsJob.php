@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Constants\InvoiceStatus;
 use App\Constants\OrderStatus;
 use App\Libraries\BillingUtils;
 use App\Mail\OrderTerminated;
@@ -29,17 +30,23 @@ class OrderTerminationsJob extends BaseJob
     public function handle()
     {
         $now = Carbon::now();
-        $overdueDays = env('TERMINATE_AFTER_OVERDUE_DAYS', 7);
+        $overdueDays = env('TERMINATE_AFTER_OVERDUE_DAYS', 7) + 1;
         $orders = Order::where('status', OrderStatus::ACTIVE)
-            ->whereRaw("TIMESTAMPDIFF(DAY, '$now', due_next) > '$overdueDays'")
+            ->whereRaw("TIMESTAMPDIFF(DAY, due_next, '$now') > '$overdueDays'")
             ->get();
 
         foreach ($orders as $order)
         {
-            BillingUtils::cancelOrder($order);
-            $lastInvoice = $order->lastInvoice;
-            $lastInvoice->status = OrderStatus::CANCELLED;
-            $lastInvoice->saveOrFail();
+            if ($order->lastInvoice->status == InvoiceStatus::UNPAID)
+            {
+                BillingUtils::cancelOrder($order);
+                $lastInvoice = $order->lastInvoice;
+                $lastInvoice->status = OrderStatus::CANCELLED;
+                $lastInvoice->saveOrFail();
+            }
+            else
+                \Log::warning("Invoice is paid but due_next its still in the past", $order->toArray());
+
 
             Mail::to($order->user->email)->queue(new OrderTerminated($order));
         }

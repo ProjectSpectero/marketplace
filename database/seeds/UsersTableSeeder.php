@@ -91,6 +91,18 @@ class UsersTableSeeder extends Seeder
 
     private function addMeta(\App\User $user)
     {
+        $stripeTokens = [
+            'tok_visa',
+            'tok_visa_debit',
+            'tok_mastercard',
+            'tok_mastercard_debit',
+            'tok_mastercard_prepaid',
+            'tok_amex',
+            'tok_discover',
+            'tok_diners',
+            'tok_jcb'
+        ];
+
         try
         {
             UserMeta::addOrUpdateMeta($user,UserMetaKeys::AddressLineOne, env('LEGAL_COMPANY_ADDRESS_PARTIAL_1'));
@@ -102,6 +114,7 @@ class UsersTableSeeder extends Seeder
             UserMeta::addOrUpdateMeta($user, UserMetaKeys::State, 'Tokyo');
             UserMeta::addOrUpdateMeta($user, UserMetaKeys::Country, 'JP');
             UserMeta::addOrUpdateMeta($user, UserMetaKeys::PostCode, 68005);
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::StripeCardToken, array_random($stripeTokens));
         }
         catch (\App\Errors\FatalException $e)
         {

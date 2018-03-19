@@ -2,6 +2,8 @@
 
 namespace App\Mail;
 
+use App\Invoice;
+use App\Libraries\Utility;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -11,14 +13,16 @@ class PaymentRequestMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    private $invoice;
+
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(Invoice $invoice)
     {
-        //
+        $this->invoice = $invoice;
     }
 
     /**
@@ -28,6 +32,11 @@ class PaymentRequestMail extends Mailable
      */
     public function build()
     {
-        return $this->view('view.name');
+        $manualUrl = Utility::generateUrl('invoice/' . $this->invoice->id, 'frontend');
+        return $this->subject('Payment Request Failed')
+            ->view('emails.PaymentRequest', [
+                'manualUrl' => $manualUrl,
+                'invoice' => $this->invoice
+            ]);
     }
 }

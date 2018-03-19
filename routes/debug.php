@@ -18,6 +18,7 @@ $router->group(['prefix' => 'debug', 'namespace' => 'V1' ], function($api)
     /** @var \Laravel\Lumen\Routing\Router $api */
     $api->get('/test', function (\Illuminate\Http\Request $request)
     {
-
+        $o = new \App\Jobs\AutoChargeJob();
+        return $o->handle();
     });
 });

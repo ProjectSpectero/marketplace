@@ -4,6 +4,7 @@ namespace App\Console;
 
 use App\Constants\InvoiceStatus;
 use App\Constants\OrderStatus;
+use App\Jobs\AutoChargeJob;
 use App\Jobs\OrderTerminationsJob;
 use App\Jobs\PeriodicCleanupJob;
 use App\Jobs\RecurringInvoiceHandlingJob;
@@ -52,8 +53,13 @@ class Kernel extends ConsoleKernel
         })->daily();
 
         $orderTerminationsJob = new OrderTerminationsJob();
-        $schedule->call(function() use ($orderTerminationsJob){
+        $schedule->call(function() use ($orderTerminationsJob) {
             $orderTerminationsJob->handle();
+        })->everyMinute();
+
+        $autoChargeJob = new AutoChargeJob();
+        $schedule->call(function() use ($autoChargeJob) {
+            $autoChargeJob->handle();
         })->everyMinute();
     }
 }

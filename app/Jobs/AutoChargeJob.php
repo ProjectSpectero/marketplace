@@ -12,9 +12,13 @@ use App\Mail\PaymentRequestMail;
 use App\Order;
 use App\UserMeta;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Translation\Exception\NotFoundResourceException;
 
 class AutoChargeJob extends Job
 {
@@ -50,12 +54,17 @@ class AutoChargeJob extends Job
             $user = $order->user;
             if ($order->lastInvoice->status == InvoiceStatus::UNPAID)
             {
-                if ($token = UserMeta::loadMeta($user, UserMetaKeys::StripeCardToken)->first())
+                try
                 {
+                    $token = UserMeta::loadMeta($user, UserMetaKeys::StripeCardToken, true);
+
                     $request->replace([
-                        'user' => $user,
                         'stripeToken' => $token->meta_value
                     ]);
+
+                    $request->setUserResolver(function() use ($user) {
+                        return $user;
+                    });
 
                     try
                     {
@@ -67,9 +76,9 @@ class AutoChargeJob extends Job
 
                     }
                 }
-                else
+                catch (ModelNotFoundException $silenced)
                 {
-                    \Mail::to($user->email)->queue(new PaymentRequestMail());
+                    Mail::to($user->email)->queue(new PaymentRequestMail($order->lastInvoice));
                 }
             }
 

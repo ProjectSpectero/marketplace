@@ -73,7 +73,7 @@ class PasswordResetController extends V1Controller
         }
         catch (ModelNotFoundException $e)
         {
-            return $this->respond(null, Errors::RESOURCE_NOT_FOUND, ResponseType::NOT_FOUND);
+            return $this->respond(null, [ Errors::RESOURCE_NOT_FOUND ], ResponseType::NOT_FOUND);
         }
 
         $user = $resetToken->user;

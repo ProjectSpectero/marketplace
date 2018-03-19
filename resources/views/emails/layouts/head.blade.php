@@ -270,5 +270,10 @@
                 background-color: #34495e !important;
                 border-color: #34495e !important; } }
 
+        .no-style {
+            all: unset !important;
+            color: blue !important;
+        }
+
     </style>
 </head>

@@ -37,7 +37,6 @@ class AutoChargeJob extends Job
     {
         $query = Order::join('order_line_items', 'orders.id', '=', 'order_line_items.order_id')
             ->join('users', 'orders.user_id', '=', 'users.id')
-            ->join('user_metas', 'users.id', '=', 'user_metas.user_id')
             ->select('orders.*')
             ->where('orders.status', '=', OrderStatus::ACTIVE)
             ->where('orders.due_next', '<=', Carbon::now())
@@ -51,11 +50,11 @@ class AutoChargeJob extends Job
             $user = $order->user;
             if ($order->lastInvoice->status == InvoiceStatus::UNPAID)
             {
-                if ($token = UserMeta::loadMeta($user, UserMetaKeys::StripeCardToken))
+                if ($token = UserMeta::loadMeta($user, UserMetaKeys::StripeCardToken)->first())
                 {
                     $request->replace([
                         'user' => $user,
-                        'stripeToken' => $token
+                        'stripeToken' => $token->meta_value
                     ]);
 
                     try

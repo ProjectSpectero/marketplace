@@ -5,6 +5,7 @@ namespace App\Console;
 use App\Constants\InvoiceStatus;
 use App\Constants\OrderStatus;
 use App\Jobs\AutoChargeJob;
+use App\Jobs\GeoIPUpdateJob;
 use App\Jobs\OrderTerminationsJob;
 use App\Jobs\PeriodicCleanupJob;
 use App\Jobs\RecurringInvoiceHandlingJob;
@@ -41,8 +42,8 @@ class Kernel extends ConsoleKernel
             $periodicCleanupJob->handle();
         })->daily();
 
-        $geoIpUpdate = 'geoipupdate -d ' . base_path() . '/resources/geoip' . ' -f ' . base_path() . '/GeoIP.conf';
-        $schedule->exec($geoIpUpdate)
+        $geoIpUpdateJob = new GeoIPUpdateJob();
+        $schedule->exec($geoIpUpdateJob->handle())
             ->weekly()
             ->sundays()
             ->timezone('America/Los_Angeles');
@@ -60,6 +61,6 @@ class Kernel extends ConsoleKernel
         $autoChargeJob = new AutoChargeJob();
         $schedule->call(function() use ($autoChargeJob) {
             $autoChargeJob->handle();
-        })->everyMinute();
+        })->daily();
     }
 }

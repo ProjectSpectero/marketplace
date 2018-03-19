@@ -128,6 +128,9 @@ class BillingUtils
 
         $invoice->saveOrFail();
 
+        $order->last_invoice_id = $invoice->id;
+        $order->saveOrFail();
+
         return $invoice;
     }
 

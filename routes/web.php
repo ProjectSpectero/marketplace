@@ -95,5 +95,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
 
         $api->post('credit/invoice', 'InvoiceController@generateCreditInvoice');
         $api->get('credit/max', 'InvoiceController@getMaxCredit');
+
+        $api->get('integrations/support', 'IntegrationsController@support');
     });
 });

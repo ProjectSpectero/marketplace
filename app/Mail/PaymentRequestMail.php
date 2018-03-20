@@ -5,11 +5,9 @@ namespace App\Mail;
 use App\Invoice;
 use App\Libraries\Utility;
 use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class PaymentRequestMail extends Mailable
+class PaymentRequestMail extends BaseMail
 {
     use Queueable, SerializesModels;
 
@@ -33,7 +31,7 @@ class PaymentRequestMail extends Mailable
     public function build()
     {
         $manualUrl = Utility::generateUrl('invoice/' . $this->invoice->id, 'frontend');
-        return $this->subject('Payment Request Failed')
+        return $this->subject($this->formatTitle('Automatic Payment Failed'))
             ->view('emails.PaymentRequest', [
                 'manualUrl' => $manualUrl,
                 'invoice' => $this->invoice

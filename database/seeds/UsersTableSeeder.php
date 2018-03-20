@@ -24,7 +24,7 @@ class UsersTableSeeder extends Seeder
 
       $admin = \App\User::create([
           'name' => "Spectero Dev",
-          'email' => "spectero@dev.com",
+          'email' => "dev@spectero.com",
           'password' => \Illuminate\Support\Facades\Hash::make('temppass'),
           'status' => \App\Constants\UserStatus::ACTIVE,
           'node_key' => \App\Libraries\Utility::getRandomString(2)

@@ -6,6 +6,8 @@ use App\Constants\InvoiceStatus;
 use App\Constants\OrderStatus;
 use App\Constants\UserMetaKeys;
 use App\Errors\UserFriendlyException;
+use App\Libraries\BillingUtils;
+use App\Libraries\Payment\AccountCreditProcessor;
 use App\Libraries\Payment\PaypalProcessor;
 use App\Libraries\Payment\StripeProcessor;
 use App\Mail\PaymentRequestMail;
@@ -60,18 +62,24 @@ class AutoChargeJob extends BaseJob
 
                     $request->setUserResolver(function() use ($user)
                     {
-                        // TODO: validate that the RIGHT user is being charged, it'll be a disaster otherwise.
                         return $user;
                     });
 
                     try
                     {
+                        $invoice = $order->lastInvoice;
                         if ($user->credit > 0)
-                            $paymentProcessor = new PaypalProcessor($request);
-                        else
-                            $paymentProcessor = new StripeProcessor($request);
+                        {
+                            $paymentProcessor = new AccountCreditProcessor($request);
+                            $paymentProcessor->process($invoice);
+                        }
 
-                        $paymentProcessor->process($order->lastInvoice);
+                        if (BillingUtils::getInvoiceDueAmount($invoice) > 0)
+                        {
+                            $paymentProcessor = new StripeProcessor($request);
+                            $paymentProcessor->process($invoice);
+                        }
+
                     }
                     catch (UserFriendlyException $silenced)
                     {

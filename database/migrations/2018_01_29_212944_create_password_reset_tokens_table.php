@@ -22,6 +22,8 @@ class CreatePasswordResetTokensTable extends Migration
             $table->timestamp('expires');
 
             $table->unique('token', 'unique_token_index');
+            $table->index('user_id', 'user_id_index');
+            
             $table->timestamps();
         });
     }

@@ -36,8 +36,6 @@ class InvoicePaymentReminder extends BaseJob
             ->whereRaw("TIMESTAMPDIFF(DAY, last_reminder_sent, '$now') >= $overDueBuffer")
             ->get();
 
-        dd($query);
-
         foreach ($query as $invoice)
         {
             Mail::to($invoice->user->email)->queue(new PaymentRequestMail($invoice));

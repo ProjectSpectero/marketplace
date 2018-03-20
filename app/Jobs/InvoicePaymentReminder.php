@@ -6,6 +6,7 @@ namespace App\Jobs;
 
 use App\Constants\InvoiceStatus;
 use App\Invoice;
+use App\Mail\PaymentReminder;
 use App\Mail\PaymentRequestMail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -38,7 +39,7 @@ class InvoicePaymentReminder extends BaseJob
 
         foreach ($query as $invoice)
         {
-            Mail::to($invoice->user->email)->queue(new PaymentRequestMail($invoice));
+            Mail::to($invoice->user->email)->queue(new PaymentReminder($invoice));
             $invoice->last_reminder_sent = Carbon::now();
             $invoice->saveOrFail();
         }

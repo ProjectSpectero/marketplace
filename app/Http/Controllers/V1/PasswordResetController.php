@@ -88,6 +88,8 @@ class PasswordResetController extends V1Controller
         Mail::to($user->email)->queue(new PasswordChanged($newPassword, $resetToken->ip));
 
         event(new UserEvent(Events::USER_PASSWORD_UPDATED, $user));
-        return $this->respond(null, [], Messages::PASSWORD_RESET_SUCCESS);
+        return $this->respond([
+                'new_password' => $newPassword
+            ], [], Messages::PASSWORD_RESET_SUCCESS);
     }
 }

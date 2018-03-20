@@ -7,7 +7,5 @@
 
     <p>This request has been processed, your password has been successfully reset.</p>
 
-    <p>Your new password is: {{ $newPassword }}</p>
-    <p>Please use it to login to our portal at <a href="{{ $loginUrl }}">here.</a></p>
-
+    <p>You can now use your new password to login to our <a href="{{ $loginUrl }}">portal here.</a></p>
 @endsection

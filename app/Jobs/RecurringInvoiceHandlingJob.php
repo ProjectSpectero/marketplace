@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Constants\InvoiceStatus;
 use App\Constants\OrderStatus;
 use App\Libraries\BillingUtils;
+use App\Order;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -24,19 +25,25 @@ class RecurringInvoiceHandlingJob extends Job
      * Execute the job.
      *
      * @return void
+     * @throws \Throwable
      */
     public function handle()
     {
-        $orders = DB::table('orders')
-            ->where('status', OrderStatus::ACTIVE)
+        $bufferDays = env('EARLY_INVOICE_GENERATION_DAYS', 7) + 1;
+
+        $now = Carbon::now();
+
+        // Querying for future dates, mind the TIMESTAMPDIFF param order (it's param 2 - param 1)
+        // Read it like this: due_next is either in the past, or up to $bufferDays in the future.
+        $orders = Order::where('status', OrderStatus::ACTIVE)
+            ->whereRaw("TIMESTAMPDIFF(DAY, '$now', due_next) <= '$bufferDays'")
             ->get();
 
         foreach ($orders as $order)
         {
-            $due_next = Carbon::parse($order->due_next);
-            if ($due_next->subDays(env('EARLY_INVOICE_GENERATION_DAYS')) <= Carbon::now()
-                && $order->lastInvoice == InvoiceStatus::PAID)
-                BillingUtils::createInvoice($order, Carbon::parse($order->due_next)->addMonth());
+            // If the last invoice is paid, means another was NOT generated yet. At the same time, due_next is valid, the two conditions required for a new invoice to be generated.
+            if ($order->lastInvoice->status == InvoiceStatus::PAID)
+                BillingUtils::createInvoice($order, $order->due_next);
         }
     }
 }

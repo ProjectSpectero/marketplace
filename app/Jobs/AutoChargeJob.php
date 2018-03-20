@@ -62,7 +62,9 @@ class AutoChargeJob extends Job
                         'stripeToken' => $token->meta_value
                     ]);
 
-                    $request->setUserResolver(function() use ($user) {
+                    $request->setUserResolver(function() use ($user)
+                    {
+                        // TODO: validate that the RIGHT user is being charged, it'll be a disaster otherwise.
                         return $user;
                     });
 
@@ -73,7 +75,7 @@ class AutoChargeJob extends Job
                     }
                     catch (UserFriendlyException $silenced)
                     {
-
+                        // TODO: don't silence it, we tried to charge them and it failed. Notify them accordingly.
                     }
                 }
                 catch (ModelNotFoundException $silenced)
@@ -81,8 +83,6 @@ class AutoChargeJob extends Job
                     Mail::to($user->email)->queue(new PaymentRequestMail($order->lastInvoice));
                 }
             }
-
         }
-
     }
 }

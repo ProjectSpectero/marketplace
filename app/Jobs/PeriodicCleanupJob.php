@@ -32,6 +32,5 @@ class PeriodicCleanupJob extends BaseJob
         DB::table('partial_auth')
             ->where('expires', '<=', Carbon::now())
             ->delete();
-
     }
 }

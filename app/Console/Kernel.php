@@ -37,30 +37,39 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        /*
+         * Take NOTE: the order here matters, as do the sleep calls (to allow for the listener/event processor to catch up)
+         */
+        $autoChargeJob = new AutoChargeJob();
+        $schedule->call(function() use ($autoChargeJob)
+        {
+            $autoChargeJob->handle();
+            // 90 seconds to catch up on all the auto charge events fired.
+            sleep(90);
+        })->daily();
+
+        $recurringInvoicesJob = new RecurringInvoiceHandlingJob();
+        $schedule->call(function() use ($recurringInvoicesJob)
+        {
+            $recurringInvoicesJob->handle();
+        })->daily();
+
+        $orderTerminationsJob = new OrderTerminationsJob();
+        $schedule->call(function() use ($orderTerminationsJob)
+        {
+            $orderTerminationsJob->handle();
+        })->daily();
+
         $periodicCleanupJob = new PeriodicCleanupJob();
         $schedule->call(function() use ($periodicCleanupJob) {
             $periodicCleanupJob->handle();
         })->daily();
 
-        $geoIpUpdateJob = new GeoIPUpdateJob();
-        $schedule->exec($geoIpUpdateJob->handle())
-            ->weekly()
-            ->sundays()
-            ->timezone('America/Los_Angeles');
-
-        $recurringInvoicesJob = new RecurringInvoiceHandlingJob();
-        $schedule->call(function() use ($recurringInvoicesJob) {
-            $recurringInvoicesJob->handle();
-        })->daily();
-
-        $orderTerminationsJob = new OrderTerminationsJob();
-        $schedule->call(function() use ($orderTerminationsJob) {
-            $orderTerminationsJob->handle();
-        })->everyMinute();
-
-        $autoChargeJob = new AutoChargeJob();
-        $schedule->call(function() use ($autoChargeJob) {
-            $autoChargeJob->handle();
-        })->daily();
+        $geoIpUpdateJob = new GeoIPUpdateJob($schedule);
+        $schedule->call(function () use ($geoIpUpdateJob)
+        {
+            $geoIpUpdateJob->handle();
+        })->weekly()
+            ->sundays();
     }
 }

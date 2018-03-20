@@ -2,18 +2,19 @@
 
 namespace App\Jobs;
 
-use phpDocumentor\Reflection\Types\String_;
+use Illuminate\Console\Scheduling\Schedule;
 
-class GeoIPUpdateJob extends Job
+class GeoIPUpdateJob extends BaseJob
 {
+    private $scheduler;
     /**
      * Create a new job instance.
      *
-     * @return void
+     * @param Schedule $schduler
      */
-    public function __construct()
+    public function __construct(Schedule $schduler)
     {
-        //
+        $this->scheduler = $schduler;
     }
 
     /**
@@ -23,6 +24,6 @@ class GeoIPUpdateJob extends Job
      */
     public function handle()
     {
-        return 'geoipupdate -d ' . base_path() . '/resources/geoip' . ' -f ' . base_path() . '/GeoIP.conf';
+        return $this->scheduler->exec('geoipupdate -d ' . base_path() . '/resources/geoip' . ' -f ' . base_path() . '/GeoIP.conf');
     }
 }

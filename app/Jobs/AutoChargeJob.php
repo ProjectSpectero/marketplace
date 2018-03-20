@@ -7,11 +7,13 @@ use App\Constants\OrderStatus;
 use App\Constants\UserMetaKeys;
 use App\Errors\UserFriendlyException;
 use App\Libraries\Payment\StripeProcessor;
+use App\Mail\PaymentRequestMail;
 use App\Order;
 use App\UserMeta;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class AutoChargeJob extends BaseJob
 {
@@ -68,7 +70,7 @@ class AutoChargeJob extends BaseJob
                     }
                     catch (UserFriendlyException $silenced)
                     {
-                        // TODO: don't silence it, we tried to charge them and it failed. Notify them accordingly.
+                        Mail::to($user->email)->queue(new PaymentRequestMail($order->lastInvoice));
                     }
                 }
                 catch (ModelNotFoundException $silenced)

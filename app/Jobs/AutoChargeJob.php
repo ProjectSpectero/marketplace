@@ -56,6 +56,11 @@ class AutoChargeJob extends BaseJob
             {
                 try
                 {
+                    $request->setUserResolver(function() use ($user)
+                    {
+                        return $user;
+                    });
+
                     if ($user->credit > 0)
                     {
                         $paymentProcessor = new AccountCreditProcessor($request);
@@ -67,11 +72,6 @@ class AutoChargeJob extends BaseJob
                     $request->replace([
                         'stripeToken' => $token->meta_value
                     ]);
-
-                    $request->setUserResolver(function() use ($user)
-                    {
-                        return $user;
-                    });
 
                     if (BillingUtils::getInvoiceDueAmount($invoice) > 0)
                     {

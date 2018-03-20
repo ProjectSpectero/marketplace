@@ -122,6 +122,7 @@ class BillingUtils
         $invoice->tax = $tax;
         $invoice->status = InvoiceStatus::UNPAID;
         $invoice->due_date = $dueNext;
+        $invoice->last_reminder_sent = Carbon::now();
 
         // TODO: Default into USD for now, we'll fix this later
         $invoice->currency = Currency::USD;

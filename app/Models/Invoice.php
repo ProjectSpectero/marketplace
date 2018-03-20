@@ -11,8 +11,15 @@ class Invoice extends BaseModel
     protected $casts = [ 'amount' => 'float', 'tax' => 'float' ];
     //protected $with = [ 'transactions' ];
     protected $hidden = [ 'notes', 'user_id' ];
+    protected $dates = [
+        'created_at',
+        'updated_at',
+        'due_date',
+        'last_reminder_sent'
+    ];
 
     public $searchAble = ['status', 'currency', 'amount', 'due_date', 'order_id '];
+
 
     public function order()
     {

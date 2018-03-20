@@ -9,7 +9,7 @@ use App\Order;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
-class RecurringInvoiceHandlingJob extends Job
+class RecurringInvoiceHandlingJob extends BaseJob
 {
     /**
      * Create a new job instance.
@@ -42,6 +42,7 @@ class RecurringInvoiceHandlingJob extends Job
         foreach ($orders as $order)
         {
             // If the last invoice is paid, means another was NOT generated yet. At the same time, due_next is valid, the two conditions required for a new invoice to be generated.
+            // The invoice is due on the EXACT SAME DAY that the order is.
             if ($order->lastInvoice->status == InvoiceStatus::PAID)
                 BillingUtils::createInvoice($order, $order->due_next);
         }

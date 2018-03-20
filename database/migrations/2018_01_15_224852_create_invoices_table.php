@@ -32,6 +32,9 @@ class CreateInvoicesTable extends Migration
             $table->string('status');
             $table->date('due_date');
 
+            $table->date('last_reminder_sent')
+                ->nullable();
+
             $table->mediumText('notes')
                 ->nullable();
 

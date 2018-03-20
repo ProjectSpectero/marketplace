@@ -6,6 +6,7 @@ use App\Constants\InvoiceStatus;
 use App\Constants\OrderStatus;
 use App\Jobs\AutoChargeJob;
 use App\Jobs\GeoIPUpdateJob;
+use App\Jobs\InvoicePaymentReminder;
 use App\Jobs\OrderTerminationsJob;
 use App\Jobs\PeriodicCleanupJob;
 use App\Jobs\RecurringInvoiceHandlingJob;
@@ -53,6 +54,12 @@ class Kernel extends ConsoleKernel
         {
             $recurringInvoicesJob->handle();
         })->daily();
+
+        $invoiceReminderJob = new InvoicePaymentReminder();
+        $schedule->call(function () use ($invoiceReminderJob)
+        {
+           $invoiceReminderJob->handle();
+        });
 
         $orderTerminationsJob = new OrderTerminationsJob();
         $schedule->call(function() use ($orderTerminationsJob)

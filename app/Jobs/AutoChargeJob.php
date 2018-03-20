@@ -7,20 +7,13 @@ use App\Constants\OrderStatus;
 use App\Constants\UserMetaKeys;
 use App\Errors\UserFriendlyException;
 use App\Libraries\Payment\StripeProcessor;
-use App\Mail\EmailChangeNew;
-use App\Mail\PaymentRequestMail;
 use App\Order;
 use App\UserMeta;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Translation\Exception\NotFoundResourceException;
 
-class AutoChargeJob extends Job
+class AutoChargeJob extends BaseJob
 {
     /**
      * Create a new job instance.
@@ -80,7 +73,9 @@ class AutoChargeJob extends Job
                 }
                 catch (ModelNotFoundException $silenced)
                 {
-                    Mail::to($user->email)->queue(new PaymentRequestMail($order->lastInvoice));
+                    // Do nothing actually, this request cannot be sent every time this task runs. We need to separate it out into another job.
+                    // User did not have a saved card, and hence nothing to do.
+                    //Mail::to($user->email)->queue(new PaymentRequestMail($order->lastInvoice));
                 }
             }
         }

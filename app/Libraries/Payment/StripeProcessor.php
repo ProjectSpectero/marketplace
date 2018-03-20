@@ -201,12 +201,19 @@ class StripeProcessor extends BasePaymentProcessor
         }
         catch (ModelNotFoundException $silenced)
         {
-            $customer = $this->provider
-                ->customers()
-                ->create([
-                             'email' => $user->email,
-                             'source' => $token
-                         ]);
+            try
+            {
+                $customer = $this->provider
+                    ->customers()
+                    ->create([
+                                 'email' => $user->email,
+                                 'source' => $token
+                             ]);
+            }
+            catch (MissingParameterException $silenced)
+            {
+                throw new UserFriendlyException(Errors::INVALID_STRIPE_TOKEN);
+            }
 
             if ($save)
             {

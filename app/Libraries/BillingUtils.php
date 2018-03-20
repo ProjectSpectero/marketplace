@@ -17,6 +17,7 @@ use App\Invoice;
 use App\Node;
 use App\NodeGroup;
 use App\Order;
+use App\Transaction;
 use App\User;
 use App\UserMeta;
 use Carbon\Carbon;
@@ -141,9 +142,13 @@ class BillingUtils
      */
     public static function getInvoiceDueAmount (Invoice $invoice)
     {
-        $amount = $invoice->amount - $invoice->transactions
-                ->where('type', PaymentType::CREDIT)
-                ->sum('amount');
+        $existingAmount = Transaction::where('invoice_id', $invoice->id)
+            ->where('type', PaymentType::CREDIT)
+            ->sum('amount');
+
+        $amount = $invoice->amount - $existingAmount;
+
+        dd($amount, $existingAmount);
 
         return $amount;
     }

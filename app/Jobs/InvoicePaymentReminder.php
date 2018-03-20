@@ -33,8 +33,10 @@ class InvoicePaymentReminder extends BaseJob
 
         $query = Invoice::where('status', InvoiceStatus::UNPAID)
             ->whereNotNull('last_reminder_sent')
-            ->whereRaw("TIMEDIFF(DAY, last_reminder_sent, '$now' >= '$overDueBuffer'")
+            ->whereRaw("TIMESTAMPDIFF(DAY, last_reminder_sent, '$now') >= $overDueBuffer")
             ->get();
+
+        dd($query);
 
         foreach ($query as $invoice)
         {

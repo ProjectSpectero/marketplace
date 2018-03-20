@@ -53,6 +53,7 @@ class BillingSeeder extends Seeder
             $invoice->status = \App\Constants\InvoiceStatus::UNPAID;
             $invoice->due_date = \Carbon\Carbon::now();
             $invoice->type = \App\Constants\InvoiceType::STANDARD;
+            $invoice->last_reminder_sent = \Carbon\Carbon::now()->subDay(mt_rand(1, 15));
             $invoice->saveOrFail();
 
             $order->last_invoice_id = $invoice->id;

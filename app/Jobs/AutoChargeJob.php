@@ -6,6 +6,7 @@ use App\Constants\InvoiceStatus;
 use App\Constants\OrderStatus;
 use App\Constants\UserMetaKeys;
 use App\Errors\UserFriendlyException;
+use App\Libraries\Payment\PaypalProcessor;
 use App\Libraries\Payment\StripeProcessor;
 use App\Mail\PaymentRequestMail;
 use App\Order;
@@ -65,7 +66,11 @@ class AutoChargeJob extends BaseJob
 
                     try
                     {
-                        $paymentProcessor = new StripeProcessor($request);
+                        if ($user->credit > 0)
+                            $paymentProcessor = new PaypalProcessor($request);
+                        else
+                            $paymentProcessor = new StripeProcessor($request);
+
                         $paymentProcessor->process($order->lastInvoice);
                     }
                     catch (UserFriendlyException $silenced)

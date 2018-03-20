@@ -148,8 +148,6 @@ class BillingUtils
 
         $amount = $invoice->amount - $existingAmount;
 
-        dd($amount, $existingAmount);
-
         return $amount;
     }
 

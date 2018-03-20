@@ -133,15 +133,21 @@ class NodeController extends CRUDController
 
         try
         {
+            /** @var Node $node */
             $node = Node::findByIPOrInstallIdOrFail($input['install_id'], $ipAddress);
             if ($node != null)
             {
+                $data = null;
                 if ($node->user_id == $request->user()->id)
+                {
                     $message = Messages::RESOURCE_ALREADY_EXISTS_ON_OWN_ACCOUNT;
+                    $data = $node->toArray();
+                }
+
                 else
                     $message = Errors::REQUEST_FAILED;
 
-                return $this->respond(null, [ Errors::RESOURCE_ALREADY_EXISTS ], $message, ResponseType::CONFLICT);
+                return $this->respond($data, [ Errors::RESOURCE_ALREADY_EXISTS ], $message, ResponseType::CONFLICT);
             }
         }
         catch (ModelNotFoundException $silenced)

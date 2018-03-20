@@ -57,15 +57,17 @@ class PaymentController extends V1Controller
             }
         }
 
-        // Before proceeding further, we need to check that if the invoice has an order associated with it, and all line items are currently available for purchase.
-        $order = $invoice->order;
 
-        // This is not supposed to happen, if it does we gotta catch and bail appropriately.
-        if ($order == null && $invoice->type == InvoiceType::STANDARD)
-            throw new UserFriendlyException(Errors::PAYMENT_FAILED);
 
         if ($invoice->type == InvoiceType::STANDARD)
         {
+            // Before proceeding further, we need to check that if the invoice has an order associated with it, and all line items are currently available for purchase.
+            $order = $invoice->order;
+
+            // This is not supposed to happen, if it does we gotta catch and bail appropriately.
+            if ($order == null)
+                throw new UserFriendlyException(Errors::PAYMENT_FAILED);
+
             foreach ($order->lineItems as $item)
             {
                 switch ($item->type)

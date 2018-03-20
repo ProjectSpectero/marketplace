@@ -56,6 +56,10 @@ class BillingEventListener extends BaseListener
 
                 /** @var Invoice $invoice */
                 $invoice = $object->invoice;
+
+                /** @var User $user */
+                $user = $invoice->user;
+
                 switch ($object->type)
                 {
                     case PaymentType::CREDIT:
@@ -64,9 +68,6 @@ class BillingEventListener extends BaseListener
                             // Invoice can now be marked as paid, activate any associated orders
                             $invoice->status = InvoiceStatus::PAID;
                             $invoice->saveOrFail();
-
-                            /** @var User $user */
-                            $user = $invoice->user;
 
                             if ($invoice->order != null)
                             {

@@ -50,10 +50,18 @@ class AutoChargeJob extends BaseJob
         foreach ($query as $order)
         {
             $user = $order->user;
-            if ($order->lastInvoice->status == InvoiceStatus::UNPAID)
+            $invoice = $order->lastInvoice;
+
+            if ($invoice->status == InvoiceStatus::UNPAID)
             {
                 try
                 {
+                    if ($user->credit > 0)
+                    {
+                        $paymentProcessor = new AccountCreditProcessor($request);
+                        $paymentProcessor->process($invoice);
+                    }
+
                     $token = UserMeta::loadMeta($user, UserMetaKeys::StripeCardToken, true);
 
                     $request->replace([
@@ -65,32 +73,20 @@ class AutoChargeJob extends BaseJob
                         return $user;
                     });
 
-                    try
+                    if (BillingUtils::getInvoiceDueAmount($invoice) > 0)
                     {
-                        $invoice = $order->lastInvoice;
-                        if ($user->credit > 0)
-                        {
-                            $paymentProcessor = new AccountCreditProcessor($request);
-                            $paymentProcessor->process($invoice);
-                        }
-
-                        if (BillingUtils::getInvoiceDueAmount($invoice) > 0)
-                        {
-                            $paymentProcessor = new StripeProcessor($request);
-                            $paymentProcessor->process($invoice);
-                        }
-
+                        $paymentProcessor = new StripeProcessor($request);
+                        $paymentProcessor->process($invoice);
                     }
-                    catch (UserFriendlyException $silenced)
-                    {
-                        Mail::to($user->email)->queue(new PaymentRequestMail($order->lastInvoice));
-                    }
+                }
+                catch (UserFriendlyException $exception)
+                {
+                    Mail::to($user->email)->queue(new PaymentRequestMail($invoice, $exception->getMessage()));
                 }
                 catch (ModelNotFoundException $silenced)
                 {
                     // Do nothing actually, this request cannot be sent every time this task runs. We need to separate it out into another job.
                     // User did not have a saved card, and hence nothing to do.
-                    //Mail::to($user->email)->queue(new PaymentRequestMail($order->lastInvoice));
                 }
             }
         }

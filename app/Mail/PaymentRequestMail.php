@@ -12,15 +12,18 @@ class PaymentRequestMail extends BaseMail
     use Queueable, SerializesModels;
 
     private $invoice;
+    private $reason;
 
     /**
      * Create a new message instance.
      *
-     * @return void
+     * @param Invoice $invoice
+     * @param String|null $reason
      */
-    public function __construct(Invoice $invoice)
+    public function __construct(Invoice $invoice, String $reason = null)
     {
         $this->invoice = $invoice;
+        $this->reason = $reason;
     }
 
     /**
@@ -34,7 +37,8 @@ class PaymentRequestMail extends BaseMail
         return $this->subject($this->formatTitle('Automatic Payment Failed'))
             ->view('emails.PaymentRequest', [
                 'manualUrl' => $manualUrl,
-                'invoice' => $this->invoice
+                'invoice' => $this->invoice,
+                'reason' => $this->reason
             ]);
     }
 }

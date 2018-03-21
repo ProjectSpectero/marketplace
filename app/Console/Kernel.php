@@ -59,7 +59,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () use ($invoiceReminderJob)
         {
            $invoiceReminderJob->handle();
-        })->daily();
+        });
 
         $orderTerminationsJob = new OrderTerminationsJob();
         $schedule->call(function() use ($orderTerminationsJob)
@@ -72,11 +72,9 @@ class Kernel extends ConsoleKernel
             $periodicCleanupJob->handle();
         })->daily();
 
-        $geoIpUpdateJob = new GeoIPUpdateJob($schedule);
-        $schedule->call(function () use ($geoIpUpdateJob)
-        {
-            $geoIpUpdateJob->handle();
-        })->weekly()
+        $geoIpUpdateJob = new GeoIPUpdateJob();
+        $schedule->exec($geoIpUpdateJob->handle())
+            ->weekly()
             ->sundays();
     }
 }

@@ -12,6 +12,10 @@ class NodeGroup extends BaseModel
     protected $with = [ 'nodes' ];
     protected $hidden = [ 'user_id', 'updated_at' ];
 
+    public $searchAble = [
+        'friendly_name', 'status', 'model', 'price'
+    ];
+
     public function nodes ()
     {
         return $this->hasMany(Node::class, 'group_id');

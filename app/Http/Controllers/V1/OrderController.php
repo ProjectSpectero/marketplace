@@ -71,8 +71,13 @@ class OrderController extends CRUDController
 
     public function self(Request $request, String $action = null)
     {
+        $rules = [
+            'searchId' => 'sometimes|alphanum'
+        ];
+        $this->validate($request, $rules);
+
         $user = $request->user();
-        $query = Order::findForUser($user->id);
+        $query = SearchManager::process($request, 'order', Order::findForUser($user->id));
 
         if ($action != null && $action == 'active')
             $query->where('status', OrderStatus::ACTIVE);

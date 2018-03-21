@@ -37,10 +37,27 @@ class SearchManager
                 throw new UserFriendlyException(Errors::SEARCH_RESOURCE_MISMATCH);
 
             $constraints = [];
+            $groupByApplied = false;
             foreach ($searchEntity->rules as $rule)
             {
-                if ($rule['operator'] == 'LIKE')
-                    $rule['value'] = '%' . $rule['value'] . '%';
+                switch ($rule['operator'])
+                {
+                    case 'LIKE':
+                        $rule['value'] = '%' . $rule['value'] . '%';
+                        break;
+
+                    case 'SORT':
+                        if ($groupByApplied)
+                            continue;
+
+                        if (! in_array($rule['value'], [ 'ASC', 'DESC' ]))
+                            $rule['value'] = 'ASC';
+
+                        $model->orderBy($rule['field'], $rule['value']);
+                        $groupByApplied = true;
+                        continue;
+                        break;
+                }
 
                 $constraints[] = [ $rule['field'], $rule['operator'], $rule['value'] ];
             }

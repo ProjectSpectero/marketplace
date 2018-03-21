@@ -30,7 +30,7 @@ class SearchController extends V1Controller
             'expires' => 'sometimes|numeric|max:' . config('search.maxExpiry', 600),
             'rules' => 'required', // TAKE NOTE OF THIS, you need to validate the field itself (here) and all members (below)
             'rules.*.field' => [ 'required', 'alpha_dash', Rule::in($searchAbleFields) ],
-            'rules.*.operator' => [ 'required', Rule::in(config('search.operators')) ],
+            'rules.*.operator' => [ 'required', Rule::in(config('search.operators', [])) ],
             'rules.*.value' => 'required'
         ];
         $this->validate($request, $rules);

@@ -106,8 +106,14 @@ class InvoiceController extends CRUDController
 
     public function self(Request $request)
     {
+        $rules = [
+            'searchId' => 'sometimes|alphanum'
+        ];
+        $this->validate($request, $rules);
+
         $user = $request->user();
-        return PaginationManager::paginate($request, Invoice::findForUser($user->id));
+        $queryBuilder = SearchManager::process($request, Invoice::findForUser($user->id));
+        return PaginationManager::paginate($request, $queryBuilder);
     }
 
     public function destroy(Request $request, int $id): JsonResponse

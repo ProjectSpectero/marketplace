@@ -16,13 +16,17 @@ class SearchManager
 {
     /**
      * @param Request $request
-     * @param String $caller
+     * @param mixed $caller
      * @return Builder
      * @throws UserFriendlyException
      */
-    public static function process (Request $request, String $caller) : Builder
+    public static function process (Request $request, $caller) : Builder
     {
-        $model = Utility::getModelFromResourceSlug($caller);
+        if (! $caller instanceof Builder)
+            $model = Utility::getModelFromResourceSlug($caller);
+        else
+            $model = $caller;
+
         if ($request->has('searchId'))
         {
             $searchId = $request->get('searchId');

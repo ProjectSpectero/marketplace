@@ -37,9 +37,7 @@ class SearchManager
                 throw new UserFriendlyException(Errors::SEARCH_RESOURCE_MISMATCH);
 
             $constraints = [];
-            $orderField = '';
-            $orderValue = '';
-            $groupByApplied = false;
+            $sortParams = null;
             foreach ($searchEntity->rules as $rule)
             {
                 switch ($rule['operator'])
@@ -49,22 +47,25 @@ class SearchManager
                         break;
 
                     case 'SORT':
-                        if ($groupByApplied)
+                        if ($sortParams != null)
                             continue 2;
 
                         if (! in_array($rule['value'], [ 'ASC', 'DESC' ]))
                             $rule['value'] = 'ASC';
 
-                        $orderField = $rule['field'];
-                        $orderValue = $rule['value'];
-                        $groupByApplied = true;
+                        $sortParams = [
+                            'field' => $rule['field'],
+                            'value' => $sortParams['value']
+                        ];
                         continue 2;
                         break;
                 }
 
                 $constraints[] = [ $rule['field'], $rule['operator'], $rule['value'] ];
             }
-            return $model->where($constraints)->orderBy($orderField, $orderValue);
+
+            $queryBuilder = $model->where($constraints);
+            return $sortParams == null ? $queryBuilder : $queryBuilder->orderBy($sortParams['field'], $sortParams['value']);
         }
 
         return $model->newQuery();

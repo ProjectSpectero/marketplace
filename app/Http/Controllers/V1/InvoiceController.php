@@ -112,7 +112,7 @@ class InvoiceController extends CRUDController
         $this->validate($request, $rules);
 
         $user = $request->user();
-        $queryBuilder = SearchManager::process($request, Invoice::findForUser($user->id));
+        $queryBuilder = SearchManager::process($request, 'invoice', Invoice::findForUser($user->id));
         return PaginationManager::paginate($request, $queryBuilder);
     }
 

@@ -11,6 +11,6 @@ namespace App\Constants;
 
 class PaymentType extends Holder
 {
-    const CREDIT = 'credit';
-    const DEBIT = 'debit';
+    const CREDIT = 'CREDIT';
+    const DEBIT = 'DEBIT';
 }

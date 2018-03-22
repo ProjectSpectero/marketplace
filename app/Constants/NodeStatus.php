@@ -6,7 +6,7 @@ namespace App\Constants;
 
 class NodeStatus extends Holder
 {
-    const UNCONFIRMED = 'unconfirmed';
-    const CONFIRMED = 'confirmed';
-    const PENDING_VERIFICATION = 'pending_verification';
+    const UNCONFIRMED = 'UNCONFIRMED';
+    const CONFIRMED = 'CONFIRMED';
+    const PENDING_VERIFICATION = 'PENDING_VERIFICATION';
 }

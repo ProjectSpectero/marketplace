@@ -109,7 +109,7 @@ class MarketplaceController extends V1Controller
                     break;
 
                 case 'nodes.asn':
-                    if ($operator !== 'IN' && ! is_array($value) && sizeof($value) < 1)
+                    if ($operator !== 'IN' || ! is_array($value) || sizeof($value) < 1 || ! $this->is_int_array($value))
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
                     $query->whereIn($field, $value);
@@ -158,7 +158,7 @@ class MarketplaceController extends V1Controller
                     break;
 
                 case 'nodes.ip_count':
-                    if (! in_array($operator, ['=', '>=', '<=', '>', '<']) || ! is_numeric($value))
+                    if (! in_array($operator, ['=', '>=', '<=', '>', '<']) || ! is_int($value))
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
                     $query->leftJoin('node_ip_addresses', 'node_ip_addresses.node_id', '=', 'nodes.id');
@@ -294,6 +294,16 @@ class MarketplaceController extends V1Controller
         $group->nodes = $nodes;
 
         return $group;
+    }
+
+    private function is_int_array (Array $values): bool
+    {
+        foreach ($values as $value)
+        {
+            if (! is_int($value))
+                return false;
+        }
+        return true;
     }
 }
 

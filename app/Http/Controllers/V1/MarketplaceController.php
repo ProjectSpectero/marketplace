@@ -37,8 +37,8 @@ class MarketplaceController extends V1Controller
                 },
                 {
                     "field": "nodes.price",
-                    "operator": "= | < | > | <= | >=", <-- ONLY supported value(s)
-                    "value": "10.5" <-- NUMERIC (float) only.
+                    "operator": "RANGE", <-- ONLY supported value(s)
+                    "value": { "start": 5, "end": 10 } <-- NUMERIC (float) only.
                 },
                 {
                     "field": "nodes.asn",
@@ -102,10 +102,13 @@ class MarketplaceController extends V1Controller
             switch ($field)
             {
                 case 'nodes.price':
-                    if (! in_array($operator, [ '=', '<', '>', '<=', '>=' ]))
+                    if ($operator !== 'RANGE' || ! is_array($value) ||
+                        ! isset($value['start']) || ! isset($value['end']) ||
+                        ! is_numeric($value['start'] || ! is_numeric($value['end']))
+                    )
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
-                    $query->where($field, $operator, $value);
+                    $query->whereBetween($field, [ $value['start'], $value['end'] ]);
                     break;
 
                 case 'nodes.asn':

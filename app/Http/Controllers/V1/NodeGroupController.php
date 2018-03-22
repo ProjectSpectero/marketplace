@@ -102,8 +102,15 @@ class NodeGroupController extends CRUDController
 
     public function self(Request $request)
     {
+        $rules = [
+            'searchId' => 'sometimes|alphanum'
+        ];
+        $this->validate($request, $rules);
+
         $user = $request->user();
-        return PaginationManager::paginate($request, NodeGroup::findForUser($user->id));
+        $query = SearchManager::process($request, 'node_group', NodeGroup::findForUser($user->id));
+
+        return PaginationManager::paginate($request, $query);
     }
 
     public function destroy(Request $request, int $id): JsonResponse

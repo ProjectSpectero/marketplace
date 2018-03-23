@@ -104,7 +104,7 @@ class MarketplaceController extends V1Controller
                 case 'nodes.price':
                     if ($operator !== 'RANGE' || ! is_array($value) ||
                         ! isset($value['start']) || ! isset($value['end']) ||
-                        ! is_numeric($value['start'] || ! is_numeric($value['end']))
+                        ! is_numeric($value['start']) || ! is_numeric($value['end'])
                     )
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 

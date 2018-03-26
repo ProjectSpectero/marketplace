@@ -88,6 +88,8 @@ class MarketplaceController extends V1Controller
             ->where('nodes.status', NodeStatus::CONFIRMED);
 
         $query = clone $originalQuery;
+        $query->leftJoin('node_groups', 'nodes.group_id', '=', 'node_groups.id')
+            ->whereRaw('(node_groups.market_model != "UNLISTED" OR node_groups.market_model IS NULL)');
 
         $includeGrouped = $request->has('includeGrouped') ? true : false;
 
@@ -131,7 +133,9 @@ class MarketplaceController extends V1Controller
                                 || $value['start'] > $value['end']
                             )
                                 throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
+
                                 $query->whereBetween($field, [ $value['start'], $value['end'] ]);
+                                $query->whereRaw('(node_groups.price between ? and ? OR node_groups.price IS NULL)', [ $value['start'], $value['end'] ]);
                     }
 
                     break;
@@ -166,6 +170,7 @@ class MarketplaceController extends V1Controller
                                 throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
                             $query->where($field, $operator, $value);
+                            $query->whereRaw('(node_groups.market_model = ? OR node_groups.market_model IS NULL)', [ $value ]);
                     }
                     break;
 
@@ -250,6 +255,8 @@ class MarketplaceController extends V1Controller
         $query->select(Node::$publicFields)
             ->noEagerLoads();
 
+        //dd($query->toSql());
+
         $results = PaginationManager::internalPaginate($request, $query);
 
         $data = [];
@@ -315,7 +322,7 @@ class MarketplaceController extends V1Controller
                 throw new UserFriendlyException(Errors::RESOURCE_NOT_FOUND);
         }
 
-        if ($data->market_model == NodeMarketModel::UNLISTED)
+        if ($data->market_model == NodeMarketModel::UNLISTED || $data->status !== NodeStatus::CONFIRMED)
             throw new UserFriendlyException(Errors::UNAUTHORIZED, ResponseType::FORBIDDEN);
 
         return $this->respond($data->toArray());

@@ -24,6 +24,7 @@ use App\Http\Controllers\Controller;
 class MarketplaceController extends V1Controller
 {
     /*
+     * Yes, the team is aware that this is a total shitshow. Rewrite incoming very shortly with ElasticSearch or Algolia (Post-MVP).
      * Formal definition of the marketplace query language:
      * These rules MAY NOT always exist together, no field is mandatory. We'll only apply filters if the specific rule is encountered.
      * Strict validation is needed, as is normal elsewhere on this app. The constraints / ONLY supported value claims need to be followed
@@ -325,7 +326,6 @@ class MarketplaceController extends V1Controller
     {
         if (! $groupExceptionOverride && $node->status != NodeStatus::CONFIRMED)
         {
-            dd($node->toArray());
             throw new UserFriendlyException(Errors::UNAUTHORIZED, ResponseType::FORBIDDEN);
         }
 

@@ -322,7 +322,7 @@ class MarketplaceController extends V1Controller
                 throw new UserFriendlyException(Errors::RESOURCE_NOT_FOUND);
         }
 
-        if ($data->market_model == NodeMarketModel::UNLISTED || $data->status !== NodeStatus::CONFIRMED)
+        if ($data->market_model == NodeMarketModel::UNLISTED)
             throw new UserFriendlyException(Errors::UNAUTHORIZED, ResponseType::FORBIDDEN);
 
         return $this->respond($data->toArray());

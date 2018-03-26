@@ -5,6 +5,7 @@ namespace App\Http\Controllers\V1;
 use App\Constants\Errors;
 use App\Constants\Messages;
 use App\Constants\NodeMarketModel;
+use App\Constants\NodeStatus;
 use App\Constants\OrderStatus;
 use App\Constants\ResponseType;
 use App\Errors\UserFriendlyException;
@@ -155,6 +156,9 @@ class NodeGroupController extends CRUDController
 
         $this->authorizeResource($node, 'node.assign');
         $this->authorizeResource($nodeGroup, 'node_group.assign');
+
+        if ($node->status =! NodeStatus::CONFIRMED)
+            throw new UserFriendlyException(Errors::NODE_PENDING_VERIFICATION, ResponseType::FORBIDDEN);
 
         $rules = [
             'node_id' => 'required',

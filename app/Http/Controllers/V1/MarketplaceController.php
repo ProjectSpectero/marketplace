@@ -93,22 +93,46 @@ class MarketplaceController extends V1Controller
         if (! $includeGrouped)
             $query->where('nodes.group_id', null);
 
+        $sortParams = null;
+
         foreach ($request->get('rules', []) as $rule)
         {
             $value = $rule['value'];
-            $operator = $rule['operator'];
+            $operator = strtoupper($rule['operator']);
             $field = $rule['field'];
+
+            if ($operator == 'SORT')
+                $this->verifySort($sortParams, $value, $field);
+
 
             switch ($field)
             {
                 case 'nodes.price':
-                    if ($operator !== 'RANGE' || ! is_array($value) ||
-                        ! isset($value['start']) || ! isset($value['end']) ||
-                        ! is_numeric($value['start']) || ! is_numeric($value['end'])
-                    )
+                    if ( ! in_array($operator, [ 'SORT', 'RANGE' ]))
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
-                    $query->whereBetween($field, [ $value['start'], $value['end'] ]);
+                    switch ($operator)
+                    {
+                        case 'SORT':
+                            $sortParams = [
+                                'field' => $field,
+                                'value' => $value,
+                                'predicate' => $field
+                            ];
+                            break;
+
+                        default:
+                            if (! is_array($value)
+                                || ! isset($value['start'])
+                                || ! isset($value['end'])
+                                || ! is_numeric($value['start'])
+                                || ! is_numeric($value['end'])
+                                || $value['start'] > $value['end']
+                            )
+                                throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
+                                $query->whereBetween($field, [ $value['start'], $value['end'] ]);
+                    }
+
                     break;
 
                 case 'nodes.asn':
@@ -119,11 +143,29 @@ class MarketplaceController extends V1Controller
                     break;
 
                 case 'nodes.market_model':
-                    if ($operator !== '=' || $value == NodeMarketModel::UNLISTED
-                    || ! in_array($value, NodeMarketModel::getConstants()))
+                    if ( ! in_array($operator, [ 'SORT', '=' ]))
                         throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
-                    $query->where($field, $operator, $value);
+                    switch ($operator)
+                    {
+                        case 'SORT':
+                            $sortParams = [
+                                'field' => $field,
+                                'value' => $value,
+                                'predicate' => $field
+                            ];
+
+                            break;
+
+                        default:
+
+                            if ($value == NodeMarketModel::UNLISTED
+                                || ! in_array($value, NodeMarketModel::getConstants())
+                            )
+                                throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
+
+                            $query->where($field, $operator, $value);
+                    }
                     break;
 
                 case 'nodes.city':
@@ -161,12 +203,25 @@ class MarketplaceController extends V1Controller
                     break;
 
                 case 'nodes.ip_count':
-                    if (! in_array($operator, ['=', '>=', '<=', '>', '<']) || ! is_int($value))
-                        throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
-
                     $query->leftJoin('node_ip_addresses', 'node_ip_addresses.node_id', '=', 'nodes.id');
 
-                    $query->havingRaw('count(node_ip_addresses.id) ' . $operator . ' ' . $value);
+                    switch ($operator)
+                    {
+                        case 'SORT':
+                            $sortParams = [
+                                'field' => $field,
+                                'value' => $value,
+                                'predicate' => 'count(node_ip_addresses.id)'
+                            ];
+
+                            break;
+
+                        default:
+                            if (! in_array($operator, ['=', '>=', '<=', '>', '<']) || ! is_int($value))
+                                throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
+
+                            $query->havingRaw('count(node_ip_addresses.id) ' . $operator . ' ' . $value);
+                    }
                     break;
 
                 default:
@@ -176,6 +231,21 @@ class MarketplaceController extends V1Controller
         }
 
         $query->groupBy([ 'nodes.id' ]);
+
+        if (is_array($sortParams))
+        {
+            switch ($sortParams['field'])
+            {
+                case 'nodes.ip_count':
+                    $query->orderByRaw($sortParams['predicate'] . ' ' . $sortParams['value']);
+                    break;
+
+                default:
+                    $query->orderBy($sortParams['predicate'], $sortParams['value']);
+            }
+        }
+
+
         $query->select(Node::$publicFields)
             ->noEagerLoads();
 
@@ -307,6 +377,12 @@ class MarketplaceController extends V1Controller
                 return false;
         }
         return true;
+    }
+
+    private function verifySort ($sortParameters, String $value, String $field)
+    {
+        if ($sortParameters != null && ! in_array(strtoupper($value), [ 'ASC', 'DESC' ]))
+            throw new UserFriendlyException(Errors::FIELD_INVALID . ':SORT:' . $field);
     }
 }
 

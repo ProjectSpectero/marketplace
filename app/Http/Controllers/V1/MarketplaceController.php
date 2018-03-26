@@ -333,12 +333,9 @@ class MarketplaceController extends V1Controller
         $ipCollection = [];
         foreach (NodeIPAddress::where('node_id', $node->id)->get() as $ip)
         {
-            $ipCollection[] = [
-                'id' => $ip->id,
-                'asn' => $ip->asn,
-                'city' => $ip->city,
-                'cc' => $ip->cc
-            ];
+            // We just hide the physical IP itself, everything else is disclosed.
+            unset($ip->ip);
+            $ipCollection[] = $ip;
         }
 
         $node->ip_addresses = $ipCollection;

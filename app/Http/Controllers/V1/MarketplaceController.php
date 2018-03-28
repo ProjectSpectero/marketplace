@@ -255,8 +255,6 @@ class MarketplaceController extends V1Controller
         $query->select(Node::$publicFields)
             ->noEagerLoads();
 
-        //dd($query->toSql());
-
         $results = PaginationManager::internalPaginate($request, $query);
 
         $data = [];
@@ -305,7 +303,6 @@ class MarketplaceController extends V1Controller
 
     public function resource(Request $request, String $type, int $id): JsonResponse
     {
-        // TODO: Figure out what to hide, and what to show.
         $data = null;
         switch ($type)
         {

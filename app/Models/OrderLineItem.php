@@ -5,7 +5,7 @@ namespace App;
 class OrderLineItem extends BaseModel
 {
     protected $casts = [ 'amount' => 'float', 'resource' => 'integer' ];
-    protected $hidden = [ 'updated_at', 'sync_timestamp' ];
+    protected $hidden = [ 'updated_at' ];
 
     public function order()
     {

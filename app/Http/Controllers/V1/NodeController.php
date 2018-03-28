@@ -54,7 +54,8 @@ class NodeController extends CRUDController
                 break;
             case 'config-pull':
                 $activeEngagements = $node->getEngagements(OrderStatus::ACTIVE)
-                    ->get([ 'order_line_items.id', 'orders.accessor', 'order_line_items.sync_timestamp' ]);
+                    ->select([ 'order_line_items.id', 'orders.accessor', 'order_line_items.sync_timestamp' ])
+                    ->get();
 
                 $data = [];
                 foreach ($activeEngagements as $engagement)

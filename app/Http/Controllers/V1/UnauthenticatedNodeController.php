@@ -47,7 +47,7 @@ class UnauthenticatedNodeController extends V1Controller
         if ($node->user_id != $req->user()->id || ! in_array($action, [ 'config-pull', 'config-full']))
             throw new UserFriendlyException(Errors::UNAUTHORIZED, ResponseType::FORBIDDEN);
 
-        if ($node->install_id != $data['identity'])
+        if ($node->install_id !== $data['install_id'])
             throw new UserFriendlyException(Errors::IDENTITY_MISMATCH, ResponseType::FORBIDDEN);
 
 

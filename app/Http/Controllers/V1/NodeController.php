@@ -72,7 +72,9 @@ class NodeController extends CRUDController
                             'engagement_id' => $engagement->id,
                             'username' => $username,
                             'password' => $password,
-                            'sync_timestamp' => $engagement->sync_timestamp
+                            'sync_timestamp' => $engagement->sync_timestamp,
+                            'cert' => "",
+                            'cert_key' => "" //TODO: actually issue certs as soon as OpenVPN is operational.
                         ];
 
                         $lineItem = OrderLineItem::findOrFail($engagement->id);
@@ -127,7 +129,6 @@ class NodeController extends CRUDController
             'install_id' => 'required|alpha_dash|size:36'
         ];
 
-        // Purposefully not validating unique:nodes,install_id so we can return a 409/conflict instead to signal to the daemon that you're already registered
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
         $ipAddress = $request->input('ip', $request->ip());

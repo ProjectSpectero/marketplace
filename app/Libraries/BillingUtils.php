@@ -7,6 +7,7 @@ namespace App\Libraries;
 use App\Constants\Currency;
 use App\Constants\Errors;
 use App\Constants\InvoiceStatus;
+use App\Constants\InvoiceType;
 use App\Constants\OrderResourceType;
 use App\Constants\OrderStatus;
 use App\Constants\PaymentType;
@@ -119,6 +120,7 @@ class BillingUtils
         $tax = TaxationManager::getTaxAmount($order, $amount);
         $amount += $tax;
 
+        $invoice->type = InvoiceType::STANDARD;
         $invoice->amount = $amount;
         $invoice->tax = $tax;
         $invoice->status = InvoiceStatus::UNPAID;

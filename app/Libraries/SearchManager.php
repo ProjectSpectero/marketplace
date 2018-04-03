@@ -60,7 +60,7 @@ class SearchManager
 
                         $sortParams = [
                             'field' => $rule['field'],
-                            'value' => $sortParams['value']
+                            'value' => $rule['value']
                         ];
                         continue 2;
                         break;

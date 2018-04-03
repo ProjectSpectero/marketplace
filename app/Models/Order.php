@@ -12,7 +12,7 @@ class Order extends BaseModel
         'due_next'
     ];
 
-    public $searchAble = ['due_next', 'status', 'term'];
+    public $searchAble = ['due_next', 'status', 'term', 'created_at', 'id'];
 
     public function lineItems()
     {

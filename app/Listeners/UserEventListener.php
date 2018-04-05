@@ -63,7 +63,12 @@ class UserEventListener extends BaseListener
                     $user->saveOrFail();
                     Mail::to($oldEmail)->queue(new EmailChangeOld($user->email));
 
-                    $verifyToken = Utility::getRandomString();
+                    $token = [
+                        'token' => Utility::getRandomString(),
+                        'email' => $user->email
+                    ];
+
+                    $verifyToken = json_encode($token);
 
                     UserMeta::addOrUpdateMeta($user, UserMetaKeys::VerifyToken, $verifyToken);
 

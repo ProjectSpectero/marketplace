@@ -211,13 +211,17 @@ class UserController extends CRUDController
     public function verify(Request $request, String $email, String $token): JsonResponse
     {
         $failed = false;
+        $parsedData = [];
         try
         {
             /** @var User $user */
             $user = User::where('email', $email)
                 ->firstOrFail();
 
-            $verifyToken = UserMeta::loadMeta($user, UserMetaKeys::VerifyToken, true)->meta_value;
+            $storedToken = UserMeta::loadMeta($user, UserMetaKeys::VerifyToken, true)->meta_value;
+            $parsedData = json_decode($storedToken, true);
+
+            $verifyToken = $parsedData['token'];
         }
         catch (ModelNotFoundException $silenced)
         {
@@ -228,7 +232,7 @@ class UserController extends CRUDController
         {
             if ($user->status == UserStatus::EMAIL_VERIFICATION_NEEDED)
             {
-                if ($verifyToken !== $token)
+                if ($verifyToken !== $token || $parsedData['email'] !== $user->email)
                     return $this->respond(
                         null, [ Errors::USER_VERIFICATION_FAILED ], null, ResponseType::NOT_AUTHORIZED);
 

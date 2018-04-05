@@ -27,6 +27,21 @@ class UserEventListener extends BaseListener
         //
     }
 
+    private function generateVerifyToken (User $user)
+    {
+        $stringToken = Utility::getRandomString();
+        $token = [
+            'token' => $stringToken,
+            'email' => $user->email
+        ];
+
+        $verifyToken = json_encode($token);
+
+        UserMeta::addOrUpdateMeta($user, UserMetaKeys::VerifyToken, $verifyToken);
+
+        return $stringToken;
+    }
+
     /**
      * Handle the event.
      *
@@ -47,9 +62,7 @@ class UserEventListener extends BaseListener
                 $template = $user->status == UserStatus::EMAIL_VERIFICATION_NEEDED ? 'WelcomeWithEmailValidation' : 'Welcome';
                 $class = "\App\Mail\\" . $template;
 
-                $verifyToken = Utility::getRandomString();
-
-                UserMeta::addOrUpdateMeta($user, UserMetaKeys::VerifyToken, $verifyToken);
+                $verifyToken = $this->generateVerifyToken($user);
 
                 Mail::to($user->email)
                     ->queue(new $class($user, $verifyToken));
@@ -63,14 +76,7 @@ class UserEventListener extends BaseListener
                     $user->saveOrFail();
                     Mail::to($oldEmail)->queue(new EmailChangeOld($user->email));
 
-                    $token = [
-                        'token' => Utility::getRandomString(),
-                        'email' => $user->email
-                    ];
-
-                    $verifyToken = json_encode($token);
-
-                    UserMeta::addOrUpdateMeta($user, UserMetaKeys::VerifyToken, $verifyToken);
+                    $verifyToken = $this->generateVerifyToken($user);
 
                     // Keep an audit trail to assist people who had their accounts taken over.
                     \Log::info(sprintf("User id: %d had its email changed from: %s to: %s\n", $user->id, $oldEmail, $user->email));

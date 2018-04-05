@@ -19,7 +19,7 @@ class CreateTableUserMetas extends Migration
             $table->integer('user_id');
             $table->string('meta_key');
             $table->string('value_type');
-            $table->string('meta_value');
+            $table->string('meta_value', 1024);
             $table->unique(['user_id', 'meta_key'], 'uid_metakey_unique_index');
             $table->timestamps();
         });

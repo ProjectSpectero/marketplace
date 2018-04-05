@@ -12,7 +12,7 @@ class NodesTableSeeder extends Seeder
     public function run()
     {
         factory(App\Node::class, 100)->create();
-        factory(App\NodeGroup::class, 25)->create();
+        factory(App\NodeGroup::class, 50)->create();
         factory(App\NodeIPAddress::class, 400)->create();
 
         foreach (\App\Node::all() as $node)
@@ -24,6 +24,12 @@ class NodesTableSeeder extends Seeder
         {
             $node->group_id = null;
             $node->save();
+        }
+
+        foreach (\App\NodeGroup::all()->random(25) as $group)
+        {
+            $group->plan = \App\Constants\SubscriptionPlan::PRO; // TODO: Clean this up in production.
+            $group->save();
         }
 
         foreach (\App\NodeGroup::all() as $group)

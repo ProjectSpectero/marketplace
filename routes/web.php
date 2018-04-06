@@ -31,6 +31,10 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
 
         $api->post('unauth/node', 'UnauthenticatedNodeController@create');
         $api->post('unauth/node/{id}/{action}', 'UnauthenticatedNodeController@handleConfigPush');
+
+        // Plan specific routes, public by default
+        $api->get('plan', 'PlanController@index');
+        $api->get('plan/{name}', 'PlanController@show');
     });
 
     $api->group(['as' => 'AuthRequired', 'middleware' => ['auth:api']], function ($api)

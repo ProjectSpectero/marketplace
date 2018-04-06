@@ -18,6 +18,7 @@ use Illuminate\Validation\Validator;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler extends ExceptionHandler
 {
@@ -107,6 +108,11 @@ class Handler extends ExceptionHandler
             case $e instanceof MethodNotAllowedHttpException:
                 return Utility::generateResponse(null, [ Errors::METHOD_NOT_ALLOWED ], Errors::REQUEST_FAILED, $version, ResponseType::METHOD_NOT_ALLOWED);
                 break;
+
+            case $e instanceof NotFoundHttpException:
+                return Utility::generateResponse(null, [ Errors::ENDPOINT_NOT_FOUND ], Errors::REQUEST_FAILED, $version, ResponseType::NOT_FOUND);
+                break;
+
             case $e instanceof ModelNotFoundException:
                 return Utility::generateResponse(null, [ Errors::RESOURCE_NOT_FOUND ], Errors::REQUEST_FAILED, $version, ResponseType::NOT_FOUND);
                 break;

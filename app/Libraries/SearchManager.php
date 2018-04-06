@@ -70,7 +70,7 @@ class SearchManager
             }
 
             $queryBuilder = $model->where($constraints);
-            return $sortParams == null ? $queryBuilder : $queryBuilder->orderBy($sortParams['field'], $sortParams['value']);
+            return $sortParams == null ? $queryBuilder->orderBy('id', 'ASC') : $queryBuilder->orderBy($sortParams['field'], $sortParams['value']);
         }
 
         return $model->newQuery();

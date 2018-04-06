@@ -43,6 +43,27 @@ class NodesTableSeeder extends Seeder
                 }
             }
         }
+
+        // Let's add the only real node, eh?
+
+        $realNode = new \App\Node();
+        $realNode->ip = '23.172.128.100';
+        $realNode->port = 6024;
+        $realNode->friendly_name = 'Real Test Node 1';
+        $realNode->protocol = 'http';
+        $realNode->access_token = 'spectero:P1a1-5o--e2Ap-6S';
+        $realNode->install_id = '23d0a0c4-dc91-4960-b6fc-2d874fb9f50f';
+        $realNode->status = \App\Constants\NodeStatus::CONFIRMED;
+        $realNode->market_model = \App\Constants\NodeMarketModel::LISTED_SHARED;
+        $realNode->user_id = 6;
+        $realNode->price = 15.99;
+        $realNode->asn = 133535;
+        $realNode->city = 'Seattle';
+        $realNode->cc = 'US';
+        $realNode->loaded_config = "";
+        $realNode->save();
+
+
     }
 
     private function createServices(\App\Node $node)

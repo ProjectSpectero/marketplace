@@ -13,9 +13,11 @@ use App\Constants\NodeSyncStatus;
 use App\Constants\OrderStatus;
 use App\Constants\Protocols;
 use App\Constants\ResponseType;
+use App\Errors\FatalException;
 use App\Errors\UserFriendlyException;
 use App\Events\NodeEvent;
 use App\HistoricResource;
+use App\Libraries\NodeManager;
 use App\Libraries\PaginationManager;
 use App\Node;
 use App\Libraries\SearchManager;
@@ -47,11 +49,14 @@ class NodeController extends CRUDController
         {
             case 'engagements':
                 return PaginationManager::paginate($request, $node->getEngagements()->noEagerLoads());
+
             case 'services':
                 return PaginationManager::paginate($request, Service::where('node_id', $node->id));
+
             case 'ips':
                 $data = $node->ipAddresses()->get()->toArray();
                 break;
+
             case 'config-pull':
                 $activeEngagements = $node->getEngagements(OrderStatus::ACTIVE)
                     ->select([ 'order_line_items.id', 'orders.accessor', 'order_line_items.sync_timestamp' ])
@@ -85,8 +90,25 @@ class NodeController extends CRUDController
                     }
                 }
                 break;
+
             case 'config-full':
                 break;
+
+            case 'auth':
+                if ($node->status !== NodeStatus::CONFIRMED)
+                    throw new UserFriendlyException(Errors::NODE_PENDING_VERIFICATION);
+
+                try
+                {
+                    $manager = new NodeManager($node, true);
+                    $data = $manager->getTokens();
+                }
+                catch (\Exception $error)
+                {
+                    throw new UserFriendlyException(Errors::NODE_UNREACHABLE, ResponseType::SERVICE_UNAVAILABLE);
+                }
+                break;
+
             default:
                 $data = $node->toArray();
         }

@@ -62,6 +62,14 @@ class NodeManager
         }
     }
 
+    public function getTokens()
+    {
+        return [
+            'accessToken'=> $this->jwtAccessToken,
+            'refreshToken' => $this->jwtRefreshToken
+        ];
+    }
+
     public function getAndValidateSystemDescriptor ()
     {
         $rules = [

@@ -42,6 +42,7 @@ class NodeManager
         $this->accessToken = $node->access_token;
         $this->identity = $node->install_id;
 
+        // TODO: This gives out the main IP of the cloud backend, which is a NO-NO (DDoS reasons). We need to abstract this out into discreet workers in prod.
         $this->client = new Client([
             'base_url' => $this->baseUrl,
             'timeout' => env('NODE_REQUEST_TIMEOUT', 5)
@@ -76,7 +77,7 @@ class NodeManager
             'config.BlockedRedirectUri' => 'required|equals:https://blocked.spectero.com/?reason={0}&uri={1}&data={2}',
             'config.AuthCacheMinutes' => 'required|max:10',
             'config.LocalSubnetBanEnabled' => 'required|equals:true',
-            'config.JWTTokenExpiryInMinutes' => 'required|max:100',
+            'config.JWTTokenExpiryInMinutes' => 'required|max:100|min:5',
             'config.RespectEndpointToOutgoingMapping' => 'required|equals:true',
             'config.InMemoryAuth' => 'required|equals:true',
             'config.InMemoryAuthCacheMinutes' => 'required|max:5',

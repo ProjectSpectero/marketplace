@@ -98,15 +98,7 @@ class NodeController extends CRUDController
                 if ($node->status !== NodeStatus::CONFIRMED)
                     throw new UserFriendlyException(Errors::NODE_PENDING_VERIFICATION);
 
-                try
-                {
-                    $manager = new NodeManager($node, true);
-                    $data = $manager->getTokens();
-                }
-                catch (\Exception $error)
-                {
-                    throw new UserFriendlyException(Errors::NODE_UNREACHABLE, ResponseType::SERVICE_UNAVAILABLE);
-                }
+                $data = $this->getFromCacheOrGenerateAuthTokens($node);
                 break;
 
             default:
@@ -288,12 +280,38 @@ class NodeController extends CRUDController
         return $this->respond(null, [], Messages::USER_DESTROYED, ResponseType::NO_CONTENT);
     }
 
-    public function removeNodeServicesAndIPAddresses(Node $node)
+    private function removeNodeServicesAndIPAddresses(Node $node)
     {
         foreach ($node->services as $service)
             $service->delete();
 
         foreach ($node->ipAddresses as $addr)
             $addr->delete();
+    }
+
+    private function getFromCacheOrGenerateAuthTokens (Node $node)
+    {
+        $key = $this->formulateCacheKey($node);
+        if (\Cache::has($key))
+            return \Cache::get($key);
+
+        // OK, it ain't in the cache.
+        try
+        {
+            $manager = new NodeManager($node, true);
+            $data = $manager->getTokens();
+        }
+        catch (\Exception $error)
+        {
+            throw new UserFriendlyException(Errors::NODE_UNREACHABLE, ResponseType::SERVICE_UNAVAILABLE);
+        }
+
+        \Cache::put($key, $data, env('NODE_JWT_CACHE_MINUTES', 10));
+        return $data;
+    }
+
+    private function formulateCacheKey (Node $node)
+    {
+        return 'node.auth.tokens.' . $node->id;
     }
 }

@@ -18,7 +18,7 @@ class Invoice extends BaseModel
         'last_reminder_sent'
     ];
 
-    public $searchAble = [ 'status', 'currency', 'amount', 'due_date', 'order_id' ];
+    public $searchAble = [ 'id', 'status', 'currency', 'amount', 'due_date', 'order_id' ];
 
 
     public function order()

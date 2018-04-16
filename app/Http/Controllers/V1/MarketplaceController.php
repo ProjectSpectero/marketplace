@@ -250,6 +250,8 @@ class MarketplaceController extends V1Controller
                     $query->orderBy($sortParams['predicate'], $sortParams['value']);
             }
         }
+        else
+            $query->orderBy('nodes.id');
 
 
         $query->select(Node::$publicFields)

@@ -309,7 +309,6 @@ class NodeController extends CRUDController
         }
         catch (\Exception $error)
         {
-            dd($error);
             throw new UserFriendlyException(Errors::NODE_UNREACHABLE, ResponseType::SERVICE_UNAVAILABLE);
         }
 

@@ -26,6 +26,8 @@ class NodeManager
 
     private $jwtAccessToken;
     private $jwtRefreshToken;
+    private $authResponse;
+
     private $authenticated;
     private $identity;
 
@@ -65,10 +67,7 @@ class NodeManager
 
     public function getTokens()
     {
-        return [
-            'accessToken'=> $this->jwtAccessToken,
-            'refreshToken' => $this->jwtRefreshToken
-        ];
+        return $this->authResponse;
     }
 
     public function getAndValidateSystemDescriptor ()
@@ -236,9 +235,15 @@ class NodeManager
         $localEndpoint = $this->getUrl('auth');
         $returnedData = $this->request('post', $localEndpoint, $this->processAccessToken());
 
-        // No errors, everything went as expected.
-        $this->authenticated = true;
-        $this->jwtAccessToken = $returnedData['result'];
+        // No errors, everything likely went as expected.
+        $returnedData = $returnedData['result'];
+        $this->authResponse = $returnedData;
+
+        $this->jwtAccessToken = isset($returnedData['access']['token']) ? $returnedData['access']['token'] : null;
+        $this->jwtRefreshToken = isset($returnedData['refresh']['token']) ? $returnedData['refresh']['token'] : null;
+
+        if ($this->jwtAccessToken != null)
+            $this->authenticated = true;
     }
 
     private function processAccessToken ()

@@ -296,13 +296,20 @@ class NodeController extends CRUDController
             return \Cache::get($key);
 
         // OK, it ain't in the cache.
+        $data = [];
         try
         {
             $manager = new NodeManager($node, true);
-            $data = $manager->getTokens();
+            $data['credentials'] = $manager->getTokens();
+            $data['meta'] = [
+                'protocol' => $node->protocol,
+                'ip' => $node->ip,
+                'port' => $node->port
+            ];
         }
         catch (\Exception $error)
         {
+            dd($error);
             throw new UserFriendlyException(Errors::NODE_UNREACHABLE, ResponseType::SERVICE_UNAVAILABLE);
         }
 

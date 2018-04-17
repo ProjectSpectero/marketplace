@@ -74,12 +74,13 @@ class NodeManager
     {
         $rules = [
             'config.BlockedRedirectUri' => 'required|equals:https://blocked.spectero.com/?reason={0}&uri={1}&data={2}',
-            'config.AuthCacheMinutes' => 'required|max:10',
+            'config.AuthCacheMinutes' => 'required|integer|max:10',
             'config.LocalSubnetBanEnabled' => 'required|equals:true',
-            'config.JWTTokenExpiryInMinutes' => 'required|max:100|min:5',
+            'config.JWTTokenExpiryInMinutes' => 'required|integer|max:100|min:5',
+            'config.JWTRefreshTokenDelta' => 'required|integer|min:30|max:100',
             'config.RespectEndpointToOutgoingMapping' => 'required|equals:true',
             'config.InMemoryAuth' => 'required|equals:true',
-            'config.InMemoryAuthCacheMinutes' => 'required|max:5',
+            'config.InMemoryAuthCacheMinutes' => 'required|integer|max:5',
             'config.AutoStartServices' => 'required|equals:true',
             'identity' => 'required|alpha_dash'
         ];
@@ -91,7 +92,7 @@ class NodeManager
         $validator = Validator::make($result, $rules);
 
         if ($validator->fails())
-            throw new FatalException(implode(PHP_EOL, $validator->errors()->toArray()));
+            throw new FatalException($validator->errors()->toJson());
 
         if($this->identity != $result['identity'])
             throw new FatalException('Identity mismatch: expected ' . $this->identity . ', but got ' . $result['identity']);

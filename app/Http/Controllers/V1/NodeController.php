@@ -304,7 +304,8 @@ class NodeController extends CRUDController
             $data['meta'] = [
                 'protocol' => $node->protocol,
                 'ip' => $node->ip,
-                'port' => $node->port
+                'port' => $node->port,
+                'apiVersion' => 'v1' // TODO: Resolve this from the daemon version
             ];
         }
         catch (\Exception $error)

@@ -24,7 +24,7 @@ class Node extends BaseModel
     ];
 
     public $searchAble = [
-        'ip', 'install_id', 'friendly_name', 'cc', 'asn', 'market_model', 'status', 'id'
+        'ip', 'install_id', 'friendly_name', 'cc', 'asn', 'market_model', 'status', 'id', 'group_id'
     ];
 
     public static $publicFields = [

@@ -53,6 +53,19 @@ class NodeController extends CRUDController
             case 'services':
                 return PaginationManager::paginate($request, Service::where('node_id', $node->id));
 
+            case 'resources':
+                $nodeResources = [];
+                foreach ($node->services as $service)
+                {
+                    $nodeResources[] = [
+                        'type' => $service->type,
+                        'resource' => $service->connection_resource
+                    ];
+                }
+
+                $data = $nodeResources;
+                break;
+
             case 'ips':
                 $data = $node->ipAddresses()->get()->toArray();
                 break;

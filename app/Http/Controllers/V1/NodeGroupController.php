@@ -142,6 +142,22 @@ class NodeGroupController extends CRUDController
         {
             case 'engagements':
                 return PaginationManager::paginate($request, $nodeGroup->getEngagements()->noEagerLoads());
+            case 'resources':
+                $nodeResources = [
+                    'id' => $nodeGroup->id,
+                    'reference' => []
+                ];
+                foreach ($nodeGroup->nodes as $node)
+                {
+                    foreach ($node->services as $service)
+                    {
+                        $nodeResources['reference'][] = [
+                            'type' => $service->type,
+                            'resource' => $service->connection_resource
+                        ];
+                    }
+                }
+                return $this->respond($nodeResources);
             default:
                 return $this->respond($nodeGroup->toArray());
         }

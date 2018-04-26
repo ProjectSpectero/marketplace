@@ -63,7 +63,7 @@ class NodesTableSeeder extends Seeder
         $realNode->loaded_config = "";
         $realNode->save();
 
-
+        $this->createServices($realNode);
     }
 
     private function createServices(\App\Node $node)
@@ -83,16 +83,23 @@ class NodesTableSeeder extends Seeder
             $service->node_id = $node->id;
             $service->type = $type;
             $service->config = json_encode([
-                'Key' => null,
-                'DatabaseFile' => 'DatabasePath/db.sqlite',
+                'DatabaseFile' => 'Database/db.sqlite',
                 "PasswordCostTimeThreshold" => 100.0,
                 "SpaCacheTime" => 1,
             ]);
+
+            $randStr = \App\Libraries\Utility::getRandomString(10);
+            for ($i = 0; $i <= 5; $i++)
+                $randStr .= PHP_EOL . $randStr;
+
+            $ipSeed = mt_rand(1, 63);
+            $ip = $ipSeed . '.' . $ipSeed * 2 . '.' . $ipSeed * 3 . '.' . $ipSeed * 4 . ':' . mt_rand(10240, 65534);
+
             $service->connection_resource = json_encode([
                 'accessReference' => [
-                    $node->ip
+                    $ip
                 ],
-                'accessConfig' => \App\Libraries\Utility::getRandomString(),
+                'accessConfig' => $randStr,
                 'accessCredentials' => array_random(['SPECTERO_USERNAME_PASSWORD', $node->access_token])
             ]);
 

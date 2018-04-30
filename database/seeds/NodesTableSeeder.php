@@ -80,19 +80,20 @@ class NodesTableSeeder extends Seeder
                                            ]);
 
             $randStr = null;
+            $ref = null;
             if ($type != \App\Constants\ServiceType::HTTPProxy)
             {
+                $ref = $this->generateAccessReferences(2);
                 $randStr = \App\Libraries\Utility::getRandomString(10);
                 for ($i = 0; $i <= 5; $i++)
                     $randStr .= PHP_EOL . $randStr;
             }
-
-            $ipSeed = mt_rand(1, 63);
-            $ip = $ipSeed . '.' . $ipSeed * 2 . '.' . $ipSeed * 3 . '.' . $ipSeed * 4 . ':' . mt_rand(10240, 65534);
+            else
+                $ref = $this->generateAccessReferences(mt_rand(5, 10));
 
             $service->connection_resource = json_encode([
                                                             'accessReference' => [
-                                                                $ip
+                                                                $ref
                                                             ],
                                                             'accessConfig' => $randStr,
                                                             'accessCredentials' => array_random(['SPECTERO_USERNAME_PASSWORD', $node->access_token])
@@ -100,5 +101,22 @@ class NodesTableSeeder extends Seeder
 
             $service->saveOrFail();
         }
+    }
+
+    private function generateAccessReferences(int $bound = 5) : array
+    {
+        $out = [];
+
+        while ($bound)
+        {
+            $ipSeed = mt_rand(1, 63);
+            $ip = $ipSeed . '.' . $ipSeed * 2 . '.' . $ipSeed * 3 . '.' . $ipSeed * 4 . ':' . mt_rand(10240, 65534);
+
+            $out[] = $ip;
+
+            $bound--;
+        }
+
+        return $out;
     }
 }

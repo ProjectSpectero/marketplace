@@ -26,11 +26,17 @@ class BillingSeeder extends Seeder
 
                 $totalAmount += $amount * $qtyEach;
 
+                $determinedType = array_rand(\App\Constants\OrderResourceType::getConstants());
+                if ($determinedType == \App\Constants\OrderResourceType::NODE_GROUP)
+                    $resourceId = mt_rand(1, 50);
+                else
+                    $resourceId = mt_rand(1, 100);
+
                 $lineItem = new \App\OrderLineItem();
                 $lineItem->description = "Example line item $i";
                 $lineItem->order_id = $order->id;
-                $lineItem->type = array_rand(\App\Constants\OrderResourceType::getConstants());
-                $lineItem->resource = mt_rand(1, 100);
+                $lineItem->type = $determinedType;
+                $lineItem->resource = $resourceId;
                 $lineItem->quantity = $qtyEach;
                 $lineItem->amount = $amount;
                 $lineItem->status = array_rand([ \App\Constants\OrderStatus::ACTIVE, \App\Constants\OrderStatus::PENDING ]);

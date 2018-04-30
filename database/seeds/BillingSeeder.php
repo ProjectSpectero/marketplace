@@ -19,7 +19,7 @@ class BillingSeeder extends Seeder
 
             $totalAmount = 0;
 
-            for ($i = $items; $i <= $items; $i++)
+            while($items)
             {
                 $amount = mt_rand(1, 100);
                 $qtyEach = mt_rand(1, 5);
@@ -33,7 +33,7 @@ class BillingSeeder extends Seeder
                     $resourceId = mt_rand(1, 100);
 
                 $lineItem = new \App\OrderLineItem();
-                $lineItem->description = "Example line item $i";
+                $lineItem->description = "Example line item";
                 $lineItem->order_id = $order->id;
                 $lineItem->type = $determinedType;
                 $lineItem->resource = $resourceId;
@@ -43,6 +43,8 @@ class BillingSeeder extends Seeder
                 $lineItem->sync_status = array_rand(\App\Constants\NodeSyncStatus::getConstants());
                 $lineItem->sync_timestamp = $timestamp;
                 $lineItem->saveOrFail();
+
+                $items--;
             }
 
             $invoice = new \App\Invoice();

@@ -275,9 +275,11 @@ class OrderController extends CRUDController
                         if ($term >= 365 && isset($plan['yearly_discount_pct'])
                             && is_numeric($plan['yearly_discount_pct']) && $plan['yearly_discount_pct'] < 1.0)
                         {
-                            $priceHolder = $price * $plan['yearly_discount_pct'];
+                            $price -= $price * $plan['yearly_discount_pct'];
+                            $price = floor($price); // This removes odd fractions, though it does result in a slightly higher PCT discount as well.
 
-                            $price = floor($priceHolder); // This removes odd fractions, though it does result in a slightly higher PCT discount as well.
+                            if ($price < 0)
+                                $price = 0;
                         }
                     }
                     // If not, we do nothing. Just silently charge the shit at full price.

@@ -68,43 +68,37 @@ class NodesTableSeeder extends Seeder
 
     private function createServices(\App\Node $node)
     {
-        for ($i = 0; $i < 4; $i++)
+        foreach (\App\Constants\ServiceType::getConstants() as $type)
         {
-            if ($i == 0)
-                $type = \App\Constants\ServiceType::HTTPProxy;
-            elseif ($i == 1)
-                $type = \App\Constants\ServiceType::OpenVPN;
-            elseif ($i == 2)
-                $type = \App\Constants\ServiceType::ShadowSOCKS;
-            else
-                $type = \App\Constants\ServiceType::SSHTunnel;
-
             $service = new \App\Service();
             $service->node_id = $node->id;
             $service->type = $type;
             $service->config = json_encode([
-                'DatabaseFile' => 'Database/db.sqlite',
-                "PasswordCostTimeThreshold" => 100.0,
-                "SpaCacheTime" => 1,
-            ]);
+                                               'DatabaseFile' => 'Database/db.sqlite',
+                                               "PasswordCostTimeThreshold" => 100.0,
+                                               "SpaCacheTime" => 1,
+                                           ]);
 
-            $randStr = \App\Libraries\Utility::getRandomString(10);
-            for ($i = 0; $i <= 5; $i++)
-                $randStr .= PHP_EOL . $randStr;
+            $randStr = null;
+            if ($type != \App\Constants\ServiceType::HTTPProxy)
+            {
+                $randStr = \App\Libraries\Utility::getRandomString(10);
+                for ($i = 0; $i <= 5; $i++)
+                    $randStr .= PHP_EOL . $randStr;
+            }
 
             $ipSeed = mt_rand(1, 63);
             $ip = $ipSeed . '.' . $ipSeed * 2 . '.' . $ipSeed * 3 . '.' . $ipSeed * 4 . ':' . mt_rand(10240, 65534);
 
             $service->connection_resource = json_encode([
-                'accessReference' => [
-                    $ip
-                ],
-                'accessConfig' => $randStr,
-                'accessCredentials' => array_random(['SPECTERO_USERNAME_PASSWORD', $node->access_token])
-            ]);
+                                                            'accessReference' => [
+                                                                $ip
+                                                            ],
+                                                            'accessConfig' => $randStr,
+                                                            'accessCredentials' => array_random(['SPECTERO_USERNAME_PASSWORD', $node->access_token])
+                                                        ]);
 
             $service->saveOrFail();
         }
-
     }
 }

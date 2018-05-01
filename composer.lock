@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b2ff5f2afe383bec035cdf6df52c7702",
+    "content-hash": "d336a93bbff02d6a7b2cf7d718440519",
     "packages": [
         {
             "name": "cartalyst/collections",

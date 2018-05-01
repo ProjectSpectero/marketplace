@@ -17,6 +17,7 @@ use App\Errors\FatalException;
 use App\Errors\UserFriendlyException;
 use App\Events\NodeEvent;
 use App\HistoricResource;
+use App\Libraries\CommandProxyManager;
 use App\Libraries\NodeManager;
 use App\Libraries\PaginationManager;
 use App\Node;
@@ -29,6 +30,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Lcobucci\JWT\Builder;
+use Lcobucci\JWT\Signer\Hmac\Sha512;
 
 class NodeController extends CRUDController
 {
@@ -111,7 +114,7 @@ class NodeController extends CRUDController
                 if ($node->status !== NodeStatus::CONFIRMED)
                     throw new UserFriendlyException(Errors::NODE_PENDING_VERIFICATION);
 
-                $data = $this->getFromCacheOrGenerateAuthTokens($node);
+                $data = $this->getFromCacheOrGenerateAuthTokens($node, $request->has('direct'));
                 break;
 
             default:
@@ -302,9 +305,9 @@ class NodeController extends CRUDController
             $addr->delete();
     }
 
-    private function getFromCacheOrGenerateAuthTokens (Node $node)
+    private function getFromCacheOrGenerateAuthTokens (Node $node, bool $direct = false)
     {
-        $key = $this->formulateCacheKey($node);
+        $key = $this->formulateCacheKey($node, $direct);
         if (\Cache::has($key))
             return \Cache::get($key);
 
@@ -313,25 +316,71 @@ class NodeController extends CRUDController
         try
         {
             $manager = new NodeManager($node, true);
-            $data['credentials'] = $manager->getTokens();
+            $tokenCollection = $manager->getTokens(); // TODO: This call itself should also be through the command proxy
+
+            $accessExpires = $tokenCollection['access']['expires'];
+            $minutesTillAccessExpires = Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($accessExpires));
+
+            $refreshExpires = $tokenCollection['refresh']['expires'];
+
+            if ($direct)
+            {
+                $protocol = $node->protocol;
+                $ip = $node->ip;
+                $port = $node->port;
+                $data['credentials'] = $tokenCollection;
+            }
+            else
+            {
+                $protocol = 'https';
+                $ip = CommandProxyManager::resolve($node);
+                $port = 443;
+
+                $proxyAuthorization = $tokenCollection;
+
+                // Need to build the right JWT payload to interact with the daemon-proxy now.
+                $signer = new Sha512();
+                $token = (new Builder())
+                    ->setIssuer(env('APP_URL', "https://cloud.spectero.com"))
+                    ->setId(uniqid("", true))
+                    ->setIssuedAt(time())
+                    ->setNotBefore(time())
+                    ->setExpiration($accessExpires)
+                    ->set('proxy.payload', [
+                        'id' => $node->id,
+                        'protocol' => $node->protocol,
+                        'ip' => $node->ip,
+                        'port' => $node->port,
+                        'credentials' => $tokenCollection
+                    ]) // TODO: Populate this
+                    ->sign($signer, env('NODE_CPROXY_JWT_SIGNING_KEY'))
+                    ->getToken();
+
+                $proxyAuthorization['access']['token'] = (string) $token;
+                $data['credentials'] = $proxyAuthorization;
+            }
+
             $data['meta'] = [
-                'protocol' => $node->protocol,
-                'ip' => $node->ip,
-                'port' => $node->port,
+                'protocol' => $protocol,
+                'ip' => $ip,
+                'port' => $port,
                 'apiVersion' => 'v1' // TODO: Resolve this from the daemon version
             ];
         }
         catch (\Exception $error)
         {
+            dd($error);
             throw new UserFriendlyException(Errors::NODE_UNREACHABLE, ResponseType::SERVICE_UNAVAILABLE);
         }
 
-        \Cache::put($key, $data, env('NODE_JWT_CACHE_MINUTES', 10));
+        if ($minutesTillAccessExpires > 0)
+            \Cache::put($key, $data, $minutesTillAccessExpires);
+
         return $data;
     }
 
-    private function formulateCacheKey (Node $node)
+    private function formulateCacheKey (Node $node, bool $direct)
     {
-        return 'node.auth.tokens.' . $node->id;
+        return 'node.auth.tokens.' . $direct . '.' . $node->id;
     }
 }

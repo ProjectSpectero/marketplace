@@ -60,7 +60,8 @@ class NodesTableSeeder extends Seeder
         $realNode->asn = 133535;
         $realNode->city = 'Seattle';
         $realNode->cc = 'US';
-        $realNode->loaded_config = "";
+        $realNode->app_settings = "{]";
+        $realNode->system_config = "{}";
         $realNode->save();
 
         $this->createServices($realNode);

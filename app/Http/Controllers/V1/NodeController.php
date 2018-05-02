@@ -156,7 +156,9 @@ class NodeController extends CRUDController
             'ip' => 'sometimes|ip',
             'port' => 'required|integer|min:1024|max:65534',
             'access_token' => 'required|min:5|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
-            'install_id' => 'required|alpha_dash|size:36'
+            'install_id' => 'required|alpha_dash|size:36',
+            'version' => 'required|max:32',
+            'system_data' => 'required'
         ];
 
         $this->validate($request, $rules);
@@ -192,6 +194,8 @@ class NodeController extends CRUDController
             $node = Node::create($input);
             $node->user_id = $request->user()->id;
             $node->market_model = NodeMarketModel::UNLISTED;
+            $node->version = $input['version'];
+            $node->system_data = json_encode($input['system_data']);
             $node->saveOrFail();
         }
 

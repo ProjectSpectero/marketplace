@@ -73,15 +73,17 @@ class NodeManager
     public function getAndValidateSystemDescriptor ()
     {
         $rules = [
-            'config.BlockedRedirectUri' => 'required|equals:https://blocked.spectero.com/?reason={0}&uri={1}&data={2}',
-            'config.AuthCacheMinutes' => 'required|integer|max:10',
-            'config.LocalSubnetBanEnabled' => 'required|equals:true',
-            'config.JWTTokenExpiryInMinutes' => 'required|integer|max:100|min:5',
-            'config.JWTRefreshTokenDelta' => 'required|integer|min:30|max:100',
-            'config.RespectEndpointToOutgoingMapping' => 'required|equals:true',
-            'config.InMemoryAuth' => 'required|equals:true',
-            'config.InMemoryAuthCacheMinutes' => 'required|integer|max:5',
-            'config.AutoStartServices' => 'required|equals:true',
+            'systemConfig' => 'required|array',
+            'appSettings' => 'required|array',
+            'appSettings.BlockedRedirectUri' => 'required|equals:https://blocked.spectero.com/?reason={0}&uri={1}&data={2}',
+            'appSettings.AuthCacheMinutes' => 'required|integer|max:10',
+            'appSettings.LocalSubnetBanEnabled' => 'required|equals:true',
+            'appSettings.JWTTokenExpiryInMinutes' => 'required|integer|max:100|min:5',
+            'appSettings.JWTRefreshTokenDelta' => 'required|integer|min:30|max:100',
+            'appSettings.RespectEndpointToOutgoingMapping' => 'required|equals:true',
+            'appSettings.InMemoryAuth' => 'required|equals:true',
+            'appSettings.InMemoryAuthCacheMinutes' => 'required|integer|max:5',
+            'appSettings.AutoStartServices' => 'required|equals:true',
             'identity' => 'required|alpha_dash'
         ];
 
@@ -112,9 +114,11 @@ class NodeManager
                 $this->validateAccessLevel();
             }
 
-            $systemConfig = $this->getAndValidateSystemDescriptor();
+            $convergedDescriptor = $this->getAndValidateSystemDescriptor();
 
-            $ret['systemConfig'] = $systemConfig;
+            $ret['appSettings'] = $convergedDescriptor['appSettings'];
+            $ret['systemConfig'] = $convergedDescriptor['systemConfig'];
+
             $ret['ipAddresses'] = $this->discoverIPAddresses();
 
             $services = $this->discoverServices()['result'];
@@ -124,7 +128,8 @@ class NodeManager
 
                 $config = $loadServiceConfigs ? $this->getServiceConfig($service) : null;
 
-                $connectionResource = $this->getServiceConnectionResources($service);
+                // TODO: Make this capable of getting resources from all services
+                $connectionResource = $service == 'HTTPProxy' ? $this->getServiceConnectionResources($service) : null;
 
                 $ret['services'][$service] = [
                     'config' => $config,

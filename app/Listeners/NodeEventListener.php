@@ -58,6 +58,11 @@ class NodeEventListener extends BaseListener
 
         switch ($event->type)
         {
+            case Events::NODE_REVERIFY:
+                // Idea is simple, we condition the node for re-verification and then run it through the newly created screen again.
+                // Note the missing break!
+                $node->ipAddresses()->delete();
+                $node->services()->delete();
             case Events::NODE_CREATED:
                 // Let's first check if the node is actually in NEED of verification. We don't do anything if it's confirmed.
                 if ($node->status == NodeStatus::CONFIRMED)
@@ -229,7 +234,9 @@ class NodeEventListener extends BaseListener
                     }
 
                     // If everything went well, node is now confirmed.
-                    $node->loaded_config = json_encode($data['systemConfig']);
+                    $node->app_settings = json_encode($data['appSettings']);
+                    $node->system_config = json_encode($data['systemConfig']);
+
                     $node->cc = $geoData['cc'];
                     $node->asn = $geoData['asn'];
                     $node->city = $geoData['city'];
@@ -242,8 +249,6 @@ class NodeEventListener extends BaseListener
                 
                 break;
             case Events::NODE_UPDATED:
-                break;
-            case Events::NODE_REVERIFY:
                 break;
             case Events::NODE_DELETED:
                 break;

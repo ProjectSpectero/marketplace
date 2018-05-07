@@ -152,23 +152,24 @@ class PromoCodeController extends CRUDController
         $currentGroup = $code->group;
         $currentGroupActivations = 0;
 
+        /** @var PromoUsage $promoUsage */
         foreach ($user->promoUsages as $promoUsage)
         {
             // Idea is to see if the user has activated a code belonging to $code's group earlier.
             // This loop is probably fine, we don't think a user will have manay codes applied. One or two in the lifetime of the account is probably a good guess.
             // We also validate that this SAME code has not previously been activated by them.
 
-            /** @var PromoUsage $usedCode */
+            /** @var PromoCode $usedCode */
             $usedCode = $promoUsage->code;
 
             if ($usedCode->id == $code->id)
                 throw new UserFriendlyException(Errors::PROMO_CODE_ALREADY_USED);
 
-            if ($usedCode->code->group->id == $currentGroup->id)
+            if ($usedCode->group->id == $currentGroup->id)
                 $currentGroupActivations++;
         }
 
-        if ($currentGroupActivations > $currentGroup->usage_limit)
+        if ($currentGroupActivations >= $currentGroup->usage_limit)
             throw new UserFriendlyException(Errors::PROMO_GROUP_LIMIT_REACHED);
 
 

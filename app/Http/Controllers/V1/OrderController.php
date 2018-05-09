@@ -159,17 +159,9 @@ class OrderController extends CRUDController
         $order = Order::findOrFail($id);
         $this->authorizeResource($order);
 
-        if ($request->user()->isNotAn(UserRoles::ADMIN))
-        {
-            $order->status = OrderStatus::CANCELLED;
-            $order->saveOrFail();
-            event(new BillingEvent(Events::ORDER_REVERIFY, $order));
-        }
-        else
-        {
-            $order->lineItems()->delete();
-            $order->delete();
-        }
+        $order->status = OrderStatus::CANCELLED;
+        $order->saveOrFail();
+        event(new BillingEvent(Events::ORDER_REVERIFY, $order));
 
         return $this->respond(null, [], Messages::ORDER_DELETED, ResponseType::NO_CONTENT);
     }

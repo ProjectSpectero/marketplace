@@ -16,7 +16,7 @@ class Node extends BaseModel
     ];
 
     protected $hidden = [
-        'install_id', 'access_token', 'updated_at', 'loaded_config'
+        'install_id', 'access_token', 'updated_at', 'deleted_at'
     ];
 
     protected $with = [

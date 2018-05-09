@@ -9,12 +9,22 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Validator;
 
 
 class PaginationManager
 {
     public static function paginate(Request $request, Builder $builder) : JsonResponse
     {
+        /** @var \Illuminate\Validation\Validator $v */
+        $v = Validator::make($request->all(), [
+                                'page' => 'sometimes|integer',
+                                'perPage' => 'sometimes|integer'
+                           ]);
+
+        if ($v->fails())
+            throw new UserFriendlyException(Errors::REQUESTED_PAGE_DOES_NOT_EXIST);
+
         $requestedPage = $request->get('page', 1);
 
         /** @var LengthAwarePaginator $paginatedResource */

@@ -177,8 +177,8 @@ class NodeGroupController extends CRUDController
             throw new UserFriendlyException(Errors::NODE_PENDING_VERIFICATION, ResponseType::FORBIDDEN);
 
         $rules = [
-            'node_id' => 'required',
-            'group_id' => 'required'
+            'node_id' => 'required|integer',
+            'group_id' => 'required|integer'
         ];
 
         $this->validate($request, $rules);

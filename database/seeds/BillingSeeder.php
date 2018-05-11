@@ -26,7 +26,7 @@ class BillingSeeder extends Seeder
 
                 $totalAmount += $amount * $qtyEach;
 
-                $determinedType = array_rand(\App\Constants\OrderResourceType::getConstants());
+                $determinedType = array_random(\App\Constants\OrderResourceType::getConstants());
                 if ($determinedType == \App\Constants\OrderResourceType::NODE_GROUP)
                     $resourceId = mt_rand(1, 50);
                 else
@@ -39,8 +39,8 @@ class BillingSeeder extends Seeder
                 $lineItem->resource = $resourceId;
                 $lineItem->quantity = $qtyEach;
                 $lineItem->amount = $amount;
-                $lineItem->status = array_rand([ \App\Constants\OrderStatus::ACTIVE, \App\Constants\OrderStatus::PENDING ]);
-                $lineItem->sync_status = array_rand(\App\Constants\NodeSyncStatus::getConstants());
+                $lineItem->status = array_random([ \App\Constants\OrderStatus::ACTIVE, \App\Constants\OrderStatus::PENDING ]);
+                $lineItem->sync_status = array_random(\App\Constants\NodeSyncStatus::getConstants());
                 $lineItem->sync_timestamp = $timestamp;
                 $lineItem->saveOrFail();
 

@@ -368,4 +368,25 @@ class OrderController extends CRUDController
         return $connectionResources;
     }
 
+    public function regenerateAccessor (Request $request, int $id)
+    {
+        /** @var Order $order */
+        $order = Order::findOrFail($id);
+        $this->authorizeResource($order, 'order.update');
+
+        // Alright, this is the owner. Let's lookup its line items and reset their sync statuses one by one.
+        /** @var OrderLineItem $lineItem */
+        foreach ($order->lineItems as $lineItem)
+        {
+            $lineItem->sync_status = NodeSyncStatus::PENDING_SYNC;
+            $lineItem->saveOrFail();
+        }
+
+        // Great, let's tag the order with the new accessor as well.
+        $order->accessor = Utility::getRandomString(1) . ':' . Utility::getRandomString(1);
+        $order->saveOrFail();
+
+        return $this->respond($order->toArray());
+    }
+
 }

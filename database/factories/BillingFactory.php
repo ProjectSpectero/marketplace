@@ -21,7 +21,8 @@ $factory->define(App\Order::class, function (Faker\Generator $faker) {
         'subscription_reference' => \App\Libraries\Utility::getRandomString(),
         'subscription_provider' => array_random(\App\Constants\PaymentProcessor::getConstants()),
         'accessor' => Utility::getRandomString() . ':' . Utility::getRandomString(),
-        'due_next' => $faker->dateTimeBetween('-7 days', '+7 days')
+        'due_next' => $faker->dateTimeBetween('-7 days', '+7 days'),
+        'term' => 30
     ];
 });
 

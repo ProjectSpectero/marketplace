@@ -15,9 +15,16 @@ class NodesTableSeeder extends Seeder
         factory(App\NodeGroup::class, 50)->create();
         factory(App\NodeIPAddress::class, 400)->create();
 
+        $system_data = [
+            '{"CPU":{"Model":"Intel(R) Core(TM) i7-3770K CPU @ 3.50GHz","Cores":4,"Threads":8,"Cache Size":1024},"Memory":{"Physical":{"Used":16171319296,"Free":9536708608,"Total":25708027904},"Virtual":{"Used":27597258752,"Free":6432268288,"Total":34029527040}},"Environment":{"Hostname":"BLEU","OS Version":{"platform":2,"servicePack":"","version":{"major":6,"minor":2,"build":9200,"revision":0,"majorRevision":0,"minorRevision":0},"versionString":"Microsoft Windows NT 6.2.9200.0"},"64-Bits":true}}',
+            '{"CPU":{"Model":" Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":8,"Cache Size":" 8192 KB"},"Memory":{"Physical":{"Used":771387392,"Free":1376096256,"Total":2147483648}},"Environment":{"Hostname":"dev","OS Version":{"platform":4,"servicePack":"","version":{"major":2,"minor":6,"build":32,"revision":42,"majorRevision":0,"minorRevision":42},"versionString":"Unix 2.6.32.42"},"64-Bits":true}}'
+        ];
+
         foreach (\App\Node::all() as $node)
         {
             $this->createServices($node);
+            $node->system_data = array_random($system_data);
+            $node->saveOrFail();
         }
 
         foreach (\App\Node::all()->random(40) as $node)

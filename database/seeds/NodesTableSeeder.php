@@ -51,8 +51,14 @@ class NodesTableSeeder extends Seeder
             }
         }
 
-        // Let's add the only real node, eh?
+        // Let's add the only real nodes
+        $this->seedRealNodes();
 
+
+    }
+
+    private function seedRealNodes ()
+    {
         $realNode = new \App\Node();
         $realNode->ip = '23.172.128.100';
         $realNode->port = 6024;
@@ -67,11 +73,66 @@ class NodesTableSeeder extends Seeder
         $realNode->asn = 133535;
         $realNode->city = 'Seattle';
         $realNode->cc = 'US';
-        $realNode->app_settings = "{]";
+        $realNode->system_data = '{"CPU":{"Model":"Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":40,"Cache Size":"8192 KB"},"Memory":{"Physical":{"Used":222289920,"Free":851451904,"Total":1073741824}},"Environment":{"Hostname":"daemon-test-0","OS Version":{"Platform":4,"ServicePack":"","Version":{"Major":2,"Minor":6,"Build":32,"Revision":42,"MajorRevision":0,"MinorRevision":42},"VersionString":"Unix 2.6.32.42"},"64-Bits":true}}';
+        $realNode->app_settings = "{}";
         $realNode->system_config = "{}";
         $realNode->save();
 
         $this->createServices($realNode);
+
+        $testNodeZero = new \App\Node();
+        $testNodeZero->id = 102;
+        $testNodeZero->ip = '23.172.128.21';
+        $testNodeZero->port = 6024;
+        $testNodeZero->protocol = 'http';
+        $testNodeZero->friendly_name = "Real Test Node 2 (test-daemon-0)";
+        $testNodeZero->access_token = 'cloud:yHZz7E_oE0_A_911-j2kK-_V';
+        $testNodeZero->install_id = 'f1f5883a-d4bd-452c-b37e-f3c386685c4c';
+        $testNodeZero->status = \App\Constants\NodeStatus::CONFIRMED;
+        $testNodeZero->market_model = \App\Constants\NodeMarketModel::UNLISTED;
+        $testNodeZero->user_id = 8;
+        $testNodeZero->price = 13.20;
+        $testNodeZero->asn = 46686;
+        $testNodeZero->city = 'Seattle';
+        $testNodeZero->cc = 'US';
+        $testNodeZero->system_data = '{"CPU":{"Model":"Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":40,"Cache Size":"8192 KB"},"Memory":{"Physical":{"Used":222289920,"Free":851451904,"Total":1073741824}},"Environment":{"Hostname":"daemon-test-0","OS Version":{"Platform":4,"ServicePack":"","Version":{"Major":2,"Minor":6,"Build":32,"Revision":42,"MajorRevision":0,"MinorRevision":42},"VersionString":"Unix 2.6.32.42"},"64-Bits":true}}';
+        $testNodeZero->app_settings = '{}';
+        $testNodeZero->system_config = '{}';
+        $testNodeZero->save();
+
+        $testServiceZero = new \App\Service();
+        $testServiceZero->node_id = 102;
+        $testServiceZero->type = \App\Constants\ServiceType::HTTPProxy;
+        $testServiceZero->config = '[{"listeners":[{"item1":"23.172.128.21","item2":10240}],"allowedDomains":null,"bannedDomains":null,"proxyMode":"Normal"}]';
+        $testServiceZero->connection_resource = '{"accessReference":["23.172.128.21:10240"],"accessConfig":null,"accessCredentials":"SPECTERO_USERNAME_PASSWORD"}';
+        $testServiceZero->save();
+
+        $testNodeOne = new \App\Node();
+        $testNodeOne->id = 103;
+        $testNodeOne->ip = '23.172.128.25';
+        $testNodeOne->port = 6024;
+        $testNodeOne->protocol = 'http';
+        $testNodeOne->friendly_name = "Real Test Node 3 (test-daemon-1)";
+        $testNodeOne->access_token = 'cloud:VX0-8xWpZ_2_7F5E9a_n_LLR';
+        $testNodeOne->install_id = '0a3d3d2e-3e7b-46ba-a7b6-3a0b4db82f75';
+        $testNodeOne->status = \App\Constants\NodeStatus::CONFIRMED;
+        $testNodeOne->market_model = \App\Constants\NodeMarketModel::UNLISTED;
+        $testNodeOne->user_id = 8;
+        $testNodeOne->price = 13.20;
+        $testNodeOne->asn = 46686;
+        $testNodeOne->city = 'Seattle';
+        $testNodeOne->cc = 'US';
+        $testNodeOne->system_data = '{"CPU":{"Model":"Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":40,"Cache Size":"8192 KB"},"Memory":{"Physical":{"Used":222289920,"Free":851451904,"Total":1073741824}},"Environment":{"Hostname":"daemon-test-0","OS Version":{"Platform":4,"ServicePack":"","Version":{"Major":2,"Minor":6,"Build":32,"Revision":42,"MajorRevision":0,"MinorRevision":42},"VersionString":"Unix 2.6.32.42"},"64-Bits":true}}';
+        $testNodeOne->app_settings = '{}';
+        $testNodeOne->system_config = '{}';
+        $testNodeOne->save();
+
+        $testServiceOne = new \App\Service();
+        $testServiceOne->node_id = 103;
+        $testServiceOne->type = \App\Constants\ServiceType::HTTPProxy;
+        $testServiceOne->config = '[{"listeners":[{"item1":"23.172.128.25","item2":10240}],"allowedDomains":null,"bannedDomains":null,"proxyMode":"Normal"}]';
+        $testServiceOne->connection_resource = '{"accessReference":["23.172.128.25:10240"],"accessConfig":null,"accessCredentials":"SPECTERO_USERNAME_PASSWORD"}';
+        $testServiceOne->save();
     }
 
     private function createServices(\App\Node $node)

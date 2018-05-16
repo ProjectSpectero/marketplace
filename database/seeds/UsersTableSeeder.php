@@ -49,7 +49,7 @@ class UsersTableSeeder extends Seeder
                                         'email' => 'sergio@spectero.com',
                                         'password' => \Illuminate\Support\Facades\Hash::make('temppass'),
                                         'status' => \App\Constants\UserStatus::ACTIVE,
-                                        'node_key' => \App\Libraries\Utility::getRandomString(2)
+                                        'node_key' => "a74aeb5b6012763e58b8423b054e3bb840ffb001aa4798b584317aab12662686"
                                     ]);
 
         $this->addMeta($sergio);

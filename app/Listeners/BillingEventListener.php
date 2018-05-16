@@ -130,6 +130,8 @@ class BillingEventListener extends BaseListener
 
             break;
 
+            // TODO: Assess its usage, and ensure that this is really needed
+            // BillingUtils::cancelOrder does this already.
             case Events::ORDER_REVERIFY:
                 // The object is an order in this case
                 /** @var Order $order */

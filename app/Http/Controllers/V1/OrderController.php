@@ -52,8 +52,9 @@ class OrderController extends CRUDController
             case 'verify':
                 $errors = BillingUtils::verifyOrder($order, false);
                 $message = count($errors) > 0 ? Errors::ORDER_VERIFICATION_FAILED : null;
+                $statusCode = count($errors) > 0 ? ResponseType::UNPROCESSABLE_ENTITY : ResponseType::OK;
 
-                return $this->respond(null, BillingUtils::verifyOrder($order, false), $message);
+                return $this->respond(null, BillingUtils::verifyOrder($order, false), $message, $statusCode);
 
             case 'resources':
                 if ($order->status != OrderStatus::ACTIVE)
@@ -136,8 +137,8 @@ class OrderController extends CRUDController
     {
         $rules = [
             'status' => 'required',
-            'subscription_reference' => 'required',
-            'subscription_provider' => 'required',
+            'subscription_reference' => 'required_with:subscription_provider',
+            'subscription_provider' => 'sometimes',
             'term' => 'required',
             'due_next' => 'required'
         ];
@@ -152,11 +153,60 @@ class OrderController extends CRUDController
         foreach ($input as $key => $value)
             $order->$key = $value;
 
-        $order->user_id = $request->user()->id;
-
         $order->saveOrFail();
 
         return $this->respond($order->toArray(), [], Messages::ORDER_UPDATED);
+    }
+
+    public function makeOrderDeliverable (Request $request, int $id) : JsonResponse
+    {
+        /*
+         * Flow:
+         *  1. If count(erros) == count(order->elements), cancel the whole order, we can't fix it.
+         *  2. Otherwise, remove the problematic elements from the order.
+         *  3. Fix the invoice at the end of it all.
+         */
+
+        $order = Order::findOrFail($id);
+        $this->authorizeResource($order, 'order.makeOrderDeliverable');
+
+        if ($order->status == OrderStatus::ACTIVE)
+            throw new UserFriendlyException(Errors::ORDER_ALREADY_ACTIVE);
+
+        $errors = BillingUtils::verifyOrder($order, false);
+
+        if (count($errors) == $order->lineItems->count())
+        {
+            // This also removes the invoice.
+            BillingUtils::cancelOrder($order);
+            throw new UserFriendlyException(Errors::ACTION_NOT_SUPPORTED);
+        }
+
+        if (count($errors) !== 0)
+            $changed = true;
+        else
+            $changed = false;
+
+        foreach ($errors as $error)
+        {
+            // We don't really care why it failed, just that it did.
+            OrderLineItem::destroy($error['id']);
+        }
+
+        // Refresh the line items.
+        $order->load('lineItems');
+
+        if ($changed)
+        {
+            // Let's fix the invoice.
+            /** @var Invoice $invoice */
+            $invoice = $order->lastInvoice;
+            $dueToday = BillingUtils::getOrderDueAmount($order);
+            $invoice->amount = $dueToday + TaxationManager::getTaxAmount($order, $dueToday);
+            $invoice->saveOrFail();
+        }
+
+        return $this->respond($order->toArray());
     }
 
     public function destroy(Request $request, int $id): JsonResponse
@@ -165,9 +215,7 @@ class OrderController extends CRUDController
         $order = Order::findOrFail($id);
         $this->authorizeResource($order);
 
-        $order->status = OrderStatus::CANCELLED;
-        $order->saveOrFail();
-        event(new BillingEvent(Events::ORDER_REVERIFY, $order));
+        BillingUtils::cancelOrder($order);
 
         return $this->respond(null, [], Messages::ORDER_DELETED, ResponseType::NO_CONTENT);
     }

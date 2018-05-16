@@ -48,6 +48,7 @@ class PermissionManager
                 Bouncer::allow($user)
                     ->toOwn(Order::class)
                     ->to([
+                        $orderResource . '.' . 'makeOrderDeliverable',
                         $orderResource . '.' . CRUDActions::DESTROY
                     ]);
 

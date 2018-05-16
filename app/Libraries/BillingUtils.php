@@ -116,7 +116,6 @@ class BillingUtils
         $invoice->order_id = $order->id;
         $invoice->user_id = $order->user_id;
 
-
         $amount = static::getOrderDueAmount($order);
         $tax = TaxationManager::getTaxAmount($order, $amount);
         $amount += $tax;

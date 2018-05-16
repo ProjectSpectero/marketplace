@@ -50,6 +50,9 @@ class OrderController extends CRUDController
                 return PaginationManager::paginate($request, Invoice::findForOrder($order)->noEagerLoads());
 
             case 'verify':
+                if ($order->status == OrderStatus::ACTIVE)
+                    throw new UserFriendlyException(Errors::ORDER_ALREADY_ACTIVE);
+
                 $errors = BillingUtils::verifyOrder($order, false);
                 $message = count($errors) > 0 ? Errors::ORDER_VERIFICATION_FAILED : null;
                 $statusCode = count($errors) > 0 ? ResponseType::UNPROCESSABLE_ENTITY : ResponseType::OK;

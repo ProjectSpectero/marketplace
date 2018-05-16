@@ -8,6 +8,7 @@ use App\Constants\Currency;
 use App\Constants\Errors;
 use App\Constants\InvoiceStatus;
 use App\Constants\InvoiceType;
+use App\Constants\NodeMarketModel;
 use App\Constants\OrderResourceType;
 use App\Constants\OrderStatus;
 use App\Constants\PaymentType;
@@ -173,5 +174,72 @@ class BillingUtils
 
         $order->status = OrderStatus::CANCELLED;
         $order->saveOrFail();
+    }
+
+    public static function verifyOrder (Order $order, bool $throwsExceptions = true) : array
+    {
+        $errors = [];
+
+        foreach ($order->lineItems as $item)
+        {
+            switch ($item->type)
+            {
+                case OrderResourceType::NODE:
+                    $resource = Node::find($item->resource);
+                    break;
+                case OrderResourceType::NODE_GROUP:
+                    $resource = NodeGroup::find($item->resource);
+                    break;
+                default:
+                    $resource = null;
+            }
+
+            if ($resource == null)
+            {
+                if ($throwsExceptions)
+                    throw new UserFriendlyException(Errors::RESOURCE_NOT_FOUND);
+
+                $errors[] = [
+                    'id' => $item->id,
+                    'reason' => Errors::RESOURCE_NOT_FOUND
+                ];
+
+                continue;
+            }
+
+            switch ($resource->market_model)
+            {
+                case NodeMarketModel::UNLISTED:
+                    if ($throwsExceptions)
+                        throw new UserFriendlyException(Errors::RESOURCE_UNLISTED);
+
+                    $errors[] = [
+                        'id' => $item->id,
+                        'reason' => Errors::RESOURCE_NOT_FOUND // Purposefully hidden with a falsified error message.
+                    ];
+
+                    break;
+
+                case NodeMarketModel::LISTED_DEDICATED:
+                    if ($resource->getOrders(OrderStatus::ACTIVE)->count() != 0)
+                    {
+                        if ($throwsExceptions)
+                            throw new UserFriendlyException(Errors::RESOURCE_SOLD_OUT, ResponseType::FORBIDDEN);
+
+                        $errors[] = [
+                            'id' => $item->id,
+                            'reason' => Errors::RESOURCE_SOLD_OUT
+                        ];
+                    }
+
+                    break;
+
+                case NodeMarketModel::LISTED_SHARED:
+                    // TODO: Enforce the shared limit here once it exists.
+                    break;
+            }
+        }
+
+        return $errors;
     }
 }

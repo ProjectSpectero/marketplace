@@ -17,6 +17,7 @@ use App\Errors\FatalException;
 use App\Errors\NotSupportedException;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
+use App\Libraries\BillingUtils;
 use App\Libraries\Payment\AccountCreditProcessor;
 use App\Libraries\Payment\IPaymentProcessor;
 use App\Libraries\Payment\PaypalProcessor;
@@ -57,8 +58,6 @@ class PaymentController extends V1Controller
             }
         }
 
-
-
         if ($invoice->type == InvoiceType::STANDARD)
         {
             // Before proceeding further, we need to check that if the invoice has an order associated with it, and all line items are currently available for purchase.
@@ -68,30 +67,8 @@ class PaymentController extends V1Controller
             if ($order == null)
                 throw new UserFriendlyException(Errors::PAYMENT_FAILED);
 
-            foreach ($order->lineItems as $item)
-            {
-                switch ($item->type)
-                {
-                    case OrderResourceType::NODE:
-                        $resource = Node::find($item->resource);
-                        break;
-                    case OrderResourceType::NODE_GROUP:
-                        $resource = NodeGroup::find($item->resource);
-                        break;
-                    default:
-                        $resource = null;
-                }
-
-                if ($resource == null)
-                    throw new UserFriendlyException(Errors::PAYMENT_FAILED);
-
-                if ($resource->market_model == NodeMarketModel::LISTED_DEDICATED)
-                {
-                    // We check that a dedicated node with orders isn't being provisioned again here, that would be a breach of trust.
-                    if($resource->getOrders(OrderStatus::ACTIVE)->count() != 0)
-                        throw new UserFriendlyException(Errors::ORDER_CONTAINS_UNAVAILABLE_RESOURCE, ResponseType::FORBIDDEN);
-                }
-            }
+            // status = ACTIVE is allowed, it might be a renewal payment.
+            BillingUtils::verifyOrder($order, true);
         }
 
         $paymentProcessor = $this->resolveProcessor($processor, $request);

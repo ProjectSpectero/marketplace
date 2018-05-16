@@ -21,6 +21,7 @@ class CreateNodeGroupsTable extends Migration
             $table->integer('user_id');
             $table->string('market_model'); // Do not set this without the constants array
             $table->decimal('price', 13, 4);
+            $table->integer('purchase_limit'); // For shared mode, this determines how many ACTIVE orders this group will allow. TODO: Implement this
             $table->timestamps();
 
             $table->string('plan')

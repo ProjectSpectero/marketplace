@@ -49,6 +49,12 @@ class OrderController extends CRUDController
             case 'invoices':
                 return PaginationManager::paginate($request, Invoice::findForOrder($order)->noEagerLoads());
 
+            case 'verify':
+                $errors = BillingUtils::verifyOrder($order, false);
+                $message = count($errors) > 0 ? Errors::ORDER_VERIFICATION_FAILED : null;
+
+                return $this->respond(null, BillingUtils::verifyOrder($order, false), $message);
+
             case 'resources':
                 if ($order->status != OrderStatus::ACTIVE)
                     throw new UserFriendlyException(Errors::ORDER_NOT_ACTIVE_YET);

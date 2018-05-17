@@ -47,13 +47,18 @@ class BillingSeeder extends Seeder
                 $items--;
             }
 
+            if ($order->status == \App\Constants\OrderStatus::ACTIVE)
+                $invoiceStatus = \App\Constants\InvoiceStatus::PAID;
+            else
+                $invoiceStatus = \App\Constants\InvoiceStatus::UNPAID;
+
             $invoice = new \App\Invoice();
             $invoice->id = mt_rand(1, 100000);
             $invoice->order_id = $order->id;
             $invoice->user_id = $order->user_id;
             $invoice->amount = $totalAmount;
             $invoice->currency = \App\Constants\Currency::USD;
-            $invoice->status = \App\Constants\InvoiceStatus::UNPAID;
+            $invoice->status = $invoiceStatus;
             $invoice->due_date = \Carbon\Carbon::now();
             $invoice->type = \App\Constants\InvoiceType::STANDARD;
             $invoice->last_reminder_sent = \Carbon\Carbon::now()->subDay(mt_rand(1, 15));

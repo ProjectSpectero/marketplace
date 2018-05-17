@@ -50,8 +50,8 @@ class OrderController extends CRUDController
                 return PaginationManager::paginate($request, Invoice::findForOrder($order)->noEagerLoads());
 
             case 'verify':
-                if ($order->status == OrderStatus::ACTIVE)
-                    throw new UserFriendlyException(Errors::ORDER_ALREADY_ACTIVE);
+                if ($order->status != OrderStatus::PENDING)
+                    throw new UserFriendlyException(Errors::RESOURCE_STATUS_MISMATCH);
 
                 $errors = BillingUtils::verifyOrder($order, false);
                 $message = count($errors) > 0 ? Errors::ORDER_VERIFICATION_FAILED : null;
@@ -173,10 +173,14 @@ class OrderController extends CRUDController
         $order = Order::findOrFail($id);
         $this->authorizeResource($order, 'order.makeOrderDeliverable');
 
-        if ($order->status == OrderStatus::ACTIVE)
-            throw new UserFriendlyException(Errors::ORDER_ALREADY_ACTIVE);
+        if ($order->status != OrderStatus::PENDING)
+            throw new UserFriendlyException(Errors::RESOURCE_STATUS_MISMATCH);
 
         $errors = BillingUtils::verifyOrder($order, false);
+
+        if (count($errors) == 0)
+            throw new UserFriendlyException(Errors::ORDER_ALREADY_VERIFIED);
+
 
         if (count($errors) == $order->lineItems->count())
         {

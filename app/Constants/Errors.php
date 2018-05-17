@@ -52,6 +52,7 @@ class Errors extends Holder
 
     const RESOURCE_UNLISTED = 'RESOURCE_UNLISTED';
     const RESOURCE_SOLD_OUT = 'RESOURCE_SOLD_OUT';
+    const RESOURCE_STATUS_MISMATCH = 'RESOURCE_STATUS_MISMATCH';
 
     // Invoice+Billing related
 
@@ -76,6 +77,7 @@ class Errors extends Holder
     const GATEWAY_DISABLED_FOR_PURPOSE = 'GATEWAY_DISABLED_FOR_PURPOSE';
     const ZERO_CREDIT_BALANCE = 'ZERO_CREDIT_BALANCE';
     const DISCREET_ORDER_REQUIRED = 'DISCREET_ORDER_REQUIRED';
+    const ORDER_ALREADY_VERIFIED = 'ORDER_ALREADY_VERIFIED';
 
     // Billing and payment processing
     const PAYMENT_FAILED = 'PAYMENT_FAILED';

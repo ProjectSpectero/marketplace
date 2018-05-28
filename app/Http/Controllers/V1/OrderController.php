@@ -173,7 +173,7 @@ class OrderController extends CRUDController
         $order = Order::findOrFail($id);
         $this->authorizeResource($order, 'order.makeOrderDeliverable');
 
-        if ($order->status != OrderStatus::PENDING)
+        if (! in_array($order->status, OrderStatus::getFixable()))
             throw new UserFriendlyException(Errors::RESOURCE_STATUS_MISMATCH);
 
         $errors = BillingUtils::verifyOrder($order, false);

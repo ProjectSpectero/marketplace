@@ -50,7 +50,7 @@ class OrderController extends CRUDController
                 return PaginationManager::paginate($request, Invoice::findForOrder($order)->noEagerLoads());
 
             case 'verify':
-                if ($order->status != OrderStatus::PENDING)
+                if (! in_array($order->status, OrderStatus::getFixable()))
                     throw new UserFriendlyException(Errors::RESOURCE_STATUS_MISMATCH);
 
                 $errors = BillingUtils::verifyOrder($order, false);

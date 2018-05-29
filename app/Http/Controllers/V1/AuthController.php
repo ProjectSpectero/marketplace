@@ -121,7 +121,8 @@ class AuthController extends V1Controller
         try
         {
             $response = $http->post($uri, [
-                'form_params' => $params
+                'form_params' => $params,
+                'connect_timeout' => env('GLOBAL_CONNECT_TIMEOUT_SECONDS', 5)
             ]);
             if ($response->getStatusCode() == 200)
             {
@@ -134,6 +135,7 @@ class AuthController extends V1Controller
         }
         catch (RequestException $requestException)
         {
+            \Log::debug("Request to oauth/token failed!", [ 'ctx' => $requestException ]);
             // API gave something other than 200, assume fail.
             $ret->success = false;
         }

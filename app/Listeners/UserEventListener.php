@@ -13,6 +13,7 @@ use App\Mail\WelcomeWithEmailValidation;
 use App\Mail\Welcome;
 use App\User;
 use App\UserMeta;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
 
 class UserEventListener extends BaseListener
@@ -69,7 +70,12 @@ class UserEventListener extends BaseListener
 
                 break;
             case Events::USER_UPDATED:
-                $oldEmail = UserMeta::loadMeta($user, UserMetaKeys::OldEmailAddress)->meta_value;
+                $oldEmailHolder = UserMeta::loadMeta($user, UserMetaKeys::OldEmailAddress);
+                if ($oldEmailHolder != null && ! $oldEmailHolder instanceof Builder)
+                    $oldEmail = $oldEmailHolder->meta_value;
+                else
+                    $oldEmail = null;
+
                 if ($oldEmail != null && $oldEmail !== $user->email)
                 {
                     $user->status = UserStatus::EMAIL_VERIFICATION_NEEDED;

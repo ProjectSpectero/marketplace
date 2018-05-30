@@ -11,6 +11,6 @@ class NodeMail extends BaseMail
 
     public function __construct(Node $node)
     {
-        $this->retryUrl = Utility::generateUrl('nodes/' . $node->id . '/verify', 'frontend');
+        $this->retryUrl = Utility::generateUrl('node/verify/' . $node->id, 'frontend');
     }
 }

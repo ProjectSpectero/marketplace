@@ -135,7 +135,17 @@ class AuthController extends V1Controller
         }
         catch (RequestException $requestException)
         {
-            \Log::debug("Request to oauth/token failed!", [ 'ctx' => $requestException ]);
+            // There's no need to spam ourselves with general auth failures, we want to log exceptional cases only.
+            $log = false;
+            $response = $requestException->getResponse();
+            if ($response != null && $response->getStatusCode() != 401)
+                $log = true;
+            elseif ($response == null)
+                $log = true;
+
+            if ($log)
+                \Log::error("Request to oauth/token failed!", [ 'ctx' => $requestException ]);
+
             // API gave something other than 200, assume fail.
             $ret->success = false;
         }

@@ -340,7 +340,7 @@ class OrderController extends CRUDController
             }
 
             $lineItem = new OrderLineItem();
-            $lineItem->description = $resource->friendly_name;
+            $lineItem->description = sprintf("%s: %s (%s)", $resource->type, $resource->id, $resource->friendly_name);
             $lineItem->order_id = $orderId;
             $lineItem->type = $type;
             $lineItem->resource = $resource->id;

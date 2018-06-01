@@ -49,6 +49,8 @@ class BillingSeeder extends Seeder
 
             if ($order->status == \App\Constants\OrderStatus::ACTIVE)
                 $invoiceStatus = \App\Constants\InvoiceStatus::PAID;
+            elseif ($order->status == \App\Constants\OrderStatus::CANCELLED)
+                $invoiceStatus = \App\Constants\InvoiceStatus::CANCELLED;
             else
                 $invoiceStatus = \App\Constants\InvoiceStatus::UNPAID;
 

@@ -158,12 +158,14 @@ class PaypalProcessor extends BasePaymentProcessor
             break;
 
             case "ipn":
+                // TODO: Figure out IPN support for recurring payments support over Paypal someday.
+                // Using a custom string because this error will eventually be taken out.
+                throw new UserFriendlyException("UNSUPPORTED_MODE");
+
                 $request->merge(['cmd' => '_notify-validate']);
                 $post = $request->all();
 
                 $response = $this->provider->verifyIPN($post);
-
-                dd($response);
                 break;
         }
 

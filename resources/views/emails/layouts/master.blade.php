@@ -9,7 +9,7 @@
             <div class="content">
 
                 <!-- START CENTERED WHITE CONTAINER -->
-                <span class="preheader">This is preheader text. Some clients will show this text as a preview.</span>
+                <!-- <span class="preheader">This is preheader text. Some clients will show this text as a preview.</span> -->
                 <table class="main">
 
                     <!-- START MAIN CONTENT AREA -->

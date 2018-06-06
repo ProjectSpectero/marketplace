@@ -14,6 +14,7 @@ class NodeMarketModel extends Holder
     public static function getConstraints()
     {
         return [
+            self::UNLISTED,
             self::LISTED_DEDICATED,
             self::LISTED_SHARED
         ];

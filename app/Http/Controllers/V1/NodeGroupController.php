@@ -46,7 +46,7 @@ class NodeGroupController extends CRUDController
         $this->authorizeResource();
 
         $rules = [
-            'friendly_name' => 'required',
+            'friendly_name' => 'required|alpha_dash|max:64',
             'market_model' => [ 'required', Rule::in(NodeMarketModel::getConstraints()) ],
             'price' => 'required|numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999)
         ];

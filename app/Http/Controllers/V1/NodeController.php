@@ -215,8 +215,8 @@ class NodeController extends CRUDController
             'port' => 'required|integer|min:1024|max:65534',
             'access_token' => 'sometimes|min:5|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
             'friendly_name' => 'sometimes|alpha_dash',
-            'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstants()) ],
-            'price' => 'required_with:market_model|numeric|min:5'
+            'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstraints()) ],
+            'price' => 'required_with:market_model|numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999)
         ];
 
         $reverifyRules = [

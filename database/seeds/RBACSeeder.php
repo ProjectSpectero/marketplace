@@ -21,9 +21,9 @@ class RBACSeeder extends Seeder
         $resources = config('resources');
         $userResource = $resources['user'];
         $nodeResource = $resources['node'];
+        $nodeGroupResource = $resources['node_group'];
         $orderResource = $resources['order'];
         $invoiceResource = $resources['invoice'];
-
 
         foreach ($resources as $resource)
         {
@@ -47,6 +47,7 @@ class RBACSeeder extends Seeder
         $this->bouncer->allow(\App\Constants\UserRoles::USER)
             ->to([
                   $nodeResource . '.' . CRUDActions::STORE,
+                  $nodeGroupResource . '.' . CRUDActions::STORE
              ]);
     }
 }

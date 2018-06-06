@@ -79,7 +79,7 @@ class OrderController extends CRUDController
         }
     }
 
-    public function self(Request $request, String $action = null)
+    public function self(Request $request, String $action = null, String $subAction = null)
     {
         $rules = [
             'searchId' => 'sometimes|alphanum'
@@ -89,8 +89,21 @@ class OrderController extends CRUDController
         $user = $request->user();
         $query = SearchManager::process($request, 'order', Order::findForUser($user->id));
 
-        if ($action != null && $action == 'active')
-            $query->where('status', OrderStatus::ACTIVE);
+        switch ($action)
+        {
+            case 'active':
+                $query->where('status', OrderStatus::ACTIVE);
+                break;
+
+            case strtolower(OrderResourceType::ENTERPRISE):
+                $query->join('order_line_items', 'orders.id', '=', 'order_line_items.order_id')
+                    ->where('order_line_items.type', OrderResourceType::ENTERPRISE);
+
+                if ($subAction != null && strtolower($subAction) == 'active')
+                    $query->where('orders.status', OrderStatus::ACTIVE);
+
+                break;
+        }
 
         return PaginationManager::paginate($request, $query);
     }

@@ -46,8 +46,12 @@ class RBACSeeder extends Seeder
         // Allow normal users to create nodes
         $this->bouncer->allow(\App\Constants\UserRoles::USER)
             ->to([
-                  $nodeResource . '.' . CRUDActions::STORE,
-                  $nodeGroupResource . '.' . CRUDActions::STORE
+                 // Allow user to create nodes
+                     $nodeResource . '.' . CRUDActions::STORE,
+                 // Allow user to create node groups
+                     $nodeGroupResource . '.' . CRUDActions::STORE,
+                 // Allow user to create cart based orders
+                     $orderResource . '.' . 'cart'
              ]);
     }
 }

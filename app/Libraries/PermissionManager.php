@@ -33,17 +33,7 @@ class PermissionManager
             case UserRoles::USER:
                 $user->assign($role);
 
-                // Allow user to create nodes
-                Bouncer::allow($user)
-                    ->to([
-                             $nodeResource . '.' . CRUDActions::STORE
-                         ]);
-
-                // Allow user to create cart based orders
-                Bouncer::allow($user)
-                    ->to([
-                             $orderResource . '.' . 'cart'
-                         ]);
+                // ONLY SET TOOWN RULES HERE, GROUP RULES DO NOT GO HERE
 
                 Bouncer::allow($user)
                     ->toOwn(Order::class)

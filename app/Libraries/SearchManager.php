@@ -23,10 +23,17 @@ class SearchManager
      */
     public static function process (Request $request, String $caller, Builder $sourceBuilder = null) : Builder
     {
+        $table = null;
         if ($sourceBuilder == null)
+        {
             $model = Utility::getModelFromResourceSlug($caller);
+            $table = $model->getTable();
+        }
         else
+        {
             $model = $sourceBuilder;
+            $table = $sourceBuilder->newModelInstance()->getTable();
+        }
 
         if ($request->has('searchId'))
         {
@@ -70,7 +77,9 @@ class SearchManager
             }
 
             $queryBuilder = $model->where($constraints);
-            return $sortParams == null ? $queryBuilder->orderBy('id', 'ASC') : $queryBuilder->orderBy($sortParams['field'], $sortParams['value']);
+            $intuitiveIdParameter = sprintf('%s.id', $table);
+
+            return $sortParams == null ? $queryBuilder->orderBy($intuitiveIdParameter, 'ASC') : $queryBuilder->orderBy($sortParams['field'], $sortParams['value']);
         }
 
         return $model->newQuery();

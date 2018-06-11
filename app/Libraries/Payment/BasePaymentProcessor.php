@@ -4,6 +4,7 @@
 namespace App\Libraries\Payment;
 use App\Constants\Errors;
 use App\Constants\Events;
+use App\Constants\InvoiceStatus;
 use App\Constants\PaymentType;
 use App\Constants\ResponseType;
 use App\Errors\UserFriendlyException;
@@ -51,6 +52,9 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
             $transaction->original_transaction_id = $originalTransactionId;
 
         $transaction->saveOrFail();
+
+        $invoice->status = InvoiceStatus::PROCESSING;
+        $invoice->saveOrFail();
 
         event(new BillingEvent(Events::BILLING_TRANSACTION_ADDED, $transaction));
         return $transaction;

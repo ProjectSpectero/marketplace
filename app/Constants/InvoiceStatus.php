@@ -11,4 +11,5 @@ class InvoiceStatus extends Holder
     const PARTIALLY_REFUNDED = 'PARTIALLY_REFUNDED';
     const REFUNDED = 'REFUNDED';
     const CANCELLED = 'CANCELLED';
+    const PROCESSING = 'PROCESSING';
 }

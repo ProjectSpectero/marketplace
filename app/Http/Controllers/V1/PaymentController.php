@@ -20,6 +20,7 @@ use App\Invoice;
 use App\Libraries\BillingUtils;
 use App\Libraries\Payment\AccountCreditProcessor;
 use App\Libraries\Payment\IPaymentProcessor;
+use App\Libraries\Payment\ManualPaymentProcessor;
 use App\Libraries\Payment\PaypalProcessor;
 use App\Libraries\Payment\StripeProcessor;
 use App\Node;
@@ -158,19 +159,25 @@ class PaymentController extends V1Controller
 
     private function resolveProcessor (String $processor, Request $request) : IPaymentProcessor
     {
+        $init = null;
         switch (strtolower($processor))
         {
             case strtolower(PaymentProcessor::PAYPAL):
-                return new PaypalProcessor($request);
+                $init = new PaypalProcessor($request);
 
             case strtolower(PaymentProcessor::STRIPE):
-                return new StripeProcessor($request);
+                $init = new StripeProcessor($request);
 
             case strtolower(PaymentProcessor::ACCOUNT_CREDIT):
-                return new AccountCreditProcessor($request);
+                $init = new AccountCreditProcessor($request);
+
+            case strtolower(PaymentProcessor::MANUAL):
+                $init = new ManualPaymentProcessor($request);
 
             default:
                 throw new FatalException(Errors::COULD_NOT_RESOLVE_PAYMENT_PROCESSOR);
         }
+
+        return $init;
     }
 }

@@ -8,6 +8,7 @@ use App\Constants\PaymentType;
 use App\Constants\ResponseType;
 use App\Errors\UserFriendlyException;
 use App\Events\BillingEvent;
+use App\Http\Controllers\V1\V1Controller;
 use App\Invoice;
 use App\Libraries\BillingUtils;
 use App\Libraries\Utility;
@@ -15,6 +16,8 @@ use App\Transaction;
 
 abstract class BasePaymentProcessor implements IPaymentProcessor
 {
+    private $caller;
+
     /**
      * @param IPaymentProcessor $processor
      * @param Invoice $invoice
@@ -100,5 +103,10 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
         list ($major, $minor) = explode('-', $id);
 
         return $major;
+    }
+
+    public function setCaller (V1Controller $controller)
+    {
+        $this->caller = $controller;
     }
 }

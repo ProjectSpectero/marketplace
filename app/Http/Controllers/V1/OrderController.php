@@ -104,9 +104,6 @@ class OrderController extends CRUDController
 
                 $query->distinct()->select('orders.*');
 
-
-                //dd($query->toSql());
-
                 break;
         }
 

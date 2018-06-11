@@ -164,15 +164,19 @@ class PaymentController extends V1Controller
         {
             case strtolower(PaymentProcessor::PAYPAL):
                 $init = new PaypalProcessor($request);
+                break;
 
             case strtolower(PaymentProcessor::STRIPE):
                 $init = new StripeProcessor($request);
+                break;
 
             case strtolower(PaymentProcessor::ACCOUNT_CREDIT):
                 $init = new AccountCreditProcessor($request);
+                break;
 
             case strtolower(PaymentProcessor::MANUAL):
                 $init = new ManualPaymentProcessor($request);
+                break;
 
             default:
                 throw new FatalException(Errors::COULD_NOT_RESOLVE_PAYMENT_PROCESSOR);

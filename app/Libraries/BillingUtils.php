@@ -145,6 +145,9 @@ class BillingUtils
      */
     public static function getInvoiceDueAmount (Invoice $invoice)
     {
+        if ($invoice->status == InvoiceStatus::CANCELLED)
+            return 0;
+
         $existingAmount = Transaction::where('invoice_id', $invoice->id)
             ->where('type', PaymentType::CREDIT)
             ->sum('amount');

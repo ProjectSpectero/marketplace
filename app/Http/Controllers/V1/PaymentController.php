@@ -19,6 +19,7 @@ use App\Errors\UserFriendlyException;
 use App\Invoice;
 use App\Libraries\BillingUtils;
 use App\Libraries\Payment\AccountCreditProcessor;
+use App\Libraries\Payment\BasePaymentProcessor;
 use App\Libraries\Payment\IPaymentProcessor;
 use App\Libraries\Payment\ManualPaymentProcessor;
 use App\Libraries\Payment\PaypalProcessor;
@@ -43,8 +44,8 @@ class PaymentController extends V1Controller
         $invoice = Invoice::findOrFail($invoiceId);
         $this->authorizeResource($invoice, 'invoice.pay');
 
-        if ($invoice->status !== InvoiceStatus::UNPAID)
-            throw new UserFriendlyException(Errors::INVOICE_ALREADY_PAID, ResponseType::BAD_REQUEST);
+        if (! in_array($invoice->status, [ InvoiceStatus::UNPAID, InvoiceStatus::PARTIALLY_PAID ]))
+            throw new UserFriendlyException(Errors::INVOICE_ALREADY_PAID);
 
         // Credit-add invoices are ONLY payable with Paypal, we will NOT charge cards to add-credit (lowers liability).
         if ($invoice->type == InvoiceType::CREDIT)
@@ -159,6 +160,7 @@ class PaymentController extends V1Controller
 
     private function resolveProcessor (String $processor, Request $request) : IPaymentProcessor
     {
+        /** @var BasePaymentProcessor $init */
         $init = null;
         switch (strtolower($processor))
         {
@@ -179,9 +181,10 @@ class PaymentController extends V1Controller
                 break;
 
             default:
-                throw new FatalException(Errors::COULD_NOT_RESOLVE_PAYMENT_PROCESSOR);
+                throw new UserFriendlyException(Errors::UNKNOWN_PAYMENT_PROCESSOR);
         }
 
+        $init->setCaller($this);
         return $init;
     }
 }

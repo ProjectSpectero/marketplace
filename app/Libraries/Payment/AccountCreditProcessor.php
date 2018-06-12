@@ -24,15 +24,12 @@ use Illuminate\Http\Request;
 
 class AccountCreditProcessor extends BasePaymentProcessor
 {
-
-    private $request;
-
     public function __construct(Request $request)
     {
         if (env('ACCOUNT_CREDIT_ENABLED', false) != true)
             throw new UserFriendlyException(Messages::PAYMENT_PROCESSOR_NOT_ENABLED, ResponseType::BAD_REQUEST);
 
-        $this->request = $request;
+        parent::__construct($request);
     }
 
     function getName(): string

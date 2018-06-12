@@ -27,7 +27,6 @@ class PaypalProcessor extends BasePaymentProcessor
 {
     private $provider;
     private $invoice;
-    private $request;
 
     /**
      * PaypalProcessor constructor.
@@ -38,7 +37,8 @@ class PaypalProcessor extends BasePaymentProcessor
             throw new UserFriendlyException(Messages::PAYMENT_PROCESSOR_NOT_ENABLED, ResponseType::BAD_REQUEST);
 
         $this->provider = PayPal::setProvider('express_checkout');
-        $this->request = $request;
+
+        parent::__construct($request);
     }
 
     function process(Invoice $invoice) : PaymentProcessorResponse

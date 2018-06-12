@@ -63,7 +63,8 @@ class BillingEventListener extends BaseListener
                 switch ($object->type)
                 {
                     case PaymentType::CREDIT:
-                        if (BillingUtils::getInvoiceDueAmount($invoice) <= 0)
+                        $currentDueAmount = BillingUtils::getInvoiceDueAmount($invoice);
+                        if ($currentDueAmount <= 0)
                         {
                             // Invoice can now be marked as paid, activate any associated orders
                             $invoice->status = InvoiceStatus::PAID;
@@ -90,6 +91,14 @@ class BillingEventListener extends BaseListener
                                 $user->credit = $user->credit + $object->amount; // Currency is assumed to be USD
                                 $user->saveOrFail();
                             }
+                        }
+
+                        // TODO: Figure out the multi-currency impact here someday.
+                        // This block is what transitions the invoice out of a 'processing' status even if it's not fully paid.
+                        if ($currentDueAmount < $invoice->amount)
+                        {
+                            $invoice->status = InvoiceStatus::PARTIALLY_PAID;
+                            $invoice->saveOrFail();
                         }
 
                         // Acknowledgement goes out whether the invoice is paid in full or not.

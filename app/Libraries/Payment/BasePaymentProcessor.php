@@ -5,10 +5,10 @@ namespace App\Libraries\Payment;
 use App\Constants\Errors;
 use App\Constants\Events;
 use App\Constants\InvoiceStatus;
-use App\Constants\PaymentType;
 use App\Constants\ResponseType;
 use App\Errors\UserFriendlyException;
 use App\Events\BillingEvent;
+use Illuminate\Http\Request;
 use App\Http\Controllers\V1\V1Controller;
 use App\Invoice;
 use App\Libraries\BillingUtils;
@@ -17,7 +17,13 @@ use App\Transaction;
 
 abstract class BasePaymentProcessor implements IPaymentProcessor
 {
-    private $caller;
+    protected $caller;
+    protected $request;
+
+    public function __construct(Request $request)
+    {
+        $this->request = $request;
+    }
 
     /**
      * @param IPaymentProcessor $processor

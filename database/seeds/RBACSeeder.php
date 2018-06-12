@@ -40,7 +40,11 @@ class RBACSeeder extends Seeder
 
         // Add non-CRUD roles to the admin class
         $this->bouncer->allow(\App\Constants\UserRoles::STAFF)
-            ->to($invoiceResource . '.' . 'pdf');
+            ->to([
+                     $invoiceResource . '.' . 'pdf',
+                     $nodeResource . '.' . 'verify',
+                     'manual.pay'
+            ]);
 
         $this->bouncer->allow(\App\Constants\UserRoles::STAFF)
             ->to($nodeResource . '.' . 'verify');

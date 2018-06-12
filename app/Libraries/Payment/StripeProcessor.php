@@ -31,7 +31,6 @@ class StripeProcessor extends BasePaymentProcessor
 {
 
     private $provider;
-    private $request;
 
     /**
      * StripeProcessor constructor.
@@ -43,7 +42,8 @@ class StripeProcessor extends BasePaymentProcessor
             throw new UserFriendlyException(Messages::PAYMENT_PROCESSOR_NOT_ENABLED, ResponseType::BAD_REQUEST);
 
         $this->provider = new Stripe(env('STRIPE_MODE', 'sandbox') == 'sandbox' ? env('STRIPE_SANDBOX_SECRET_KEY') : env('STRIPE_LIVE_SECRET_KEY'));
-        $this->request = $request;
+
+        parent::__construct($request);
     }
 
     function getName(): string

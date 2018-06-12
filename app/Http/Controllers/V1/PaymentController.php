@@ -45,7 +45,7 @@ class PaymentController extends V1Controller
         $this->authorizeResource($invoice, 'invoice.pay');
 
         if (! in_array($invoice->status, [ InvoiceStatus::UNPAID, InvoiceStatus::PARTIALLY_PAID ]))
-            throw new UserFriendlyException(Errors::INVOICE_ALREADY_PAID);
+            throw new UserFriendlyException(Errors::INVOICE_STATUS_MISMATCH);
 
         // Credit-add invoices are ONLY payable with Paypal, we will NOT charge cards to add-credit (lowers liability).
         if ($invoice->type == InvoiceType::CREDIT)

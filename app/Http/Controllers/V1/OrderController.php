@@ -102,7 +102,7 @@ class OrderController extends CRUDController
                 if ($subAction != null && strtolower($subAction) === 'active')
                     $query->where('orders.status', '=', OrderStatus::ACTIVE);
 
-                $query->distinct()->select('orders.*');
+                $query->select('orders.*')->distinct()->groupBy('orders.id');
 
                 break;
         }

@@ -84,18 +84,28 @@ class StripeProcessor extends BasePaymentProcessor
         if ($customerId instanceof UserMeta)
             $customerId = $customerId->meta_value;
 
+        $order = $invoice->order;
+        if ($order != null)
+            $orderId = $order->id;
+        else
+            $orderId = null;
 
         $metadata = [
             'invoiceId' => $invoice->id,
-            'orderId' => $invoice->order->id != null ? $invoice->order->id : null
+            'orderId' => $orderId
         ];
+
+        $companyName = env('COMPANY_NAME', 'Spectero');
+        $statementDescriptor = $companyName. ' #' . $invoice->id;
+        if (strlen($statementDescriptor) > 22)
+            $statementDescriptor = 'SPCInv #' . $invoice->id;
 
         try
         {
             $descriptor = [
                 'currency' => $invoice->currency,
                 'amount'   => $dueAmount,
-                'statement_descriptor' => env('COMPANY_NAME', 'Spectero') . ' Invoice ' . $invoice->id,
+                'statement_descriptor' => $statementDescriptor,
                 'metadata' => $metadata,
                 'expand' => [ "balance_transaction" ]
             ];

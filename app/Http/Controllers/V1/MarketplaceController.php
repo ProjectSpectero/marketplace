@@ -85,6 +85,7 @@ class MarketplaceController extends V1Controller
         // Never pick up on unlisted nodes, and only return nodes that are verified/confirmed.
         // Don't return nodes that are a part of a group.
         $originalQuery->where('nodes.market_model', '!=', NodeMarketModel::UNLISTED)
+            ->where('nodes.market_model', '!=', NodeMarketModel::ENTERPRISE)
             ->where('nodes.status', NodeStatus::CONFIRMED);
 
         $query = clone $originalQuery;

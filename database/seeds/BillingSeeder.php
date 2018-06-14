@@ -11,7 +11,8 @@ class BillingSeeder extends Seeder
      */
     public function run()
     {
-        factory(App\Order::class, 100)->create();
+        factory(App\Order::class, 250)->create();
+        /** @var \App\Order $order */
         foreach (App\Order::noEagerLoads()->get() as $order)
         {
             $timestamp = \Carbon\Carbon::now();
@@ -19,7 +20,7 @@ class BillingSeeder extends Seeder
 
             $totalAmount = 0;
 
-            while($items)
+            while($items > 0)
             {
                 $amount = mt_rand(1, 100);
                 $qtyEach = mt_rand(1, 5);
@@ -27,8 +28,29 @@ class BillingSeeder extends Seeder
                 $totalAmount += $amount * $qtyEach;
 
                 $determinedType = array_random(\App\Constants\OrderResourceType::getConstants());
+
+                // To prevent it from occurring too often
+                if ($determinedType == \App\Constants\OrderResourceType::ENTERPRISE)
+                {
+                    $seed = mt_rand(1, 10);
+                    // I'm so random XD (!)
+                    if ($seed % 2 == 0)
+                        $determinedType = array_random(\App\Constants\OrderResourceType::getConstants());
+                }
+
+
                 if ($determinedType == \App\Constants\OrderResourceType::NODE_GROUP)
                     $resourceId = mt_rand(1, 50);
+                elseif ($determinedType == \App\Constants\OrderResourceType::ENTERPRISE)
+                {
+                    $resourceId = mt_rand(1, 100);
+                    // The loop needs to stop after this iteration, ent orders are always solo.
+                    $items = 0;
+                    // To enforce ^, let's get rid of all its existing lineitems.
+                    $order->lineItems()->delete();
+                    // Let's fix the total-amount too.
+                    $totalAmount = $amount;
+                }
                 else
                     $resourceId = mt_rand(1, 100);
 
@@ -55,7 +77,7 @@ class BillingSeeder extends Seeder
                 $invoiceStatus = \App\Constants\InvoiceStatus::UNPAID;
 
             $invoice = new \App\Invoice();
-            $invoice->id = mt_rand(1, 100000);
+            $invoice->id = mt_rand(1, 1000000);
             $invoice->order_id = $order->id;
             $invoice->user_id = $order->user_id;
             $invoice->amount = $totalAmount;

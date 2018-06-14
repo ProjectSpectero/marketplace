@@ -84,9 +84,13 @@ class MarketplaceController extends V1Controller
 
         // Never pick up on unlisted nodes, and only return nodes that are verified/confirmed.
         // Don't return nodes that are a part of a group.
-        $originalQuery->where('nodes.market_model', '!=', NodeMarketModel::UNLISTED)
-            ->where('nodes.market_model', '!=', NodeMarketModel::ENTERPRISE)
-            ->where('nodes.status', NodeStatus::CONFIRMED);
+        $originalQuery->where('nodes.status', '=', NodeStatus::CONFIRMED);
+
+        $unallowedModels = array_keys(array_diff(NodeMarketModel::getConstants(), NodeMarketModel::getMarketable()));
+        foreach ($unallowedModels as $unallowedModel)
+        {
+            $originalQuery->where('nodes.market_model', '!=', $unallowedModel);
+        }
 
         $query = clone $originalQuery;
         $query->leftJoin('node_groups', 'nodes.group_id', '=', 'node_groups.id')
@@ -165,9 +169,7 @@ class MarketplaceController extends V1Controller
 
                         default:
 
-                            if ($value == NodeMarketModel::UNLISTED
-                                || ! in_array($value, NodeMarketModel::getConstants())
-                            )
+                            if (! in_array($value, NodeMarketModel::getMarketable()))
                                 throw new UserFriendlyException(Errors::FIELD_INVALID .':' . $field);
 
                             $query->where($field, $operator, $value);
@@ -331,11 +333,13 @@ class MarketplaceController extends V1Controller
     // まだ心の準備ができていないからね
     private function prepareNode (Node $node, bool $groupExceptionOverride = false)
     {
-        if (! $groupExceptionOverride && $node->status != NodeStatus::CONFIRMED)
+        if ($node->status != NodeStatus::CONFIRMED)
         {
-            throw new UserFriendlyException(Errors::UNAUTHORIZED, ResponseType::FORBIDDEN);
+            if (! $groupExceptionOverride)
+                throw new UserFriendlyException(Errors::UNAUTHORIZED, ResponseType::FORBIDDEN);
+            else
+                return null;
         }
-
 
         $ipCollection = [];
         foreach (NodeIPAddress::where('node_id', $node->id)->get() as $ip)
@@ -366,7 +370,9 @@ class MarketplaceController extends V1Controller
         $nodes = [];
         foreach (Node::where('group_id', $group->id)->get() as $node)
         {
-            $nodes[] = $this->prepareNode($node, true);
+            $tmp = $this->prepareNode($node, true);
+            if ($tmp != null)
+                $nodes[] = $tmp;
         }
         $group->nodes = $nodes;
 

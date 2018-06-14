@@ -224,7 +224,17 @@ class BillingUtils
                     break;
 
                 case NodeMarketModel::LISTED_DEDICATED:
-                    if ($resource->getOrders(OrderStatus::ACTIVE)->count() != 0)
+                    $existingOrders = $resource->getOrders(OrderStatus::ACTIVE)->get();
+                    $existingCount = count($existingOrders);
+
+                    if ($existingCount == 1 && $order->status == OrderStatus::ACTIVE)
+                    {
+                        // It might be THIS order, we need to verify that for already active orders.
+                        $resourceOrder = $existingOrders->first();
+                        if ($order->id == $resourceOrder->id)
+                            continue;
+                    }
+                    elseif ($existingCount != 0)
                     {
                         if ($throwsExceptions)
                             throw new UserFriendlyException(Errors::RESOURCE_SOLD_OUT, ResponseType::FORBIDDEN);

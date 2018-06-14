@@ -69,7 +69,10 @@ class PaymentController extends V1Controller
             if ($order == null)
                 throw new UserFriendlyException(Errors::PAYMENT_FAILED);
 
-            // status = ACTIVE is allowed, it might be a renewal payment.
+            if (! in_array($order->status, OrderStatus::getPayable()))
+                throw new UserFriendlyException(Errors::ORDER_STATUS_MISMATCH);
+
+            // Verify that all the order resources are proper.
             BillingUtils::verifyOrder($order, true);
         }
 

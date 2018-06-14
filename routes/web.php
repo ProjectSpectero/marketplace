@@ -70,7 +70,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         \App\Libraries\Utility::defineResourceRoute('invoice', 'InvoiceController', $api, []);
 
         // Order resource routes
-        $api->get('order/self[/{action}[/{subAction}]]', 'OrderController@self');
+        $api->get('order/self[/{action}]', 'OrderController@self');
         $api->put('order/{id}/accessor', 'OrderController@regenerateAccessor');
         $api->put('order/{id}/fix', 'OrderController@makeOrderDeliverable');
         \App\Libraries\Utility::defineResourceRoute('order', 'OrderController', $api, []);

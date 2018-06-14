@@ -79,7 +79,7 @@ class OrderController extends CRUDController
         }
     }
 
-    public function self(Request $request, String $action = null, String $subAction = null)
+    public function self(Request $request, String $action = null)
     {
         $rules = [
             'searchId' => 'sometimes|alphanum'
@@ -98,9 +98,6 @@ class OrderController extends CRUDController
             case strtolower(OrderResourceType::ENTERPRISE):
                 $query->join('order_line_items', 'orders.id', '=', 'order_line_items.order_id')
                     ->where('order_line_items.type', '=', OrderResourceType::ENTERPRISE);
-
-                if ($subAction != null && strtolower($subAction) === 'active')
-                    $query->where('orders.status', '=', OrderStatus::ACTIVE);
 
                 $query->select('orders.*')->distinct()->groupBy('orders.id');
 

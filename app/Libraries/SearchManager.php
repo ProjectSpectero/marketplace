@@ -73,7 +73,7 @@ class SearchManager
                         break;
                 }
 
-                $constraints[] = [ $rule['field'], $rule['operator'], $rule['value'] ];
+                $constraints[] = [ $table . '.' . $rule['field'], $rule['operator'], $rule['value'] ];
             }
 
             $queryBuilder = $model->where($constraints);

@@ -76,6 +76,9 @@ class BillingSeeder extends Seeder
                     $hostingIPs = $hostingNode->ipAddresses();
                     $hostingIPCount = $hostingIPs->count();
 
+                    if ($hostingIPCount == 0)
+                        continue;
+
                     $resourcesToCreate = mt_rand(1, $hostingIPCount);
 
                     /** @var \Illuminate\Database\Eloquent\Collection $chosenIPs */

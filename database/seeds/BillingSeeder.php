@@ -11,6 +11,8 @@ class BillingSeeder extends Seeder
      */
     public function run()
     {
+        $enterpriseNodes = \App\Node::where('market_model', \App\Constants\NodeMarketModel::ENTERPRISE)->get();
+
         factory(App\Order::class, 250)->create();
         /** @var \App\Order $order */
         foreach (App\Order::noEagerLoads()->get() as $order)
@@ -65,6 +67,39 @@ class BillingSeeder extends Seeder
                 $lineItem->sync_status = array_random(\App\Constants\NodeSyncStatus::getConstants());
                 $lineItem->sync_timestamp = $timestamp;
                 $lineItem->saveOrFail();
+
+                if ($determinedType == \App\Constants\OrderResourceType::ENTERPRISE)
+                {
+                    // Let's seed some IPs / such things too.
+                    /** @var \App\Node $hostingNode */
+                    $hostingNode = $enterpriseNodes->random();
+                    $hostingIPs = $hostingNode->ipAddresses();
+                    $hostingIPCount = $hostingIPs->count();
+
+                    $resourcesToCreate = mt_rand(1, $hostingIPCount);
+
+                    /** @var \Illuminate\Database\Eloquent\Collection $chosenIPs */
+                    $chosenIPs = $hostingIPs->get()->random($resourcesToCreate)->toArray();
+
+                    while ($resourcesToCreate > 0)
+                    {
+                        $tmpIp = $chosenIPs[$resourcesToCreate - 1];
+
+                        $enterpriseResource = new \App\EnterpriseResource();
+
+                        $enterpriseResource->ip_id = $tmpIp['id'];
+                        $enterpriseResource->outgoing_ip_id = $tmpIp['id'];
+
+                        $enterpriseResource->port = 10240;
+                        $enterpriseResource->order_line_item_id = $lineItem->id;
+
+                        $enterpriseResource->saveOrFail();
+
+                        array_pop($chosenIPs);
+
+                        $resourcesToCreate--;
+                    }
+                }
 
                 $items--;
             }

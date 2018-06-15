@@ -13,7 +13,9 @@ use App\Constants\OrderResourceType;
 use App\Constants\OrderStatus;
 use App\Constants\PaymentProcessor;
 use App\Constants\ResponseType;
+use App\Constants\ServiceType;
 use App\Constants\UserRoles;
+use App\EnterpriseResource;
 use App\Errors\UserFriendlyException;
 use App\Events\BillingEvent;
 use App\Invoice;
@@ -436,6 +438,29 @@ class OrderController extends CRUDController
                         ];
                     }
                 }
+            case OrderResourceType::ENTERPRISE:
+                // Our magnum opus
+                $enterpriseResources = EnterpriseResource::findForOrderLineItem($item)->get();
+
+                $skeletonResource = [
+                    'accessConfig' => null,
+                    'accessCredentials' => 'SPECTERO_USERNAME_PASSWORD',
+                    'accessReference' => []
+                ];
+
+
+                /** @var EnterpriseResource $enterpriseResource */
+                foreach ($enterpriseResources as $enterpriseResource)
+                {
+                    $skeletonResource['accessReference'][] = $enterpriseResource->accessor();
+                }
+
+                $connectionResources['resource']['reference'][] = [
+                    'type' => ServiceType::HTTPProxy,
+                    'resource' => $skeletonResource
+                ];
+
+                break;
         }
 
         return $connectionResources;

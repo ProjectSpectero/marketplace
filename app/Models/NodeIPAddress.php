@@ -11,4 +11,9 @@ class NodeIPAddress extends BaseModel
     {
         return $this->belongsTo(Node::class);
     }
+
+    public function resources ()
+    {
+        return $this->hasMany(EnterpriseResource::class, 'ip_id');
+    }
 }

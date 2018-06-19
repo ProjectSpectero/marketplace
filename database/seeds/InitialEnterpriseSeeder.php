@@ -263,6 +263,7 @@ class InitialEnterpriseSeeder extends Seeder
                                                         $reference, \App\Constants\PaymentType::CREDIT, \App\Constants\TransactionReasons::PAYMENT, $notes);
 
             $transaction->created_at = $data['due_date'];
+            $transaction->updated_at = $data['due_date'];
             $transaction->saveOrFail();
         }
 

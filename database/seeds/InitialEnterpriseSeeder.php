@@ -152,6 +152,9 @@ class InitialEnterpriseSeeder extends Seeder
         $cahpyonOrder->accessor = 'blue:sQUqqGKgkwKY8JFk';
         $rankingPressOrder->accessor = 'green:MPp8NhuZ8aHjajaE';
 
+        $cahpyonOrder->last_invoice_id = 1009;
+        $rankingPressOrder->last_invoice_id = 1010;
+
         $this->apply($orders, 'status', \App\Constants\OrderStatus::ACTIVE);
         $this->apply($orders, 'term', 30);
         $this->apply($orders, 'due_next', '2018-07-01');
@@ -256,8 +259,11 @@ class InitialEnterpriseSeeder extends Seeder
             }
             $invoice->saveOrFail();
 
-            \App\Libraries\BillingUtils::addTransaction($processor, $invoice, $invoice->amount, $transactionDetails['fee'],
+            $transaction = \App\Libraries\BillingUtils::addTransaction($processor, $invoice, $invoice->amount, $transactionDetails['fee'],
                                                         $reference, \App\Constants\PaymentType::CREDIT, \App\Constants\TransactionReasons::PAYMENT, $notes);
+
+            $transaction->created_at = $data['due_date'];
+            $transaction->saveOrFail();
         }
 
 

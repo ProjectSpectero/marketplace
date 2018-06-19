@@ -43,21 +43,7 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
                                     String $reason, String $rawData,
                                     int $originalTransactionId = -1) : Transaction
     {
-        $transaction = new Transaction();
-        $transaction->invoice_id = $invoice->id;
-        $transaction->payment_processor = $processor->getName();
-        $transaction->reference = $transactionId;
-        $transaction->type = $transactionType;
-        $transaction->reason = $reason;
-        $transaction->amount = $amount;
-        $transaction->fee = $fee;
-        $transaction->currency = $invoice->currency;
-        $transaction->raw_response = $rawData;
-
-        if ($originalTransactionId != -1)
-            $transaction->original_transaction_id = $originalTransactionId;
-
-        $transaction->saveOrFail();
+        $transaction = BillingUtils::addTransaction($processor, $invoice, $amount, $fee, $transactionId, $transactionType, $reason, $rawData, $originalTransactionId);
 
         $invoice->status = InvoiceStatus::PROCESSING;
         $invoice->saveOrFail();

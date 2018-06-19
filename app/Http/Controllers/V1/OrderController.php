@@ -298,6 +298,7 @@ class OrderController extends CRUDController
                      */
                     break;
                 default:
+                    // TODO: Add handling for ent order type here.
                     BillingUtils::cancelOrder($order);
                     throw new UserFriendlyException(Errors::RESOURCE_NOT_FOUND);
             }
@@ -387,7 +388,7 @@ class OrderController extends CRUDController
 
         $rules = [
             'items' => 'array|min:1',
-            'items.*.type' =>  Rule::in(OrderResourceType::getConstants()),
+            'items.*.type' =>  Rule::in(OrderResourceType::getOrderable()),
             'items.*.id' => 'required|numeric',
             'meta.term' => 'required|in:30,365'
         ];

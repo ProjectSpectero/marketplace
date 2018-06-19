@@ -16,6 +16,7 @@ use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
+use App\Libraries\Payment\IPaymentProcessor;
 use App\Node;
 use App\NodeGroup;
 use App\Order;
@@ -315,5 +316,30 @@ class BillingUtils
         Cache::put($cacheKey, $plans, env('USER_PLANS_CACHE_MINUTES', 1));
 
         return $plans;
+    }
+
+    public static function addTransaction (IPaymentProcessor $processor, Invoice $invoice,
+                                    Float $amount, Float $fee,
+                                    String $transactionId, String $transactionType,
+                                    String $reason, String $rawData,
+                                    int $originalTransactionId = -1) : Transaction
+    {
+        $transaction = new Transaction();
+        $transaction->invoice_id = $invoice->id;
+        $transaction->payment_processor = $processor->getName();
+        $transaction->reference = $transactionId;
+        $transaction->type = $transactionType;
+        $transaction->reason = $reason;
+        $transaction->amount = $amount;
+        $transaction->fee = $fee;
+        $transaction->currency = $invoice->currency;
+        $transaction->raw_response = $rawData;
+
+        if ($originalTransactionId != -1)
+            $transaction->original_transaction_id = $originalTransactionId;
+
+        $transaction->saveOrFail();
+
+        return $transaction;
     }
 }

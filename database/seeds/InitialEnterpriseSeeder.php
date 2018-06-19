@@ -193,7 +193,7 @@ class InitialEnterpriseSeeder extends Seeder
         $invoices = [
             [
                 'id' => 1001, 'order_id' => 1001, 'user_id' => $cahpyon->id, 'amount' => 10800, 'tax' => 0, 'currency' => \App\Constants\Currency::USD, 'type' => \App\Constants\InvoiceType::STANDARD,
-                'status' => \App\Constants\InvoiceStatus::PAID, 'due_date' => '2018-03-01', 'transaction' => [ 'processor' => \App\Constants\PaymentProcessor::MANUAL, 'fee' => 45 ]
+                'status' => \App\Constants\InvoiceStatus::PAID, 'due_date' => '2018-02-01', 'transaction' => [ 'processor' => \App\Constants\PaymentProcessor::MANUAL, 'fee' => 45 ]
             ],
             [
                 'id' => 1002, 'order_id' => 1002, 'user_id' => $rankingPress->id, 'amount' => 60, 'tax' => 0, 'currency' => \App\Constants\Currency::USD, 'type' => \App\Constants\InvoiceType::STANDARD,
@@ -201,7 +201,7 @@ class InitialEnterpriseSeeder extends Seeder
             ],
             [
                 'id' => 1004, 'order_id' => 1001, 'user_id' => $cahpyon->id, 'amount' => 10800, 'tax' => 0, 'currency' => \App\Constants\Currency::USD, 'type' => \App\Constants\InvoiceType::STANDARD,
-                'status' => \App\Constants\InvoiceStatus::PAID, 'due_date' => '2018-04-01', 'transaction' => [ 'processor' => \App\Constants\PaymentProcessor::MANUAL, 'fee' => 45 ]
+                'status' => \App\Constants\InvoiceStatus::PAID, 'due_date' => '2018-03-01', 'transaction' => [ 'processor' => \App\Constants\PaymentProcessor::MANUAL, 'fee' => 45 ]
             ],
             [
                 'id' => 1005, 'order_id' => 1002, 'user_id' => $rankingPress->id, 'amount' => 60, 'tax' => 0, 'currency' => \App\Constants\Currency::USD, 'type' => \App\Constants\InvoiceType::STANDARD,
@@ -209,6 +209,10 @@ class InitialEnterpriseSeeder extends Seeder
             ],
             [
                 'id' => 1006, 'order_id' => 1001, 'user_id' => $cahpyon->id, 'amount' => 10800, 'tax' => 0, 'currency' => \App\Constants\Currency::USD, 'type' => \App\Constants\InvoiceType::STANDARD,
+                'status' => \App\Constants\InvoiceStatus::PAID, 'due_date' => '2018-04-01', 'transaction' => [ 'processor' => \App\Constants\PaymentProcessor::MANUAL, 'fee' => 45 ]
+            ],
+            [
+                'id' => 1007, 'order_id' => 1001, 'user_id' => $cahpyon->id, 'amount' => 10800, 'tax' => 0, 'currency' => \App\Constants\Currency::USD, 'type' => \App\Constants\InvoiceType::STANDARD,
                 'status' => \App\Constants\InvoiceStatus::PAID, 'due_date' => '2018-05-01', 'transaction' => [ 'processor' => \App\Constants\PaymentProcessor::MANUAL, 'fee' => 45 ]
             ],
             [

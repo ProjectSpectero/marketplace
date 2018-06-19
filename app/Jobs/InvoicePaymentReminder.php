@@ -13,13 +13,16 @@ use Illuminate\Support\Facades\Mail;
 
 class InvoicePaymentReminder extends BaseJob
 {
+    protected $signature = "invoice:remind";
+    protected $description = "Notify user that they have overdue invoices that need paying.";
+
     /**
      * Create a new job instance.
      *
      */
     public function __construct()
     {
-
+        parent::__construct();
     }
 
     /**

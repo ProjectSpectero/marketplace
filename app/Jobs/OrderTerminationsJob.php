@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Mail;
 
 class OrderTerminationsJob extends BaseJob
 {
+    protected $signature = "order:terminate-overdue";
+    protected $description = "Terminate overdue order(s).";
+
     /**
      * Create a new job instance.
      *
@@ -19,7 +22,7 @@ class OrderTerminationsJob extends BaseJob
      */
     public function __construct()
     {
-        //
+        parent::__construct();
     }
 
     /**

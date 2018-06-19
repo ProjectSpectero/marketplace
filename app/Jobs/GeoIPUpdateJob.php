@@ -2,17 +2,20 @@
 
 namespace App\Jobs;
 
-use Illuminate\Console\Scheduling\Schedule;
 
 class GeoIPUpdateJob extends BaseJob
 {
+
+    protected $signature = "geoip:update";
+    protected $description = "Update MaxMind GeoIP DB(s)";
+
     /**
      * Create a new job instance.
      *
      */
     public function __construct()
     {
-
+        parent::__construct();
     }
 
     /**

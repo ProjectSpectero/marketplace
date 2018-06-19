@@ -20,6 +20,9 @@ use Illuminate\Support\Facades\Mail;
 
 class AutoChargeJob extends BaseJob
 {
+    protected $signature = "invoice:auto-charge";
+    protected $description = "Try to charge due invoices from stored Cards or Credit balance.";
+
     /**
      * Create a new job instance.
      *
@@ -27,7 +30,7 @@ class AutoChargeJob extends BaseJob
      */
     public function __construct()
     {
-        //
+        parent::__construct();
     }
 
     /**

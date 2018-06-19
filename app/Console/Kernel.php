@@ -27,7 +27,12 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-
+        AutoChargeJob::class,
+        GeoIPUpdateJob::class,
+        InvoicePaymentReminder::class,
+        OrderTerminationsJob::class,
+        PeriodicCleanupJob::class,
+        RecurringInvoiceHandlingJob::class
     ];
 
     /**

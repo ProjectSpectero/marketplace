@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class RecurringInvoiceHandlingJob extends BaseJob
 {
+    protected $signature = "invoice:generate";
+    protected $description = "Generate invoices for orders based on their term.";
     /**
      * Create a new job instance.
      *
@@ -18,7 +20,7 @@ class RecurringInvoiceHandlingJob extends BaseJob
      */
     public function __construct()
     {
-        //
+        parent::__construct();
     }
 
     /**

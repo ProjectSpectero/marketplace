@@ -150,7 +150,7 @@ class InitialEnterpriseSeeder extends Seeder
         $rankingPressOrder->user_id = $rankingPress->id;
 
         $cahpyonOrder->accessor = 'blue:sQUqqGKgkwKY8JFk';
-        $rankingPressOrder->accessor = 'green:MPp8NhuZ8aHjajaE';
+        $rankingPressOrder->accessor = 'yellow:5DXUey8qk86pVK8b';
 
         $cahpyonOrder->last_invoice_id = 1009;
         $rankingPressOrder->last_invoice_id = 1010;
@@ -261,6 +261,10 @@ class InitialEnterpriseSeeder extends Seeder
             {
                 $invoice->{$key} = $value;
             }
+
+            $invoice->created_at = $data['due_date'];
+            $invoice->updated_at = $data['due_date'];
+
             $invoice->saveOrFail();
 
             $transaction = \App\Libraries\BillingUtils::addTransaction($processor, $invoice, $invoice->amount, $transactionDetails['fee'],

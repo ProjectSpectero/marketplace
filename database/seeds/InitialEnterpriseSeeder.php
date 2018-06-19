@@ -83,7 +83,7 @@ class InitialEnterpriseSeeder extends Seeder
             $ip->save();
 
         // CPH -> blue resources
-        for ($i = 12500; $i < 15500; $i++)
+        for ($i = 12500; $i < 15501; $i++)
         {
             foreach ($allIPs as $ip)
             {

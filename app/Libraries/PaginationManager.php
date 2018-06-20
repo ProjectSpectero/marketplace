@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Validator;
 
 class PaginationManager
 {
-    public static function paginate(Request $request, Builder $builder) : JsonResponse
+    public static function paginate(Request $request, Builder $builder, array $columns = []) : JsonResponse
     {
         /** @var \Illuminate\Validation\Validator $v */
         $v = Validator::make($request->all(), [
@@ -28,7 +28,7 @@ class PaginationManager
         $requestedPage = $request->get('page', 1);
 
         /** @var LengthAwarePaginator $paginatedResource */
-        $paginatedResource = static::internalPaginate($request, $builder)->toArray();
+        $paginatedResource = static::internalPaginate($request, $builder, $columns)->toArray();
 
         if ($requestedPage > $paginatedResource['last_page'] && $requestedPage != 1)
             throw new UserFriendlyException(Errors::REQUESTED_PAGE_DOES_NOT_EXIST);
@@ -39,14 +39,18 @@ class PaginationManager
         return Utility::generateResponse($data, [], null, 'v1', ResponseType::OK, [], $paginatedResource);
     }
 
-    public static function internalPaginate (Request $request, Builder $builder)
+    public static function internalPaginate (Request $request, Builder $builder, array $columns = [])
     {
         $perPage = $request->get('perPage', config('pagination.default_per_page', 10));
         $maxPerPage = config('pagination.max_per_page', 15);
 
         $perPage = $perPage <= $maxPerPage ? $perPage : $maxPerPage;
 
-        $paginated = $builder->paginate($perPage);
+        if (count($columns) != 0)
+            $paginated = $builder->paginate($perPage, $columns);
+        else
+            $paginated = $builder->paginate($perPage);
+
         $paginated->appends($request->query());
 
         return $paginated;

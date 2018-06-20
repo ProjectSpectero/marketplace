@@ -13,7 +13,9 @@ use App\Constants\OrderResourceType;
 use App\Constants\OrderStatus;
 use App\Constants\PaymentProcessor;
 use App\Constants\ResponseType;
+use App\Constants\ServiceType;
 use App\Constants\UserRoles;
+use App\EnterpriseResource;
 use App\Errors\UserFriendlyException;
 use App\Events\BillingEvent;
 use App\Invoice;
@@ -89,8 +91,20 @@ class OrderController extends CRUDController
         $user = $request->user();
         $query = SearchManager::process($request, 'order', Order::findForUser($user->id));
 
-        if ($action != null && $action == 'active')
-            $query->where('status', OrderStatus::ACTIVE);
+        switch ($action)
+        {
+            case 'active':
+                $query->where('status', OrderStatus::ACTIVE);
+                break;
+
+            case strtolower(OrderResourceType::ENTERPRISE):
+                $query->join('order_line_items', 'orders.id', '=', 'order_line_items.order_id')
+                    ->where('order_line_items.type', '=', OrderResourceType::ENTERPRISE);
+
+                $query->select('orders.*')->distinct()->groupBy('orders.id');
+
+                break;
+        }
 
         return PaginationManager::paginate($request, $query);
     }
@@ -284,6 +298,7 @@ class OrderController extends CRUDController
                      */
                     break;
                 default:
+                    // TODO: Add handling for ent order type here.
                     BillingUtils::cancelOrder($order);
                     throw new UserFriendlyException(Errors::RESOURCE_NOT_FOUND);
             }
@@ -340,7 +355,7 @@ class OrderController extends CRUDController
             }
 
             $lineItem = new OrderLineItem();
-            $lineItem->description = $resource->friendly_name;
+            $lineItem->description = sprintf("%s: %s (%s)", $type, $resource->id, $resource->friendly_name);
             $lineItem->order_id = $orderId;
             $lineItem->type = $type;
             $lineItem->resource = $resource->id;
@@ -373,7 +388,7 @@ class OrderController extends CRUDController
 
         $rules = [
             'items' => 'array|min:1',
-            'items.*.type' =>  Rule::in(OrderResourceType::getConstants()),
+            'items.*.type' =>  Rule::in(OrderResourceType::getOrderable()),
             'items.*.id' => 'required|numeric',
             'meta.term' => 'required|in:30,365'
         ];
@@ -424,6 +439,29 @@ class OrderController extends CRUDController
                         ];
                     }
                 }
+            case OrderResourceType::ENTERPRISE:
+                // Our magnum opus
+                $enterpriseResources = EnterpriseResource::findForOrderLineItem($item)->get();
+
+                $skeletonResource = [
+                    'accessConfig' => null,
+                    'accessCredentials' => 'SPECTERO_USERNAME_PASSWORD',
+                    'accessReference' => []
+                ];
+
+
+                /** @var EnterpriseResource $enterpriseResource */
+                foreach ($enterpriseResources as $enterpriseResource)
+                {
+                    $skeletonResource['accessReference'][] = $enterpriseResource->accessor();
+                }
+
+                $connectionResources['resource']['reference'][] = [
+                    'type' => ServiceType::HTTPProxy,
+                    'resource' => $skeletonResource
+                ];
+
+                break;
         }
 
         return $connectionResources;
@@ -434,6 +472,10 @@ class OrderController extends CRUDController
         /** @var Order $order */
         $order = Order::findOrFail($id);
         $this->authorizeResource($order, 'order.update');
+
+        // TODO: Build support for full ent handling, and at that point enable accessor updates.
+        if ($order->isEnterprise())
+            throw new UserFriendlyException(Errors::CONTACT_ACCOUNT_REPRESENTATIVE, ResponseType::FORBIDDEN);
 
         // Alright, this is the owner. Let's lookup its line items and reset their sync statuses one by one.
         /** @var OrderLineItem $lineItem */

@@ -10,4 +10,9 @@ class Service extends BaseModel
     {
         return $this->belongsTo(Node::class);
     }
+
+    public function getConnectionResourceAttribute ($value)
+    {
+        return json_decode($value, true);
+    }
 }

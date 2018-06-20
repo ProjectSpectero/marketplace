@@ -4,7 +4,7 @@
 namespace App\Constants;
 
 
-class Currency
+class Currency extends Holder
 {
     const USD = 'USD';
 }

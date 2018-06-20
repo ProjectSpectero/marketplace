@@ -21,6 +21,9 @@ class UserMetaKeys extends Holder
 
     const StripeCustomerIdentifier = 'stripe_customer_identifier';
     const StripeCardToken = 'stripe_card_token';
+
+    // This key represents if the large attempted charge on this stored card was successful or not.
+    const StoredCardValid = 'stored_card_valid';
     const StoredCardIdentifier = 'stored_card_identifier';
 
     static function getPublicMetaKeys()

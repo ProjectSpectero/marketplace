@@ -117,15 +117,14 @@ class UsersTableSeeder extends Seeder
 
             try
             {
-                UserMeta::addOrUpdateMeta($user,UserMetaKeys::AddressLineOne, env('LEGAL_COMPANY_ADDRESS_PARTIAL_1'));
-                UserMeta::addOrUpdateMeta($user,UserMetaKeys::AddressLineTwo, env('LEGAL_COMPANY_ADDRESS_PARTIAL_2'));
+                UserMeta::addOrUpdateMeta($user,UserMetaKeys::AddressLineOne, "300 Delaware Ave.");
                 UserMeta::addOrUpdateMeta($user,UserMetaKeys::Organization, 'Spectero');
                 UserMeta::addOrUpdateMeta($user, UserMetaKeys::TaxIdentification, 'FRC-3-612A1521');
                 UserMeta::addOrUpdateMeta($user, UserMetaKeys::PreferredCurrency, 'USD');
-                UserMeta::addOrUpdateMeta($user, UserMetaKeys::City, 'Shinagawa-ku');
-                UserMeta::addOrUpdateMeta($user, UserMetaKeys::State, 'Tokyo');
-                UserMeta::addOrUpdateMeta($user, UserMetaKeys::Country, 'JP');
-                UserMeta::addOrUpdateMeta($user, UserMetaKeys::PostCode, 68005);
+                UserMeta::addOrUpdateMeta($user, UserMetaKeys::City, 'Wilmington');
+                UserMeta::addOrUpdateMeta($user, UserMetaKeys::State, 'Delaware');
+                UserMeta::addOrUpdateMeta($user, UserMetaKeys::Country, 'US');
+                UserMeta::addOrUpdateMeta($user, UserMetaKeys::PostCode, 19801);
                 UserMeta::addOrUpdateMeta($user, UserMetaKeys::StripeCardToken, array_random($stripeTokens));
             }
             catch (\App\Errors\FatalException $e)

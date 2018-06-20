@@ -22,7 +22,6 @@ class PlanController extends V1Controller
         if (! isset($plans[$name]))
             throw new ModelNotFoundException();
 
-
         return $this->respond($plans[$name]);
     }
 }

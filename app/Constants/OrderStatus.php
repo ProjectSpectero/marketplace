@@ -18,4 +18,11 @@ class OrderStatus extends Holder
             self::PENDING, self::AUTOMATED_FRAUD_CHECK, self::MANUAL_FRAUD_CHECK
         ];
     }
+
+    public static function getPayable () : array
+    {
+        return [
+          self::PENDING, self::ACTIVE
+        ];
+    }
 }

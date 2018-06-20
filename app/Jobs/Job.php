@@ -3,11 +3,13 @@
 namespace App\Jobs;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Console\Command;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-abstract class Job implements ShouldQueue
+abstract class Job extends Command
+    implements ShouldQueue
 {
     /*
     |--------------------------------------------------------------------------
@@ -21,4 +23,9 @@ abstract class Job implements ShouldQueue
     */
 
     use InteractsWithQueue, Queueable, SerializesModels;
+
+    public function __construct()
+    {
+        parent::__construct();
+    }
 }

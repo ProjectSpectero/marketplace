@@ -2,6 +2,9 @@
 
 namespace App;
 
+use App\Constants\OrderResourceType;
+use App\Constants\OrderStatus;
+
 class Order extends BaseModel
 {
     protected $with = [ 'lineItems', 'lastInvoice' ];
@@ -27,5 +30,17 @@ class Order extends BaseModel
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function isEnterprise () : bool
+    {
+        foreach ($this->lineItems as $lineItem)
+        {
+            if ($lineItem->status == OrderStatus::ACTIVE
+            && $lineItem->type == OrderResourceType::ENTERPRISE)
+                return true;
+        }
+
+        return false;
     }
 }

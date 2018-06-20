@@ -16,12 +16,14 @@ use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
+use App\Libraries\Payment\IPaymentProcessor;
 use App\Node;
 use App\NodeGroup;
 use App\Order;
 use App\Transaction;
 use App\User;
 use App\UserMeta;
+use Cache;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -106,11 +108,11 @@ class BillingUtils
 
     /**
      * @param Order $order
-     * @param Carbon $dueNext
+     * @param Carbon $dueDate
      * @return Invoice
      * @throws \Throwable
      */
-    public static function createInvoice (Order $order, Carbon $dueNext) : Invoice
+    public static function createInvoice (Order $order, Carbon $dueDate) : Invoice
     {
         $invoice = new Invoice();
         $invoice->order_id = $order->id;
@@ -124,7 +126,7 @@ class BillingUtils
         $invoice->amount = $amount;
         $invoice->tax = $tax;
         $invoice->status = InvoiceStatus::UNPAID;
-        $invoice->due_date = $dueNext;
+        $invoice->due_date = $dueDate;
         $invoice->last_reminder_sent = Carbon::now();
 
         // TODO: Default into USD for now, we'll fix this later
@@ -144,6 +146,9 @@ class BillingUtils
      */
     public static function getInvoiceDueAmount (Invoice $invoice)
     {
+        if ($invoice->status == InvoiceStatus::CANCELLED)
+            return 0;
+
         $existingAmount = Transaction::where('invoice_id', $invoice->id)
             ->where('type', PaymentType::CREDIT)
             ->sum('amount');
@@ -155,6 +160,10 @@ class BillingUtils
 
     public static function cancelOrder (Order $order)
     {
+        // TODO: Build support for full ent handling, and at that point enable cancellations.
+        if ($order->isEnterprise())
+            throw new UserFriendlyException(Errors::CONTACT_ACCOUNT_REPRESENTATIVE, ResponseType::FORBIDDEN);
+
         foreach ($order->lineItems as $lineItem)
         {
             $lineItem->status = OrderStatus::CANCELLED;
@@ -220,7 +229,17 @@ class BillingUtils
                     break;
 
                 case NodeMarketModel::LISTED_DEDICATED:
-                    if ($resource->getOrders(OrderStatus::ACTIVE)->count() != 0)
+                    $existingOrders = $resource->getOrders(OrderStatus::ACTIVE)->get();
+                    $existingCount = count($existingOrders);
+
+                    if ($existingCount == 1 && $order->status == OrderStatus::ACTIVE)
+                    {
+                        // It might be THIS order, we need to verify that for already active orders.
+                        $resourceOrder = $existingOrders->first();
+                        if ($order->id == $resourceOrder->id)
+                            continue;
+                    }
+                    elseif ($existingCount != 0)
                     {
                         if ($throwsExceptions)
                             throw new UserFriendlyException(Errors::RESOURCE_SOLD_OUT, ResponseType::FORBIDDEN);
@@ -240,5 +259,91 @@ class BillingUtils
         }
 
         return $errors;
+    }
+
+    private static function formulateUserPlanCacheKey (User $user)
+    {
+        return 'core.user.' . $user->id . '.plans';
+    }
+
+    public static function getUserPlans (User $user)
+    {
+        $cacheKey = static::formulateUserPlanCacheKey($user);
+        if (Cache::has($cacheKey))
+            return Cache::get($cacheKey);
+
+
+        /** @var array<Order> $orders */
+        $orders = Order::findForUser($user->id)
+            ->where('status', OrderStatus::ACTIVE)
+            ->get();
+
+        $plans = [];
+        $definedPlans = config('plans', []);
+
+        /** @var Order $order */
+        foreach ($orders as $order)
+        {
+            foreach ($order->lineItems as $lineItem)
+            {
+                // Perks are only bestowed based on current, active subscriptions.
+                if ($lineItem->status !== OrderStatus::ACTIVE)
+                    continue;
+
+                switch ($lineItem->type)
+                {
+                    case OrderResourceType::ENTERPRISE:
+                        if (! in_array(strtolower(OrderResourceType::ENTERPRISE), $plans))
+                            $plans[] = strtolower(OrderResourceType::ENTERPRISE);
+
+                        break;
+
+                    case OrderResourceType::NODE:
+                        $node = Node::find($lineItem->resource);
+                        if ($node != null && $node->plan != null
+                            && isset($definedPlans[$node->plan]) && ! in_array($node->plan, $plans))
+                            $plans[] = $node->plan;
+
+                        break;
+
+                    case OrderResourceType::NODE_GROUP:
+                        $group = NodeGroup::find($lineItem->resource);
+                        if ($group != null && $group->plan != null
+                            && isset($definedPlans[$group->plan])  && ! in_array($group->plan, $plans))
+                            $plans[] = $group->plan;
+
+                        break;
+                }
+            }
+        }
+
+        Cache::put($cacheKey, $plans, env('USER_PLANS_CACHE_MINUTES', 1));
+
+        return $plans;
+    }
+
+    public static function addTransaction (IPaymentProcessor $processor, Invoice $invoice,
+                                    Float $amount, Float $fee,
+                                    String $transactionId, String $transactionType,
+                                    String $reason, String $rawData,
+                                    int $originalTransactionId = -1) : Transaction
+    {
+        $transaction = new Transaction();
+        $transaction->invoice_id = $invoice->id;
+        $transaction->payment_processor = $processor->getName();
+        $transaction->reference = $transactionId;
+        $transaction->type = $transactionType;
+        $transaction->reason = $reason;
+        $transaction->amount = $amount;
+        $transaction->fee = $fee;
+        $transaction->currency = $invoice->currency;
+        $transaction->raw_response = $rawData;
+
+        if ($originalTransactionId != -1)
+            $transaction->original_transaction_id = $originalTransactionId;
+
+        $transaction->saveOrFail();
+
+        return $transaction;
     }
 }

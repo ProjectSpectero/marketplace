@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 class PeriodicCleanupJob extends BaseJob
 {
+    protected $signature = "core:housekeeping";
+    protected $description = "Cleanup expired DB entities of various kind(s).";
     /**
      * Create a new job instance.
      *
@@ -14,7 +16,7 @@ class PeriodicCleanupJob extends BaseJob
      */
     public function __construct()
     {
-        //
+        parent::__construct();
     }
 
     /**
@@ -24,6 +26,7 @@ class PeriodicCleanupJob extends BaseJob
      */
     public function handle()
     {
+        \Log::info("Cleaning up stale tokens/resources.");
 
         DB::table('password_reset_tokens')
             ->where('expires', '<=', Carbon::now())

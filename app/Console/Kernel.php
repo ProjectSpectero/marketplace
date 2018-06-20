@@ -2,21 +2,13 @@
 
 namespace App\Console;
 
-use App\Constants\InvoiceStatus;
-use App\Constants\OrderStatus;
 use App\Jobs\AutoChargeJob;
 use App\Jobs\GeoIPUpdateJob;
 use App\Jobs\InvoicePaymentReminder;
 use App\Jobs\OrderTerminationsJob;
 use App\Jobs\PeriodicCleanupJob;
 use App\Jobs\RecurringInvoiceHandlingJob;
-use App\Libraries\BillingUtils;
-use App\Mail\OrderTerminated;
-use App\Order;
-use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
@@ -27,7 +19,12 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-
+        AutoChargeJob::class,
+        GeoIPUpdateJob::class,
+        InvoicePaymentReminder::class,
+        OrderTerminationsJob::class,
+        PeriodicCleanupJob::class,
+        RecurringInvoiceHandlingJob::class
     ];
 
     /**
@@ -41,6 +38,12 @@ class Kernel extends ConsoleKernel
         /*
          * Take NOTE: the order here matters, as do the sleep calls (to allow for the listener/event processor to catch up)
          */
+        $recurringInvoicesJob = new RecurringInvoiceHandlingJob();
+        $schedule->call(function() use ($recurringInvoicesJob)
+        {
+            $recurringInvoicesJob->handle();
+        })->daily();
+
         $autoChargeJob = new AutoChargeJob();
         $schedule->call(function() use ($autoChargeJob)
         {
@@ -49,16 +52,10 @@ class Kernel extends ConsoleKernel
             sleep(90);
         })->daily();
 
-        $recurringInvoicesJob = new RecurringInvoiceHandlingJob();
-        $schedule->call(function() use ($recurringInvoicesJob)
-        {
-            $recurringInvoicesJob->handle();
-        })->daily();
-
         $invoiceReminderJob = new InvoicePaymentReminder();
         $schedule->call(function () use ($invoiceReminderJob)
         {
-           $invoiceReminderJob->handle();
+            $invoiceReminderJob->handle();
         })->daily();
 
         $orderTerminationsJob = new OrderTerminationsJob();
@@ -73,8 +70,9 @@ class Kernel extends ConsoleKernel
         })->daily();
 
         $geoIpUpdateJob = new GeoIPUpdateJob();
-        $schedule->exec($geoIpUpdateJob->handle())
-            ->weekly()
-            ->sundays();
+        $schedule->call(function () use ($geoIpUpdateJob, $schedule)
+        {
+            $geoIpUpdateJob->handle($schedule);
+        })->weekly()->sundays();
     }
 }

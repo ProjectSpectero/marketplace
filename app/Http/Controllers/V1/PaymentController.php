@@ -19,7 +19,9 @@ use App\Errors\UserFriendlyException;
 use App\Invoice;
 use App\Libraries\BillingUtils;
 use App\Libraries\Payment\AccountCreditProcessor;
+use App\Libraries\Payment\BasePaymentProcessor;
 use App\Libraries\Payment\IPaymentProcessor;
+use App\Libraries\Payment\ManualPaymentProcessor;
 use App\Libraries\Payment\PaypalProcessor;
 use App\Libraries\Payment\StripeProcessor;
 use App\Node;
@@ -42,21 +44,13 @@ class PaymentController extends V1Controller
         $invoice = Invoice::findOrFail($invoiceId);
         $this->authorizeResource($invoice, 'invoice.pay');
 
-        if ($invoice->status !== InvoiceStatus::UNPAID)
-            throw new UserFriendlyException(Errors::INVOICE_ALREADY_PAID, ResponseType::BAD_REQUEST);
+        if (! in_array($invoice->status, [ InvoiceStatus::UNPAID, InvoiceStatus::PARTIALLY_PAID ]))
+            throw new UserFriendlyException(Errors::INVOICE_STATUS_MISMATCH);
 
         // Credit-add invoices are ONLY payable with Paypal, we will NOT charge cards to add-credit (lowers liability).
-        if ($invoice->type == InvoiceType::CREDIT)
-        {
-            switch ($processor)
-            {
-                case strtolower(PaymentProcessor::PAYPAL):
-                    break;
-
-                default:
-                    throw new UserFriendlyException(Errors::GATEWAY_DISABLED_FOR_PURPOSE, ResponseType::FORBIDDEN);
-            }
-        }
+        if ($invoice->type == InvoiceType::CREDIT
+            && ! in_array($processor, PaymentProcessor::getCreditAddAllowedVia()))
+                throw new UserFriendlyException(Errors::GATEWAY_DISABLED_FOR_PURPOSE, ResponseType::FORBIDDEN);
 
         if ($invoice->type == InvoiceType::STANDARD)
         {
@@ -67,7 +61,10 @@ class PaymentController extends V1Controller
             if ($order == null)
                 throw new UserFriendlyException(Errors::PAYMENT_FAILED);
 
-            // status = ACTIVE is allowed, it might be a renewal payment.
+            if (! in_array($order->status, OrderStatus::getPayable()))
+                throw new UserFriendlyException(Errors::ORDER_STATUS_MISMATCH);
+
+            // Verify that all the order resources are proper.
             BillingUtils::verifyOrder($order, true);
         }
 
@@ -158,19 +155,31 @@ class PaymentController extends V1Controller
 
     private function resolveProcessor (String $processor, Request $request) : IPaymentProcessor
     {
+        /** @var BasePaymentProcessor $init */
+        $init = null;
         switch (strtolower($processor))
         {
             case strtolower(PaymentProcessor::PAYPAL):
-                return new PaypalProcessor($request);
+                $init = new PaypalProcessor($request);
+                break;
 
             case strtolower(PaymentProcessor::STRIPE):
-                return new StripeProcessor($request);
+                $init = new StripeProcessor($request);
+                break;
 
             case strtolower(PaymentProcessor::ACCOUNT_CREDIT):
-                return new AccountCreditProcessor($request);
+                $init = new AccountCreditProcessor($request);
+                break;
+
+            case strtolower(PaymentProcessor::MANUAL):
+                $init = new ManualPaymentProcessor($request);
+                break;
 
             default:
-                throw new FatalException(Errors::COULD_NOT_RESOLVE_PAYMENT_PROCESSOR);
+                throw new UserFriendlyException(Errors::UNKNOWN_PAYMENT_PROCESSOR);
         }
+
+        $init->setCaller($this);
+        return $init;
     }
 }

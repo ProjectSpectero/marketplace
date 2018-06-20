@@ -10,6 +10,7 @@ use App\Constants\UserRoles;
 use App\Constants\UserStatus;
 use App\Errors\UserFriendlyException;
 use App\Events\UserEvent;
+use App\Libraries\BillingUtils;
 use App\Libraries\PaginationManager;
 use App\Libraries\PermissionManager;
 use App\Libraries\SearchManager;
@@ -48,6 +49,7 @@ class UserController extends CRUDController
 
         $data = array_merge($user->toArray(), UserMeta::getUserPublicMeta($user));
         $data['card'] = $cardInfo;
+        $data['plans'] = BillingUtils::getUserPlans($user);
 
         return $this->respond($data);
     }

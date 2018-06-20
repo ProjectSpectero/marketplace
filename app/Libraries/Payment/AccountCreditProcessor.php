@@ -24,15 +24,12 @@ use Illuminate\Http\Request;
 
 class AccountCreditProcessor extends BasePaymentProcessor
 {
-
-    private $request;
-
     public function __construct(Request $request)
     {
         if (env('ACCOUNT_CREDIT_ENABLED', false) != true)
             throw new UserFriendlyException(Messages::PAYMENT_PROCESSOR_NOT_ENABLED, ResponseType::BAD_REQUEST);
 
-        $this->request = $request;
+        parent::__construct($request);
     }
 
     function getName(): string
@@ -72,6 +69,7 @@ class AccountCreditProcessor extends BasePaymentProcessor
             }
             else
             {
+                // We'll only charge however much is available as credit. The user will have to supplement the invoice with another payment method later.
                 $amountToCharge = $credit;
                 $credit = 0;
             }

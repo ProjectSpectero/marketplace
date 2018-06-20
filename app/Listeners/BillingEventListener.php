@@ -63,13 +63,17 @@ class BillingEventListener extends BaseListener
                 switch ($object->type)
                 {
                     case PaymentType::CREDIT:
-                        if (BillingUtils::getInvoiceDueAmount($invoice) <= 0)
+                        $currentDueAmount = BillingUtils::getInvoiceDueAmount($invoice);
+
+                        // This checks if the invoice is FULLY paid.
+                        if ($currentDueAmount <= 0)
                         {
                             // Invoice can now be marked as paid, activate any associated orders
                             $invoice->status = InvoiceStatus::PAID;
                             $invoice->saveOrFail();
 
-                            if ($invoice->order != null)
+                            if ($invoice->type == InvoiceType::STANDARD
+                            && $invoice->order != null)
                             {
                                 $order = $invoice->order;
                                 $order->status = OrderStatus::ACTIVE;
@@ -78,6 +82,7 @@ class BillingEventListener extends BaseListener
                                     $item->status = OrderStatus::ACTIVE;
                                     $item->saveOrFail();
                                 }
+                                // TODO: figure out the actual impact of this call, particularly whether
                                 $order->due_next = $order->due_next->addDays($order->term);
                                 $order->saveOrFail();
                             }
@@ -91,6 +96,13 @@ class BillingEventListener extends BaseListener
                                 $user->saveOrFail();
                             }
                         }
+                        else if ($currentDueAmount > 0 && $currentDueAmount < $invoice->amount)
+                        {
+                            // TODO: Figure out the multi-currency impact here someday.
+                            // This block is what transitions the invoice out of a 'processing' status even if it's not fully paid.
+                            $invoice->status = InvoiceStatus::PARTIALLY_PAID;
+                            $invoice->saveOrFail();
+                        }
 
                         // Acknowledgement goes out whether the invoice is paid in full or not.
                         Mail::to($user->email)->queue(new InvoicePaid($invoice, $object));
@@ -98,6 +110,7 @@ class BillingEventListener extends BaseListener
 
                     case PaymentType::DEBIT:
                         // TODO: terminate/cancel stuff if refunds happen
+                        break;
                 }
                 AccountingManager::account($object);
 

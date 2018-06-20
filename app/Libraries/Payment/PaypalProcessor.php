@@ -27,7 +27,6 @@ class PaypalProcessor extends BasePaymentProcessor
 {
     private $provider;
     private $invoice;
-    private $request;
 
     /**
      * PaypalProcessor constructor.
@@ -38,7 +37,8 @@ class PaypalProcessor extends BasePaymentProcessor
             throw new UserFriendlyException(Messages::PAYMENT_PROCESSOR_NOT_ENABLED, ResponseType::BAD_REQUEST);
 
         $this->provider = PayPal::setProvider('express_checkout');
-        $this->request = $request;
+
+        parent::__construct($request);
     }
 
     function process(Invoice $invoice) : PaymentProcessorResponse
@@ -158,12 +158,14 @@ class PaypalProcessor extends BasePaymentProcessor
             break;
 
             case "ipn":
+                // TODO: Figure out IPN support for recurring payments support over Paypal someday.
+                // Using a custom string because this error will eventually be taken out.
+                throw new UserFriendlyException("UNSUPPORTED_MODE");
+
                 $request->merge(['cmd' => '_notify-validate']);
                 $post = $request->all();
 
                 $response = $this->provider->verifyIPN($post);
-
-                dd($response);
                 break;
         }
 

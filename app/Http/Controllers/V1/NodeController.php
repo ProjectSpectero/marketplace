@@ -214,9 +214,9 @@ class NodeController extends CRUDController
             'ip' => 'required|ip',
             'port' => 'required|integer|min:1024|max:65534',
             'access_token' => 'sometimes|min:5|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
-            'friendly_name' => 'sometimes|alpha_dash',
-            'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstants()) ],
-            'price' => 'required_with:market_model|numeric|min:5'
+            'friendly_name' => 'sometimes|alpha_dash|max:64',
+            'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstraints()) ],
+            'price' => 'required_with:market_model|numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999)
         ];
 
         $reverifyRules = [
@@ -373,7 +373,6 @@ class NodeController extends CRUDController
         }
         catch (\Exception $error)
         {
-            dd($error);
             throw new UserFriendlyException(Errors::NODE_UNREACHABLE, ResponseType::SERVICE_UNAVAILABLE);
         }
 

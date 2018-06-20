@@ -31,7 +31,6 @@ class StripeProcessor extends BasePaymentProcessor
 {
 
     private $provider;
-    private $request;
 
     /**
      * StripeProcessor constructor.
@@ -42,8 +41,9 @@ class StripeProcessor extends BasePaymentProcessor
         if (env('STRIPE_ENABLED', false) != true)
             throw new UserFriendlyException(Messages::PAYMENT_PROCESSOR_NOT_ENABLED, ResponseType::BAD_REQUEST);
 
-        $this->provider = new Stripe(env('STRIPE_MODE') == 'sandbox' ? env('STRIPE_SANDBOX_SECRET_KEY') : env('STRIPE_LIVE_SECRET_KEY'));
-        $this->request = $request;
+        $this->provider = new Stripe(env('STRIPE_MODE', 'sandbox') == 'sandbox' ? env('STRIPE_SANDBOX_SECRET_KEY') : env('STRIPE_LIVE_SECRET_KEY'));
+
+        parent::__construct($request);
     }
 
     function getName(): string
@@ -79,23 +79,31 @@ class StripeProcessor extends BasePaymentProcessor
         if ($customerId instanceof Builder)
             throw new UserFriendlyException(Errors::NO_STORED_CARD);
 
-
-
         if ($customerId instanceof UserMeta)
             $customerId = $customerId->meta_value;
 
+        $order = $invoice->order;
+        if ($order != null)
+            $orderId = $order->id;
+        else
+            $orderId = null;
 
         $metadata = [
             'invoiceId' => $invoice->id,
-            'orderId' => $invoice->order->id != null ? $invoice->order->id : null
+            'orderId' => $orderId
         ];
+
+        $companyName = env('COMPANY_NAME', 'Spectero');
+        $statementDescriptor = $companyName. ' #' . $invoice->id;
+        if (strlen($statementDescriptor) > 22)
+            $statementDescriptor = 'SPCInv #' . $invoice->id;
 
         try
         {
             $descriptor = [
                 'currency' => $invoice->currency,
                 'amount'   => $dueAmount,
-                'statement_descriptor' => env('COMPANY_NAME', 'Spectero') . ' Invoice ' . $invoice->id,
+                'statement_descriptor' => $statementDescriptor,
                 'metadata' => $metadata,
                 'expand' => [ "balance_transaction" ]
             ];
@@ -120,6 +128,7 @@ class StripeProcessor extends BasePaymentProcessor
         {
             $cardIdentifier = $charge['source']['brand'] . ' ' . $charge['source']['last4'] . ' ' . $charge['source']['exp_month'] . '/' . $charge['source']['exp_year'];
             UserMeta::addOrUpdateMeta($user, UserMetaKeys::StoredCardIdentifier, $cardIdentifier);
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::StoredCardValid, true);
         }
 
         // TODO: integrate fraud check here before accepting transaction.

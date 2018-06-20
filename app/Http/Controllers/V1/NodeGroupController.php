@@ -46,10 +46,9 @@ class NodeGroupController extends CRUDController
         $this->authorizeResource();
 
         $rules = [
-            'friendly_name' => 'required',
-            'status' => 'required',
-            'market_model' => 'required',
-            'price' => 'required'
+            'friendly_name' => 'required|alpha_dash|max:64',
+            'market_model' => [ 'required', Rule::in(NodeMarketModel::getConstraints()) ],
+            'price' => 'required|numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999)
         ];
 
         $this->validate($request, $rules);
@@ -57,7 +56,7 @@ class NodeGroupController extends CRUDController
 
         $nodeGroup = new NodeGroup();
         $nodeGroup->friendly_name = $input['friendly_name'];
-        $nodeGroup->status = $input['status'];
+        $nodeGroup->status = NodeStatus::CONFIRMED;
         $nodeGroup->user_id = $request->user()->id;
         $nodeGroup->market_model = $input['market_model'];
         $nodeGroup->price = $input['price'];

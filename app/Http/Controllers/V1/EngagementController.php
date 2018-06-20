@@ -41,6 +41,10 @@ class EngagementController extends CRUDController
         if ($lineItem->status != OrderStatus::ACTIVE)
             throw new UserFriendlyException(Errors::ORDER_NOT_ACTIVE_YET);
 
+        // TODO: Build support for full ent handling, and at that point enable cancellations.
+        if ($lineItem->type == OrderResourceType::ENTERPRISE)
+            throw new UserFriendlyException(Errors::CONTACT_ACCOUNT_REPRESENTATIVE, ResponseType::FORBIDDEN);
+
         $lineItem->status = OrderStatus::CANCELLED;
         $lineItem->saveOrFail();
 

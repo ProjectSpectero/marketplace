@@ -473,6 +473,10 @@ class OrderController extends CRUDController
         $order = Order::findOrFail($id);
         $this->authorizeResource($order, 'order.update');
 
+        // TODO: Build support for full ent handling, and at that point enable accessor updates.
+        if ($order->isEnterprise())
+            throw new UserFriendlyException(Errors::CONTACT_ACCOUNT_REPRESENTATIVE, ResponseType::FORBIDDEN);
+
         // Alright, this is the owner. Let's lookup its line items and reset their sync statuses one by one.
         /** @var OrderLineItem $lineItem */
         foreach ($order->lineItems as $lineItem)

@@ -160,6 +160,10 @@ class BillingUtils
 
     public static function cancelOrder (Order $order)
     {
+        // TODO: Build support for full ent handling, and at that point enable cancellations.
+        if ($order->isEnterprise())
+            throw new UserFriendlyException(Errors::CONTACT_ACCOUNT_REPRESENTATIVE, ResponseType::FORBIDDEN);
+
         foreach ($order->lineItems as $lineItem)
         {
             $lineItem->status = OrderStatus::CANCELLED;

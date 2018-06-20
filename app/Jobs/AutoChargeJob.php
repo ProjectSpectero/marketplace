@@ -51,6 +51,9 @@ class AutoChargeJob extends BaseJob
             ->distinct()
             ->get();
 
+        $count = count($query);
+        \Log::info("Found $count possible order(s) to attempt to automatically charge.");
+
         $request = new Request();
 
         foreach ($query as $invoice)

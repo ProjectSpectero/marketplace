@@ -38,6 +38,12 @@ class Kernel extends ConsoleKernel
         /*
          * Take NOTE: the order here matters, as do the sleep calls (to allow for the listener/event processor to catch up)
          */
+        $recurringInvoicesJob = new RecurringInvoiceHandlingJob();
+        $schedule->call(function() use ($recurringInvoicesJob)
+        {
+            $recurringInvoicesJob->handle();
+        })->daily();
+
         $autoChargeJob = new AutoChargeJob();
         $schedule->call(function() use ($autoChargeJob)
         {
@@ -46,16 +52,10 @@ class Kernel extends ConsoleKernel
             sleep(90);
         })->daily();
 
-        $recurringInvoicesJob = new RecurringInvoiceHandlingJob();
-        $schedule->call(function() use ($recurringInvoicesJob)
-        {
-            $recurringInvoicesJob->handle();
-        })->daily();
-
         $invoiceReminderJob = new InvoicePaymentReminder();
         $schedule->call(function () use ($invoiceReminderJob)
         {
-           $invoiceReminderJob->handle();
+            $invoiceReminderJob->handle();
         })->daily();
 
         $orderTerminationsJob = new OrderTerminationsJob();

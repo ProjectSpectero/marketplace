@@ -43,7 +43,7 @@ class OrderTerminationsJob extends BaseJob
 
         $count = count($orders);
 
-        \Log::info("Found $count order(s) to TERMINATE, proceeding ahead.");
+        \Log::info("Found $count possible order(s) to TERMINATE, proceeding ahead.");
 
         /** @var Order $order */
         foreach ($orders as $order)

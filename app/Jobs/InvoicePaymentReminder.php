@@ -43,6 +43,10 @@ class InvoicePaymentReminder extends BaseJob
             ->whereRaw("TIMESTAMPDIFF(DAY, last_reminder_sent, '$now') >= $overDueBuffer")
             ->get();
 
+        $count = count($query);
+
+        \Log::info("Found $count possible invoice(s) to possibly send payment reminder(s) for.");
+
         foreach ($query as $invoice)
         {
             $user = $invoice->user;

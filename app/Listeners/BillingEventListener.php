@@ -64,13 +64,16 @@ class BillingEventListener extends BaseListener
                 {
                     case PaymentType::CREDIT:
                         $currentDueAmount = BillingUtils::getInvoiceDueAmount($invoice);
+
+                        // This checks if the invoice is FULLY paid.
                         if ($currentDueAmount <= 0)
                         {
                             // Invoice can now be marked as paid, activate any associated orders
                             $invoice->status = InvoiceStatus::PAID;
                             $invoice->saveOrFail();
 
-                            if ($invoice->order != null)
+                            if ($invoice->type == InvoiceType::STANDARD
+                            && $invoice->order != null)
                             {
                                 $order = $invoice->order;
                                 $order->status = OrderStatus::ACTIVE;
@@ -79,6 +82,7 @@ class BillingEventListener extends BaseListener
                                     $item->status = OrderStatus::ACTIVE;
                                     $item->saveOrFail();
                                 }
+                                // TODO: figure out the actual impact of this call, particularly whether
                                 $order->due_next = $order->due_next->addDays($order->term);
                                 $order->saveOrFail();
                             }

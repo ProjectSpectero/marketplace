@@ -26,6 +26,7 @@ class PeriodicCleanupJob extends BaseJob
      */
     public function handle()
     {
+        \Log::info("Cleaning up stale tokens/resources.");
 
         DB::table('password_reset_tokens')
             ->where('expires', '<=', Carbon::now())

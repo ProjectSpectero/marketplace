@@ -108,11 +108,11 @@ class BillingUtils
 
     /**
      * @param Order $order
-     * @param Carbon $dueNext
+     * @param Carbon $dueDate
      * @return Invoice
      * @throws \Throwable
      */
-    public static function createInvoice (Order $order, Carbon $dueNext) : Invoice
+    public static function createInvoice (Order $order, Carbon $dueDate) : Invoice
     {
         $invoice = new Invoice();
         $invoice->order_id = $order->id;
@@ -126,7 +126,7 @@ class BillingUtils
         $invoice->amount = $amount;
         $invoice->tax = $tax;
         $invoice->status = InvoiceStatus::UNPAID;
-        $invoice->due_date = $dueNext;
+        $invoice->due_date = $dueDate;
         $invoice->last_reminder_sent = Carbon::now();
 
         // TODO: Default into USD for now, we'll fix this later

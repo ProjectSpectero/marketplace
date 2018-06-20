@@ -33,20 +33,47 @@ class OrderTerminationsJob extends BaseJob
     public function handle()
     {
         $now = Carbon::now();
+
+        // Why +1? Because 0 is a valid index.
         $overdueDays = env('TERMINATE_AFTER_OVERDUE_DAYS', 7) + 1;
+
         $orders = Order::where('status', OrderStatus::ACTIVE)
-            ->whereRaw("TIMESTAMPDIFF(DAY, due_next, '$now') > '$overdueDays'")
+            ->whereRaw("TIMESTAMPDIFF(DAY, due_next, '$now') > $overdueDays")
             ->get();
 
+        $count = count($orders);
+
+        \Log::info("Found $count order(s) to TERMINATE, proceeding ahead.");
+
+        /** @var Order $order */
         foreach ($orders as $order)
         {
-            if ($order->lastInvoice->status == InvoiceStatus::UNPAID)
+            // Enterprise orders are exempt from auto termination;
+            // TODO: Get ent going, and remove this limitation.
+            if ($order->isEnterprise())
             {
+                \Log::warn("Order #$order->id: this is an enterprise order, termination skipped. Please fish for payment.");
+                continue;
+            }
+
+
+            $lastInvoice = $order->lastInvoice;
+
+            if ($lastInvoice->status == InvoiceStatus::UNPAID)
+            {
+                if (BillingUtils::getInvoiceDueAmount($lastInvoice) <= 0)
+                {
+                    \Log::warn("Order #$order->id: invoice #$lastInvoice->id is marked as UNPAID, but has no dues. Transactions exist.");
+                    continue;
+                }
+
+                \Log::info("Order #$order->id: Auto-cancelling, it was due on $order->due_next.");
+
                 BillingUtils::cancelOrder($order);
                 Mail::to($order->user->email)->queue(new OrderTerminated($order));
             }
             else
-                \Log::warning("Invoice is paid but due_next its still in the past", $order->toArray());
+                \Log::warning("Order #$order->id: Invoice (#$lastInvoice->id) status is $lastInvoice->status (due on $lastInvoice->due_date), but due_next ($order->due_next) is still in the past.");
         }
     }
 }

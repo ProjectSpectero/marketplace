@@ -56,7 +56,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () use ($invoiceReminderJob)
         {
             $invoiceReminderJob->handle();
-        })->daily();
+        })->cron('0 0 */3 * *'); // Once every 3 days
 
         $orderTerminationsJob = new OrderTerminationsJob();
         $schedule->call(function() use ($orderTerminationsJob)

@@ -83,6 +83,9 @@ class AutoChargeJob extends BaseJob
 
                     if (BillingUtils::getInvoiceDueAmount($invoice) > 0)
                     {
+                        // This attempts to charge him every day if it fails. We should probably cap it out at x attempts if the card is a dud.
+                        // TODO: Implement tracking for non-operational stored payment methods.
+
                         \Log::info("$invoice->id has an attached user with a saved CC. Attempting to charge $invoice->amount $invoice->currency via Stripe...");
                         $paymentProcessor = new StripeProcessor($request);
                         $paymentProcessor->enableAutoProcessing();

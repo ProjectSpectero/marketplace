@@ -128,6 +128,7 @@ class StripeProcessor extends BasePaymentProcessor
         {
             $cardIdentifier = $charge['source']['brand'] . ' ' . $charge['source']['last4'] . ' ' . $charge['source']['exp_month'] . '/' . $charge['source']['exp_year'];
             UserMeta::addOrUpdateMeta($user, UserMetaKeys::StoredCardIdentifier, $cardIdentifier);
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::StoredCardValid, true);
         }
 
         // TODO: integrate fraud check here before accepting transaction.

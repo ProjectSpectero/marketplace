@@ -316,6 +316,8 @@ class InitialEnterpriseSeeder extends Seeder
         UserMeta::addOrUpdateMeta($rankingpress, UserMetaKeys::State, 'New South Wales');
         UserMeta::addOrUpdateMeta($rankingpress, UserMetaKeys::Country, 'AU');
         UserMeta::addOrUpdateMeta($rankingpress, UserMetaKeys::PostCode, '2068');
+        UserMeta::addOrUpdateMeta($rankingpress, UserMetaKeys::StripeCustomerIdentifier, 'cus_BEYBilBcw8Ja4L');
+
 
         $internalUser = \App\User::create([
                                               'name' => 'Spectero Team',

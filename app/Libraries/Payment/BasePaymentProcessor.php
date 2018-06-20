@@ -20,6 +20,8 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
     protected $caller;
     protected $request;
 
+    protected $automated = false;
+
     public function __construct(Request $request)
     {
         $this->request = $request;
@@ -76,7 +78,7 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
         if ($amount <= 0)
             throw new UserFriendlyException(Errors::INVOICE_ALREADY_PAID, ResponseType::BAD_REQUEST);
 
-        if ($amount < $lowestAllowedAmount)
+        if ($amount < $lowestAllowedAmount && ! $this->automated)
             throw new UserFriendlyException(Errors::INVOICE_DUE_IS_LOWER_THAN_LOWEST_THRESHOLD, ResponseType::BAD_REQUEST);
 
         return $amount;
@@ -104,5 +106,10 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
     public function setCaller (V1Controller $controller)
     {
         $this->caller = $controller;
+    }
+
+    public function enableAutoProcessing ()
+    {
+        $this->automated = true;
     }
 }

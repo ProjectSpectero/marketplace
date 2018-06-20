@@ -79,8 +79,6 @@ class StripeProcessor extends BasePaymentProcessor
         if ($customerId instanceof Builder)
             throw new UserFriendlyException(Errors::NO_STORED_CARD);
 
-
-
         if ($customerId instanceof UserMeta)
             $customerId = $customerId->meta_value;
 

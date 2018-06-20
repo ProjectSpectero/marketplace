@@ -69,6 +69,7 @@ class AccountCreditProcessor extends BasePaymentProcessor
             }
             else
             {
+                // We'll only charge however much is available as credit. The user will have to supplement the invoice with another payment method later.
                 $amountToCharge = $credit;
                 $credit = 0;
             }

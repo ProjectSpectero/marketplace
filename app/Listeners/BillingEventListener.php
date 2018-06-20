@@ -92,11 +92,10 @@ class BillingEventListener extends BaseListener
                                 $user->saveOrFail();
                             }
                         }
-
-                        // TODO: Figure out the multi-currency impact here someday.
-                        // This block is what transitions the invoice out of a 'processing' status even if it's not fully paid.
-                        if ($currentDueAmount < $invoice->amount)
+                        else if ($currentDueAmount > 0 && $currentDueAmount < $invoice->amount)
                         {
+                            // TODO: Figure out the multi-currency impact here someday.
+                            // This block is what transitions the invoice out of a 'processing' status even if it's not fully paid.
                             $invoice->status = InvoiceStatus::PARTIALLY_PAID;
                             $invoice->saveOrFail();
                         }
@@ -107,6 +106,7 @@ class BillingEventListener extends BaseListener
 
                     case PaymentType::DEBIT:
                         // TODO: terminate/cancel stuff if refunds happen
+                        break;
                 }
                 AccountingManager::account($object);
 

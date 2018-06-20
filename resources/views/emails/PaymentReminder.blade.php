@@ -3,7 +3,7 @@
 @section ('content')
 
     <p>Hi there,</p>
-    <p>This email is to remind you that payment is pending for invoice #{{ $invoice->id }}.</p>
+    <p>This email is to remind you that payment is pending for invoice #{{ $invoice->id }} which is due on {{ $invoice->due_date }}.</p>
 
     <p>To ensure smooth operation your service(s), please make sure to submit payment in time.</p>
 

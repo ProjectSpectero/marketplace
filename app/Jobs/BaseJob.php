@@ -13,14 +13,4 @@ class BaseJob extends Job
     {
         parent::__construct();
     }
-
-    /**
-     * Execute the job.
-     *
-     * @return void
-     */
-    public function handle()
-    {
-        //
-    }
 }

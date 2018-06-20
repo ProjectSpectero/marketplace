@@ -92,7 +92,7 @@ class AutoChargeJob extends BaseJob
                 }
                 catch (UserFriendlyException $exception)
                 {
-                    \Log::error("A charge attempt (auto-charge) has failed: ", [ 'ctx' => $exception ]);
+                    \Log::error("A charge attempt (auto-charge) on invoice #$invoice->id has failed: ", [ 'ctx' => $exception ]);
                     // We tried to charge him, but ultimately failed. Let's make him aware of this fact, and fish for payment.
                     Mail::to($user->email)->queue(new PaymentRequestMail($invoice, $exception->getMessage()));
                 }

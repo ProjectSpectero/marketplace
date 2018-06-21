@@ -198,9 +198,9 @@ class BillingUtils
                 case OrderResourceType::NODE_GROUP:
                     $resource = NodeGroup::find($item->resource);
                     break;
-                // TODO: Add proper handling for enterprise, and add that point get a proper verification routine going.
+                // TODO: Add proper handling for enterprise, and at that point get a proper verification routine going.
                 case OrderResourceType::ENTERPRISE:
-                    continue;
+                    continue 2;
                 default:
                     $resource = null;
             }

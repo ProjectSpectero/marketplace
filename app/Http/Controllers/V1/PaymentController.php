@@ -49,7 +49,7 @@ class PaymentController extends V1Controller
 
         // Credit-add invoices are ONLY payable with Paypal, we will NOT charge cards to add-credit (lowers liability).
         if ($invoice->type == InvoiceType::CREDIT
-            && ! in_array($processor, PaymentProcessor::getCreditAddAllowedVia()))
+            && ! in_array(strtoupper($processor), PaymentProcessor::getCreditAddAllowedVia()))
                 throw new UserFriendlyException(Errors::GATEWAY_DISABLED_FOR_PURPOSE, ResponseType::FORBIDDEN);
 
         if ($invoice->type == InvoiceType::STANDARD)

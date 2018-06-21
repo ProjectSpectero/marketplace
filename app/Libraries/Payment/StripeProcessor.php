@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Cartalyst\Stripe\Stripe;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class StripeProcessor extends BasePaymentProcessor
 {
@@ -119,6 +120,7 @@ class StripeProcessor extends BasePaymentProcessor
         }
         catch (MissingParameterException $silenced)
         {
+            $this->logIfAppropriate($silenced);
             throw new UserFriendlyException(Errors::INVALID_STRIPE_TOKEN);
         }
 
@@ -221,6 +223,7 @@ class StripeProcessor extends BasePaymentProcessor
             }
             catch (MissingParameterException $silenced)
             {
+                $this->logIfAppropriate($silenced);
                 throw new UserFriendlyException(Errors::INVALID_STRIPE_TOKEN);
             }
 
@@ -239,7 +242,6 @@ class StripeProcessor extends BasePaymentProcessor
             if ($storedToken != null && $storedToken !== $token)
             {
                 // Token changed, let us update the customer
-
                 try
                 {
                     $this->provider
@@ -248,10 +250,13 @@ class StripeProcessor extends BasePaymentProcessor
                             'source' => $token
                         ]);
                 }
-                catch (MissingParameterException $exception)
+                catch (\Exception $exception)
                 {
+                    // This can also trigger if the customer ID is invalid. But we're not too concerned ATM. FYI however.
+                    $this->logIfAppropriate($exception);
                     throw new UserFriendlyException(Errors::INVALID_STRIPE_TOKEN);
                 }
+
                 UserMeta::addOrUpdateMeta($user, UserMetaKeys::StripeCardToken, $token);
             }
 
@@ -322,5 +327,25 @@ class StripeProcessor extends BasePaymentProcessor
 
         if ($failed)
             throw new UserFriendlyException(Errors::PAYMENT_FAILED, ResponseType::FORBIDDEN);
+    }
+
+    private function isInvalidToken (\Exception $exception)
+    {
+        $message = $exception->getMessage();
+
+        return strpos($message, 'No such token') !== false;
+    }
+
+    private function isInvalidCustomer (\Exception $exception)
+    {
+        $message = $exception->getMessage();
+
+        return strpos($message, 'No such customer') !== false;
+    }
+
+    private function logIfAppropriate (\Exception $exception)
+    {
+        if (! $this->isInvalidToken($exception) && ! $this->isInvalidCustomer($exception))
+            \Log::error("Stripe processing failed: ", [ 'ctx' => $exception ]);
     }
 }

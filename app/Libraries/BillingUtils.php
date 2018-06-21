@@ -59,13 +59,13 @@ class BillingUtils
 
         return [
             'addrLine1' => $addrLine1,
-            'addrLine2' => $addrLine2,
+            'addrLine2' => ($addrLine2 instanceof Builder  || $addrLine2 == null) ? null : $addrLine2->meta_value,
             'city' => $city,
             'state' => $state,
             'country' => $country,
             'postCode' => $postCode,
-            'organization' => $organization,
-            'taxId' => $taxId
+            'organization' => ($organization instanceof Builder || $organization == null) ? null : $organization->meta_value,
+            'taxId' => ($taxId instanceof Builder || $taxId == null) ? null : $taxId->meta_value
         ];
     }
 

@@ -40,7 +40,7 @@ class NewInvoiceGeneratedMail extends BaseMail
                 break;
 
             case InvoiceType::STANDARD:
-                $reasonString = 'your order #' . $this->invoice->order->id;
+                $reasonString = 'for your order #' . $this->invoice->order->id;
                 break;
         }
 

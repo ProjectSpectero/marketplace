@@ -12,7 +12,6 @@
 
     <p>To ensure smooth operation your service(s), please make sure to submit payment in time.</p>
 
-    <p>Please make <a class="no-style" href="{{ $manualUrl }}">a payment manually</a> or
-        update the stored payment method to automatically submit payment in the future.</p>
+    <p>You may <a class="no-style" href="{{ $manualUrl }}">view this invoice online.</a> A manual payment can be made from the same screen, you may also setup automatic payments there.</p>
 
 @endsection

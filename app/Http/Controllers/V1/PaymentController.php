@@ -52,6 +52,9 @@ class PaymentController extends V1Controller
             && ! in_array(strtoupper($processor), PaymentProcessor::getCreditAddAllowedVia()))
                 throw new UserFriendlyException(Errors::GATEWAY_DISABLED_FOR_PURPOSE, ResponseType::FORBIDDEN);
 
+        // The invoice user needs to have a complete billing profile, this call enforces that.
+        BillingUtils::compileDetails($invoice->user);
+
         if ($invoice->type == InvoiceType::STANDARD)
         {
             // Before proceeding further, we need to check that if the invoice has an order associated with it, and all line items are currently available for purchase.

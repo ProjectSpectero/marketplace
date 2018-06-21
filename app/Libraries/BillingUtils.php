@@ -25,6 +25,7 @@ use App\User;
 use App\UserMeta;
 use Cache;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class BillingUtils
@@ -39,7 +40,7 @@ class BillingUtils
         try
         {
             $addrLine1 = UserMeta::loadMeta($user, UserMetaKeys::AddressLineOne, true)->meta_value;
-            $addrLine2 = UserMeta::loadMeta($user, UserMetaKeys::AddressLineTwo, true)->meta_value;
+
             $city = UserMeta::loadMeta($user, UserMetaKeys::City, true)->meta_value;
             $state = UserMeta::loadMeta($user, UserMetaKeys::State, true)->meta_value;
             $country = UserMeta::loadMeta($user, UserMetaKeys::Country, true)->meta_value;
@@ -48,6 +49,7 @@ class BillingUtils
             // These are nullable
             $organization = UserMeta::loadMeta($user, UserMetaKeys::Organization);
             $taxId = UserMeta::loadMeta($user, UserMetaKeys::TaxIdentification);
+            $addrLine2 = UserMeta::loadMeta($user, UserMetaKeys::AddressLineTwo);
 
         }
         catch (ModelNotFoundException $e)

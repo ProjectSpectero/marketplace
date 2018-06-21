@@ -14,6 +14,20 @@ class BillingSeeder extends Seeder
         $enterpriseNodes = \App\Node::where('market_model', \App\Constants\NodeMarketModel::ENTERPRISE)->get();
 
         factory(App\Order::class, 250)->create();
+
+        $fraudCheckOrders = \App\Order::whereIn('status', [ \App\Constants\OrderStatus::AUTOMATED_FRAUD_CHECK, \App\Constants\OrderStatus::MANUAL_FRAUD_CHECK ]);
+        $fraudCheckOrdersCount = $fraudCheckOrders->count();
+
+        $fraudCheckOrders = $fraudCheckOrders->get()->random(floor($fraudCheckOrdersCount / 2));
+
+        // CF-370: Skew the seeder to favor ACTIVE or PENDING instead of the FRAUD_CHECK types.
+        /** @var \App\Order $order */
+        foreach ($fraudCheckOrders as $order)
+        {
+            $order->status = array_random([ \App\Constants\OrderStatus::PENDING, \App\Constants\OrderStatus::ACTIVE ]);
+            $order->saveOrFail();
+        }
+
         /** @var \App\Order $order */
         foreach (App\Order::noEagerLoads()->get() as $order)
         {

@@ -96,6 +96,7 @@ class UserEventListener extends BaseListener
                 break;
 
             case Events::USER_PASSWORD_UPDATED:
+                // TODO: Notify the user that their password has been changed, and that they should immediately contact support if it was not them.
                 break;
         }
     }

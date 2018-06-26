@@ -179,6 +179,8 @@ class UserController extends CRUDController
                 throw new UserFriendlyException(Errors::CURRENT_PASSWORD_MISMATCH, ResponseType::FORBIDDEN);
 
             $user->password = Hash::make($input['password']);
+
+            event(new UserEvent(Events::USER_PASSWORD_UPDATED, $user));
         }
 
         // Remove the ones that go into the original model

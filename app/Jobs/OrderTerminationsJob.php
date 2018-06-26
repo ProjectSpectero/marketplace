@@ -29,6 +29,7 @@ class OrderTerminationsJob extends BaseJob
      * Execute the job.
      *
      * @return void
+     * @throws \App\Errors\UserFriendlyException
      */
     public function handle()
     {
@@ -56,21 +57,25 @@ class OrderTerminationsJob extends BaseJob
                 continue;
             }
 
-
             $lastInvoice = $order->lastInvoice;
 
             if ($lastInvoice->status == InvoiceStatus::UNPAID)
             {
                 if (BillingUtils::getInvoiceDueAmount($lastInvoice) <= 0)
                 {
-                    \Log::warn("Order #$order->id: invoice #$lastInvoice->id is marked as UNPAID, but has no dues. Transactions exist.");
+                    \Log::warn("Order #$order->id: invoice #$lastInvoice->id is marked as UNPAID, but has no dues. Refusing to terminate...");
                     continue;
                 }
 
-                \Log::info("Order #$order->id: Auto-cancelling, it was due on $order->due_next.");
+                // Let's try to auto-charge the invoice one last time before termination.
+                // This will actually NOT throw any exceptions, because the invoice->status check has been duplicated across both.
+                if (! BillingUtils::attemptToChargeIfPossible($lastInvoice))
+                {
+                    \Log::info("Order #$order->id: Auto-cancelling, it was due on $order->due_next. Our last attempt to auto-charge it also resulted in failure.");
 
-                BillingUtils::cancelOrder($order);
-                Mail::to($order->user->email)->queue(new OrderTerminated($order));
+                    BillingUtils::cancelOrder($order);
+                    Mail::to($order->user->email)->queue(new OrderTerminated($order));
+                }
             }
             else
                 \Log::warning("Order #$order->id: Invoice (#$lastInvoice->id) status is $lastInvoice->status (due on $lastInvoice->due_date), but due_next ($order->due_next) is still in the past.");

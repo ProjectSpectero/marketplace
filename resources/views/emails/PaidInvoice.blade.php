@@ -8,7 +8,7 @@
     <p>You do not need to reply to this e-mail, but you may wish to save it for your records.</p>
 
     <p>
-        {{ $transaction->amount }} {{ $transaction->currency }} was {{ $transaction->type }}ed via your
+        {{ $transaction->amount }} {{ $transaction->currency }} was {{ strtolower($transaction->type) }}ed via your
         @if($transaction->payment_processor == \App\Constants\PaymentProcessor::STRIPE)
             Credit Card
         @else

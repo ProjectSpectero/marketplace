@@ -75,15 +75,15 @@ class UserController extends CRUDController
             'name' => 'sometimes|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:5|max:72',
-            UserMetaKeys::AddressLineOne => 'sometimes|max:255',
-            UserMetaKeys::AddressLineTwo => 'sometimes|max:255',
-            UserMetaKeys::City => 'sometimes|max:255',
-            UserMetaKeys::State => 'sometimes|max:255',
-            UserMetaKeys::PostCode => 'sometimes|max:255',
-            UserMetaKeys::Country => 'sometimes|country|max:255',
-            UserMetaKeys::PhoneNumber => 'sometimes|max:255',
-            UserMetaKeys::Organization => 'sometimes|max:255',
-            UserMetaKeys::TaxIdentification => 'sometimes|max:255'
+            UserMetaKeys::AddressLineOne => 'sometimes|min:1|max:255',
+            UserMetaKeys::AddressLineTwo => 'sometimes|min:1|max:255',
+            UserMetaKeys::City => 'sometimes|min:1|max:64',
+            UserMetaKeys::State => 'sometimes|min:1|max:64',
+            UserMetaKeys::PostCode => 'sometimes|min:1|max:64',
+            UserMetaKeys::Country => 'sometimes|country|max:64',
+            UserMetaKeys::PhoneNumber => 'sometimes|min:1|max:64',
+            UserMetaKeys::Organization => 'sometimes|min:1|max:64',
+            UserMetaKeys::TaxIdentification => 'sometimes|min:1|max:96'
         ];
 
         $this->validate($request, $rules);
@@ -105,7 +105,7 @@ class UserController extends CRUDController
 
         foreach ($input as $key => $value)
         {
-            if (! is_null($value))
+            if (! is_null($value) && $value != "")
                 UserMeta::addOrUpdateMeta($user, $key, $value);
         }
 
@@ -149,15 +149,15 @@ class UserController extends CRUDController
             'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'sometimes|min:5|max:72',
             'current_password' => 'required_with:password|min:5|max:72',
-            UserMetaKeys::AddressLineOne => 'sometimes|max:255',
-            UserMetaKeys::AddressLineTwo => 'sometimes|max:255',
-            UserMetaKeys::City => 'sometimes|max:255',
-            UserMetaKeys::State => 'sometimes|max:255',
-            UserMetaKeys::PostCode => 'sometimes|max:64',
-            UserMetaKeys::Country => 'sometimes|country|max:255',
-            UserMetaKeys::PhoneNumber => 'sometimes|max:255',
-            UserMetaKeys::Organization => 'sometimes|max:255',
-            UserMetaKeys::TaxIdentification => 'sometimes|max:255'
+            UserMetaKeys::AddressLineOne => 'sometimes|min:1|max:255',
+            UserMetaKeys::AddressLineTwo => 'sometimes|min:1|max:255',
+            UserMetaKeys::City => 'sometimes|min:1|max:64',
+            UserMetaKeys::State => 'sometimes|min:1|max:64',
+            UserMetaKeys::PostCode => 'sometimes|min:1|max:64',
+            UserMetaKeys::Country => 'sometimes|country|max:64',
+            UserMetaKeys::PhoneNumber => 'sometimes|min:1|max:64',
+            UserMetaKeys::Organization => 'sometimes|min:1|max:64',
+            UserMetaKeys::TaxIdentification => 'sometimes|min:1|max:96'
         ];
 
         $this->validate($request, $rules);
@@ -188,7 +188,7 @@ class UserController extends CRUDController
 
         foreach ($input as $key => $value)
         {
-            if (! is_null($value))
+            if (! is_null($value) && $value != "")
                 UserMeta::addOrUpdateMeta($user, $key, $value);
         }
 

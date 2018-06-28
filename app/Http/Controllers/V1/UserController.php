@@ -145,7 +145,7 @@ class UserController extends CRUDController
             $this->authorizeResource();
 
         $rules = [
-            'name' => 'sometimes|max:255',
+            'name' => 'required|min:1|max:255',
             'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'sometimes|min:5|max:72',
             'current_password' => 'required_with:password|min:5|max:72',
@@ -154,7 +154,7 @@ class UserController extends CRUDController
             UserMetaKeys::City => 'required|min:1|max:64',
             UserMetaKeys::State => 'required|min:1|max:64',
             UserMetaKeys::PostCode => 'required|min:1|max:64',
-            UserMetaKeys::Country => 'required|country|max:64',
+            UserMetaKeys::Country => 'required|country',
             UserMetaKeys::PhoneNumber => 'sometimes|max:64',
             UserMetaKeys::Organization => 'sometimes|max:64',
             UserMetaKeys::TaxIdentification => 'sometimes|max:96'

@@ -13,10 +13,12 @@ use App\Invoice;
 use App\Libraries\BillingUtils;
 use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
+use App\Mail\NewInvoiceGeneratedMail;
 use App\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class InvoiceController extends CRUDController
 {
@@ -184,6 +186,8 @@ class InvoiceController extends CRUDController
         $invoice->status = InvoiceStatus::UNPAID;
         $invoice->due_date = Carbon::now();
         $invoice->saveOrFail();
+
+        Mail::to($user->email)->queue(new NewInvoiceGeneratedMail($invoice));
 
         return $this->respond($invoice->toArray());
     }

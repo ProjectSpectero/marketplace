@@ -11,12 +11,17 @@ use App\Constants\InvoiceType;
 use App\Constants\NodeMarketModel;
 use App\Constants\OrderResourceType;
 use App\Constants\OrderStatus;
+use App\Constants\PaymentProcessorResponseType;
 use App\Constants\PaymentType;
 use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
+use App\Libraries\Payment\AccountCreditProcessor;
 use App\Libraries\Payment\IPaymentProcessor;
+use App\Libraries\Payment\StripeProcessor;
+use App\Mail\PaymentRequestMail;
+use App\Models\Opaque\PaymentProcessorResponse;
 use App\Node;
 use App\NodeGroup;
 use App\Order;
@@ -25,7 +30,10 @@ use App\User;
 use App\UserMeta;
 use Cache;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class BillingUtils
 {
@@ -39,7 +47,7 @@ class BillingUtils
         try
         {
             $addrLine1 = UserMeta::loadMeta($user, UserMetaKeys::AddressLineOne, true)->meta_value;
-            $addrLine2 = UserMeta::loadMeta($user, UserMetaKeys::AddressLineTwo, true)->meta_value;
+
             $city = UserMeta::loadMeta($user, UserMetaKeys::City, true)->meta_value;
             $state = UserMeta::loadMeta($user, UserMetaKeys::State, true)->meta_value;
             $country = UserMeta::loadMeta($user, UserMetaKeys::Country, true)->meta_value;
@@ -48,6 +56,7 @@ class BillingUtils
             // These are nullable
             $organization = UserMeta::loadMeta($user, UserMetaKeys::Organization);
             $taxId = UserMeta::loadMeta($user, UserMetaKeys::TaxIdentification);
+            $addrLine2 = UserMeta::loadMeta($user, UserMetaKeys::AddressLineTwo);
 
         }
         catch (ModelNotFoundException $e)
@@ -57,13 +66,13 @@ class BillingUtils
 
         return [
             'addrLine1' => $addrLine1,
-            'addrLine2' => $addrLine2,
+            'addrLine2' => ($addrLine2 instanceof Builder  || $addrLine2 == null) ? null : $addrLine2->meta_value,
             'city' => $city,
             'state' => $state,
             'country' => $country,
             'postCode' => $postCode,
-            'organization' => $organization,
-            'taxId' => $taxId
+            'organization' => ($organization instanceof Builder || $organization == null) ? null : $organization->meta_value,
+            'taxId' => ($taxId instanceof Builder || $taxId == null) ? null : $taxId->meta_value
         ];
     }
 
@@ -198,9 +207,9 @@ class BillingUtils
                 case OrderResourceType::NODE_GROUP:
                     $resource = NodeGroup::find($item->resource);
                     break;
-                // TODO: Add proper handling for enterprise, and add that point get a proper verification routine going.
+                // TODO: Add proper handling for enterprise, and at that point get a proper verification routine going.
                 case OrderResourceType::ENTERPRISE:
-                    continue;
+                    continue 2;
                 default:
                     $resource = null;
             }
@@ -349,4 +358,81 @@ class BillingUtils
 
         return $transaction;
     }
+
+    public static function attemptToChargeIfPossible (Invoice $invoice) : bool
+    {
+        /** @var User $user */
+        $user = $invoice->user;
+        $request = new Request();
+
+        // This is mostly a error-case only variable, the two success cases have their own checks, and immediately return instead of using this.
+        $success = false;
+
+        if (in_array($invoice->status, [ InvoiceStatus::UNPAID, InvoiceStatus::PARTIALLY_PAID ]))
+        {
+            try
+            {
+                $request->setUserResolver(function() use ($user)
+                {
+                    return $user;
+                });
+
+                if ($user->credit > 0
+                    && $user->credit_currency == $invoice->currency)
+                {
+                    \Log::info("$invoice->id has positive balance ($user->credit $user->credit_currency), and currency matches invoice. Attempting to charge $invoice->amount $invoice->currency ...");
+                    // OK, he has dollarydoos. Let's go take some.
+                    $paymentProcessor = new AccountCreditProcessor($request);
+                    $paymentProcessor->enableAutoProcessing();
+
+                    // It is possible for this call to only manage to partially pay an invoice depending on credit availability.
+                    $paymentProcessor->process($invoice);
+                }
+
+                $postAccountCreditDue = BillingUtils::getInvoiceDueAmount($invoice);
+
+                // We managed to fully charge it from account credit, let's bail. No need to bother with stored card.
+                if ($postAccountCreditDue <= 0)
+                    return true;
+
+                // Useless call to verify if it's possible to attempt to charge him. If we got here, that means credit(s) was/were not enough.
+                // At this stage, the due is > 0 and we will be attempting to charge it to their stored card, should one exist.
+                UserMeta::loadMeta($user, UserMetaKeys::StripeCustomerIdentifier, true);
+
+                // This attempts to charge him every day if it fails. We should probably cap it out at x attempts if the card is a dud.
+                // TODO: Implement tracking for non-operational stored payment methods a la ^.
+
+                \Log::info("$invoice->id has an attached user with a saved CC. Attempting to charge $invoice->amount $invoice->currency via Stripe...");
+
+                $paymentProcessor = new StripeProcessor($request);
+                $paymentProcessor->enableAutoProcessing();
+
+                /** @var PaymentProcessorResponse $cardProcessingResponse */
+                $cardProcessingResponse = $paymentProcessor->process($invoice);
+
+                return $cardProcessingResponse->type == PaymentProcessorResponseType::SUCCESS;
+            }
+            catch (UserFriendlyException $exception)
+            {
+                \Log::error("A charge attempt (auto-charge) on invoice #$invoice->id has failed: ", [ 'ctx' => $exception ]);
+                // We tried to charge him, but ultimately failed. Let's make him aware of this fact, and fish for payment.
+                Mail::to($user->email)->queue(new PaymentRequestMail($invoice, $exception->getMessage()));
+
+                // User did have a saved card (or account credit), but our attempt to fully charge the invoice has nonetheless failed.
+                // Redundant assignment, but just in case...
+                $success = false;
+            }
+            catch (ModelNotFoundException $silenced)
+            {
+                // User did not have a saved card, and hence let's notify the caller that our attempt to fully charge the invoice has failed.
+                // Redundant assignment, but just in case...
+                $success = false;
+            }
+
+            return $success;
+        }
+
+        throw new UserFriendlyException(Errors::INVOICE_STATUS_MISMATCH);
+    }
+
 }

@@ -27,6 +27,7 @@ class Node extends BaseModel
         'ip', 'install_id', 'friendly_name', 'cc', 'asn', 'market_model', 'status', 'id', 'group_id'
     ];
 
+    // Why alongside table names? Because this is used on a `select()` call on a joined data array instead of directly.
     public static $publicFields = [
         'nodes.id', 'nodes.status', 'nodes.friendly_name', 'nodes.market_model', 'nodes.price', 'nodes.city', 'nodes.cc', 'nodes.asn', 'nodes.group_id', 'nodes.created_at'
     ];

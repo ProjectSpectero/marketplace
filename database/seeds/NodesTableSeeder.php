@@ -60,7 +60,7 @@ class NodesTableSeeder extends Seeder
     private function seedRealNodes ()
     {
         $realNode = new \App\Node();
-        $realNode->ip = '23.172.128.100';
+        $realNode->ip = '23.158.64.30';
         $realNode->port = 6024;
         $realNode->friendly_name = 'Real Test Node 1';
         $realNode->protocol = 'http';

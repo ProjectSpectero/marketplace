@@ -18,6 +18,7 @@ use App\Libraries\TaxationManager;
 use App\Libraries\Utility;
 use App\Mail\InvoicePaid;
 use App\Mail\OrderCreated;
+use App\Mail\OrderProvisionedMail;
 use App\Order;
 use App\User;
 use Illuminate\Support\Facades\Mail;
@@ -72,19 +73,26 @@ class BillingEventListener extends BaseListener
                             $invoice->status = InvoiceStatus::PAID;
                             $invoice->saveOrFail();
 
+                            // There is a slight chance of this ending up re-activating a cancelled order if the listener runs after a delay.
                             if ($invoice->type == InvoiceType::STANDARD
                             && $invoice->order != null)
                             {
+                                /** @var Order $order */
                                 $order = $invoice->order;
-                                $order->status = OrderStatus::ACTIVE;
-                                foreach ($order->lineItems as $item)
+                                if ($order->status != OrderStatus::CANCELLED)
                                 {
-                                    $item->status = OrderStatus::ACTIVE;
-                                    $item->saveOrFail();
+                                    $order->status = OrderStatus::ACTIVE;
+                                    foreach ($order->lineItems as $item)
+                                    {
+                                        $item->status = OrderStatus::ACTIVE;
+                                        $item->saveOrFail();
+                                    }
+                                    // TODO: figure out the actual impact of this call, particularly whether it functions properly for both renewal and first-time orders.
+                                    $order->due_next = $order->due_next->addDays($order->term);
+                                    $order->saveOrFail();
+
+                                    Mail::to($user->email)->queue(new OrderProvisionedMail($order));
                                 }
-                                // TODO: figure out the actual impact of this call, particularly whether
-                                $order->due_next = $order->due_next->addDays($order->term);
-                                $order->saveOrFail();
                             }
 
                             // There's no partial credit add, invoice needs to be fully paid for this to happen

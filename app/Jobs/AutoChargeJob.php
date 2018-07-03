@@ -39,6 +39,7 @@ class AutoChargeJob extends BaseJob
      * Execute the job.
      *
      * @return void
+     * @throws UserFriendlyException <-- Technically possible, but the status check is duplicated. Which means this is for fluff only.
      */
     public function handle()
     {
@@ -54,60 +55,11 @@ class AutoChargeJob extends BaseJob
         $count = count($query);
         \Log::info("Found $count possible order(s) to attempt to automatically charge.");
 
-        $request = new Request();
-
+        /** @var Invoice $invoice */
         foreach ($query as $invoice)
         {
-            \Log::debug("Attempting to auto-charge invoice #$invoice->id");
-            $user = $invoice->user;
-
-            if ($invoice->status == InvoiceStatus::UNPAID)
-            {
-                try
-                {
-                    $request->setUserResolver(function() use ($user)
-                    {
-                        return $user;
-                    });
-
-                    if ($user->credit > 0
-                    && $user->credit_currency == $invoice->currency)
-                    {
-                        \Log::info("$invoice->id has positive balance ($user->credit $user->credit_currency), and currency matches invoice. Attempting to charge $invoice->amount $invoice->currency ...");
-                        // OK, he has dollarydoos. Let's go take some.
-                        $paymentProcessor = new AccountCreditProcessor($request);
-                        $paymentProcessor->enableAutoProcessing();
-
-                        $paymentProcessor->process($invoice);
-                    }
-
-                    // Useless call to verify if it's possible to attempt to charge him.
-                    UserMeta::loadMeta($user, UserMetaKeys::StripeCustomerIdentifier, true);
-
-                    if (BillingUtils::getInvoiceDueAmount($invoice) > 0)
-                    {
-                        // This attempts to charge him every day if it fails. We should probably cap it out at x attempts if the card is a dud.
-                        // TODO: Implement tracking for non-operational stored payment methods.
-
-                        \Log::info("$invoice->id has an attached user with a saved CC. Attempting to charge $invoice->amount $invoice->currency via Stripe...");
-                        $paymentProcessor = new StripeProcessor($request);
-                        $paymentProcessor->enableAutoProcessing();
-
-                        $paymentProcessor->process($invoice);
-                    }
-                }
-                catch (UserFriendlyException $exception)
-                {
-                    \Log::error("A charge attempt (auto-charge) on invoice #$invoice->id has failed: ", [ 'ctx' => $exception ]);
-                    // We tried to charge him, but ultimately failed. Let's make him aware of this fact, and fish for payment.
-                    Mail::to($user->email)->queue(new PaymentRequestMail($invoice, $exception->getMessage()));
-                }
-                catch (ModelNotFoundException $silenced)
-                {
-                    // Do nothing actually, this request cannot be sent every time this task runs. We need to separate it out into another job.
-                    // User did not have a saved card, and hence nothing to do.
-                }
-            }
+            \Log::debug("Verifying if auto-charge is possible for Invoice #$invoice->id");
+            BillingUtils::attemptToChargeIfPossible($invoice);
         }
     }
 }

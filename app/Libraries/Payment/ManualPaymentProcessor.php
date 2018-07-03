@@ -41,6 +41,7 @@ class ManualPaymentProcessor extends BasePaymentProcessor
                 return
                 [
                     'amount' => 'required|numeric|min:0.1',
+                    'fee' => 'sometimes|numeric|min:0.1',
                     'currency' => [ 'required', Rule::in(Currency::getConstants()) ],
                     'note' => 'sometimes|string|min:5|max:2048',
                 ];
@@ -58,6 +59,7 @@ class ManualPaymentProcessor extends BasePaymentProcessor
 
         $candidateAmount = $input['amount'];
         $candidateCurrency = $input['currency'];
+        $candidateFee = isset($input['fee']) ? $input['fee'] : 0;
 
         if ($invoice->currency !== $candidateCurrency)
             throw new UserFriendlyException(Errors::INVOICE_CURRENCY_MISMATCH);
@@ -66,6 +68,9 @@ class ManualPaymentProcessor extends BasePaymentProcessor
 
         if ($candidateAmount > $dueAmount)
             throw new UserFriendlyException(Errors::INVOICE_OVERPAYMENT_DETECTED);
+
+        if ($candidateFee > $candidateAmount)
+            throw new UserFriendlyException(Errors::FEE_GREATER_THAN_AMOUNT);
 
         $requester = $this->request->user();
         $authString = sprintf("id: %s (%s)", $requester->id, $requester->email);
@@ -76,7 +81,7 @@ class ManualPaymentProcessor extends BasePaymentProcessor
             'note' => $this->request->has('note') ? $input['note'] : null
         ];
 
-        $ret = $this->addTransaction($this, $invoice, $candidateAmount, 0.00, Utility::getRandomString(2),
+        $ret = $this->addTransaction($this, $invoice, $candidateAmount, $candidateFee, Utility::getRandomString(2),
                                      PaymentType::CREDIT, TransactionReasons::PAYMENT, json_encode($raw));
 
         $ret->raw_response = null;

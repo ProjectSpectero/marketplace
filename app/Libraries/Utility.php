@@ -128,10 +128,29 @@ class Utility
         }
     }
 
-
     public static function alphaDashRule(String $str)
     {
         return ( ! preg_match("/^([-a-z])+$/i", $str)) ? FALSE : TRUE;
+    }
+
+    public static function joinPaths (string ...$parts): string
+    {
+        $parts = array_map('trim', $parts);
+        $path = [];
+
+        foreach ($parts as $part) {
+            if ($part !== '') {
+                $path[] = $part;
+            }
+        }
+
+        $path = implode(DIRECTORY_SEPARATOR, $path);
+
+        return preg_replace(
+            '#' . preg_quote(DIRECTORY_SEPARATOR) . '{2,}#',
+            DIRECTORY_SEPARATOR,
+            $path
+        );
     }
 
 }

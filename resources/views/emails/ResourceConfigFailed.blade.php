@@ -1,15 +1,15 @@
 @extends ('emails.layouts.NodeError', [ 'retryUrl' => $retryUrl, 'node' => $node ])
 
 @section ('error')
-    <p>The daemon config does not match the expected values. Details:</p>
+    <p>The daemon config does not match the expected values.</p>
 
-    <h3>Reason:</h3>
+    <p>Reasons:</p>
 
     <ul class="errors">
     @foreach ($errors as $error)
 
         @foreach ($error as $message)
-                <li>{{$message}}</li>
+            <li>{{$message}}</li>
         @endforeach
 
     @endforeach

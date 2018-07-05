@@ -15,6 +15,8 @@ class DatabaseSeeder extends Seeder
          $this->call(UsersTableSeeder::class);
          $this->call(NodesTableSeeder::class);
          $this->call(BillingSeeder::class);
-         $this->call(InitialEnterpriseSeeder::class);
+
+         // This is not really needed to test.
+         //$this->call(InitialEnterpriseSeeder::class);
     }
 }

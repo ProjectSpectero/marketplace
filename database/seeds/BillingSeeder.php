@@ -70,6 +70,25 @@ class BillingSeeder extends Seeder
                 else
                     $resourceId = mt_rand(1, 100);
 
+                $res = null;
+
+                switch ($determinedType)
+                {
+                    case \App\Constants\OrderResourceType::NODE:
+                        $res = \App\Node::find($resourceId);
+                        break;
+
+                    case \App\Constants\OrderResourceType::NODE_GROUP:
+                        $res = \App\NodeGroup::find($determinedType);
+                        break;
+                }
+
+                if ($res != null && ! $res->isMarketable())
+                {
+                    $res->market_model = array_random(\App\Constants\NodeMarketModel::getMarketable());
+                    $res->saveOrFail();
+                }
+
                 $lineItem = new \App\OrderLineItem();
                 $lineItem->description = "Example line item";
                 $lineItem->order_id = $order->id;

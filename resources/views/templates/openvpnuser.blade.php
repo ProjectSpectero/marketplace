@@ -28,16 +28,10 @@ setenv PUSH_PEER_INFO
 auth-user-pass
 
 <pkcs12>
-@foreach($certChunks as $certChunk)
-{!! $certChunk !!}
-@endforeach
+{!! $chunkedCert !!}
 </pkcs12>
 
 # key-direction 1
-# <tls-auth>
-#
-#
-# </tls-auth>
 
 # Extra user-defined configuration
 cipher {{ $cipherType }}

@@ -35,51 +35,10 @@ class ProvisionedResourceResolver
 
         $out = [
             'accessor' => $order->accessor,
-            'resources' => $resources
+            'items' => $resources
         ];
 
         return $out;
-    }
-
-    private static function resolveService(Service $service, Order $againstOrder)
-    {
-        // Why a dedicated function? Because not all services can be resolved in the same way.
-        $serviceType = $service->type;
-
-        $ret = [
-            'type' => $serviceType,
-            'resource' => [
-                'accessConfig' => null,
-                'accessCredentials' => 'SPECTERO_USERNAME_PASSWORD',
-                'accessReference' => null
-            ]
-        ];
-
-        switch ($serviceType)
-        {
-            case ServiceType::HTTPProxy:
-                $ret['resource'] = $service->connection_resource;
-                break;
-
-            case ServiceType::OpenVPN:
-                $ret['resource']['accessConfig'] = OpenVPNConfigResolver::resolveOrderConfig($service->node, $againstOrder);
-                break;
-
-        }
-
-        return $ret;
-    }
-
-    private static function resolveNode (Node $node, Order $againstOrder)
-    {
-        $ret = [];
-
-        foreach ($node->services as $service)
-        {
-            $ret[] = self::resolveService($service, $againstOrder);
-        }
-
-        return $ret;
     }
 
     private static function getConnectionResources(OrderLineItem $item)
@@ -89,7 +48,7 @@ class ProvisionedResourceResolver
             'resource' => [
                 'id' => $item->resource,
                 'type' => $item->type,
-                'reference' => []
+                'reference' => null
             ]
         ];
 
@@ -97,14 +56,19 @@ class ProvisionedResourceResolver
         {
             case OrderResourceType::NODE:
                 $node = Node::find($item->resource);
-                $connectionResources['resource']['reference'][] = self::resolveNode($node, $item->order);
+                $connectionResources['resource']['reference'] = self::resolveNode($node, $item->order);
                 break;
 
             case OrderResourceType::NODE_GROUP:
                 $nodeGroup = NodeGroup::find($item->resource);
                 foreach ($nodeGroup->nodes as $node)
                 {
-                    $connectionResources['resource']['reference'][] = self::resolveNode($node, $item->order);
+                    $data = [
+                        'from' => $node->id,
+                        'services' => self::resolveNode($node, $item->order)
+                    ];
+
+                    $connectionResources['resource']['reference'][] = $data;
                 }
                 break;
 
@@ -127,7 +91,7 @@ class ProvisionedResourceResolver
 
                 $connectionResources['resource']['reference'][] = [
                     'type' => ServiceType::HTTPProxy,
-                    'resource' => $skeletonResource
+                    'connector' => $skeletonResource
                 ];
 
                 break;
@@ -137,5 +101,46 @@ class ProvisionedResourceResolver
         }
 
         return $connectionResources;
+    }
+
+    private static function resolveNode (Node $node, Order $againstOrder)
+    {
+        $ret = [];
+
+        foreach ($node->services as $service)
+        {
+            $ret[] = self::resolveService($service, $againstOrder);
+        }
+
+        return $ret;
+    }
+
+    private static function resolveService(Service $service, Order $againstOrder)
+    {
+        // Why a dedicated function? Because not all services can be resolved in the same way.
+        $serviceType = $service->type;
+
+        $ret = [
+            'type' => $serviceType,
+            'connector' => [
+                'accessConfig' => null,
+                'accessCredentials' => 'SPECTERO_USERNAME_PASSWORD',
+                'accessReference' => null
+            ]
+        ];
+
+        switch ($serviceType)
+        {
+            case ServiceType::HTTPProxy:
+                $ret['connector'] = $service->connection_resource;
+                break;
+
+            case ServiceType::OpenVPN:
+                $ret['connector']['accessConfig'] = OpenVPNConfigResolver::resolveOrderConfig($service->node, $againstOrder);
+                break;
+
+        }
+
+        return $ret;
     }
 }

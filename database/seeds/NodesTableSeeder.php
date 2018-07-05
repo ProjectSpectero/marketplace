@@ -15,10 +15,12 @@ class NodesTableSeeder extends Seeder
         factory(App\NodeGroup::class, 50)->create();
         factory(App\NodeIPAddress::class, 600)->create();
 
-        $system_data = [
+        $systemTemplates = [
             '{"CPU":{"Model":"Intel(R) Core(TM) i7-3770K CPU @ 3.50GHz","Cores":4,"Threads":8,"Cache Size":1024},"Memory":{"Physical":{"Used":16171319296,"Free":9536708608,"Total":25708027904},"Virtual":{"Used":27597258752,"Free":6432268288,"Total":34029527040}},"Environment":{"Hostname":"BLEU","OS Version":{"platform":2,"servicePack":"","version":{"major":6,"minor":2,"build":9200,"revision":0,"majorRevision":0,"minorRevision":0},"versionString":"Microsoft Windows NT 6.2.9200.0"},"64-Bits":true}}',
             '{"CPU":{"Model":" Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":8,"Cache Size":" 8192 KB"},"Memory":{"Physical":{"Used":771387392,"Free":1376096256,"Total":2147483648}},"Environment":{"Hostname":"dev","OS Version":{"platform":4,"servicePack":"","version":{"major":2,"minor":6,"build":32,"revision":42,"majorRevision":0,"minorRevision":42},"versionString":"Unix 2.6.32.42"},"64-Bits":true}}'
         ];
+
+        $system_data = array_map(function ($data) { return json_decode($data, true); }, $systemTemplates);
 
         foreach (\App\Node::all() as $node)
         {
@@ -73,9 +75,11 @@ class NodesTableSeeder extends Seeder
         $realNode->asn = 133535;
         $realNode->city = 'Seattle';
         $realNode->cc = 'US';
-        $realNode->system_data = '{"CPU":{"Model":"Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":40,"Cache Size":"8192 KB"},"Memory":{"Physical":{"Used":222289920,"Free":851451904,"Total":1073741824}},"Environment":{"Hostname":"daemon-test-0","OS Version":{"Platform":4,"ServicePack":"","Version":{"Major":2,"Minor":6,"Build":32,"Revision":42,"MajorRevision":0,"MinorRevision":42},"VersionString":"Unix 2.6.32.42"},"64-Bits":true}}';
-        $realNode->app_settings = "{}";
-        $realNode->system_config = "{}";
+        $realNode->system_data = json_decode('{"CPU":{"Model":"Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":40,"Cache Size":"8192 KB"},"Memory":{"Physical":{"Used":222289920,"Free":851451904,"Total":1073741824}},"Environment":{"Hostname":"daemon-test-0","OS Version":{"Platform":4,"ServicePack":"","Version":{"Major":2,"Minor":6,"Build":32,"Revision":42,"MajorRevision":0,"MinorRevision":42},"VersionString":"Unix 2.6.32.42"},"64-Bits":true}}', true);
+
+        //$realNode->app_settings = "{}";
+        //$realNode->system_config = "{}";
+
         $realNode->save();
 
         $this->createServices($realNode);
@@ -95,16 +99,19 @@ class NodesTableSeeder extends Seeder
         $testNodeZero->asn = 46686;
         $testNodeZero->city = 'Seattle';
         $testNodeZero->cc = 'US';
-        $testNodeZero->system_data = '{"CPU":{"Model":"Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":40,"Cache Size":"8192 KB"},"Memory":{"Physical":{"Used":222289920,"Free":851451904,"Total":1073741824}},"Environment":{"Hostname":"daemon-test-0","OS Version":{"Platform":4,"ServicePack":"","Version":{"Major":2,"Minor":6,"Build":32,"Revision":42,"MajorRevision":0,"MinorRevision":42},"VersionString":"Unix 2.6.32.42"},"64-Bits":true}}';
-        $testNodeZero->app_settings = '{}';
-        $testNodeZero->system_config = '{}';
+
+        $testNodeZero->system_data = json_decode('{"CPU":{"Model":"Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":40,"Cache Size":"8192 KB"},"Memory":{"Physical":{"Used":222289920,"Free":851451904,"Total":1073741824}},"Environment":{"Hostname":"daemon-test-0","OS Version":{"Platform":4,"ServicePack":"","Version":{"Major":2,"Minor":6,"Build":32,"Revision":42,"MajorRevision":0,"MinorRevision":42},"VersionString":"Unix 2.6.32.42"},"64-Bits":true}}', true);
+
+        //$testNodeZero->app_settings = '{}';
+        //$testNodeZero->system_config = '{}';
+
         $testNodeZero->save();
 
         $testServiceZero = new \App\Service();
         $testServiceZero->node_id = 102;
         $testServiceZero->type = \App\Constants\ServiceType::HTTPProxy;
-        $testServiceZero->config = '[{"listeners":[{"item1":"23.172.128.21","item2":10240}],"allowedDomains":null,"bannedDomains":null,"proxyMode":"Normal"}]';
-        $testServiceZero->connection_resource = '{"accessReference":["23.172.128.21:10240"],"accessConfig":null,"accessCredentials":"SPECTERO_USERNAME_PASSWORD"}';
+        $testServiceZero->config = json_decode('[{"listeners":[{"item1":"23.172.128.21","item2":10240}],"allowedDomains":null,"bannedDomains":null,"proxyMode":"Normal"}]', true);
+        $testServiceZero->connection_resource = json_decode('{"accessReference":["23.172.128.21:10240"],"accessConfig":null,"accessCredentials":"SPECTERO_USERNAME_PASSWORD"}', true);
         $testServiceZero->save();
 
         $testNodeOne = new \App\Node();
@@ -122,7 +129,7 @@ class NodesTableSeeder extends Seeder
         $testNodeOne->asn = 46686;
         $testNodeOne->city = 'Seattle';
         $testNodeOne->cc = 'US';
-        $testNodeOne->system_data = '{"CPU":{"Model":"Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":40,"Cache Size":"8192 KB"},"Memory":{"Physical":{"Used":222289920,"Free":851451904,"Total":1073741824}},"Environment":{"Hostname":"daemon-test-0","OS Version":{"Platform":4,"ServicePack":"","Version":{"Major":2,"Minor":6,"Build":32,"Revision":42,"MajorRevision":0,"MinorRevision":42},"VersionString":"Unix 2.6.32.42"},"64-Bits":true}}';
+        $testNodeOne->system_data = json_decode('{"CPU":{"Model":"Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":40,"Cache Size":"8192 KB"},"Memory":{"Physical":{"Used":222289920,"Free":851451904,"Total":1073741824}},"Environment":{"Hostname":"daemon-test-0","OS Version":{"Platform":4,"ServicePack":"","Version":{"Major":2,"Minor":6,"Build":32,"Revision":42,"MajorRevision":0,"MinorRevision":42},"VersionString":"Unix 2.6.32.42"},"64-Bits":true}}', true);
         $testNodeOne->app_settings = '{}';
         $testNodeOne->system_config = '{}';
         $testNodeOne->save();
@@ -130,8 +137,8 @@ class NodesTableSeeder extends Seeder
         $testServiceOne = new \App\Service();
         $testServiceOne->node_id = 103;
         $testServiceOne->type = \App\Constants\ServiceType::HTTPProxy;
-        $testServiceOne->config = '[{"listeners":[{"item1":"23.172.128.25","item2":10240}],"allowedDomains":null,"bannedDomains":null,"proxyMode":"Normal"}]';
-        $testServiceOne->connection_resource = '{"accessReference":["23.172.128.25:10240"],"accessConfig":null,"accessCredentials":"SPECTERO_USERNAME_PASSWORD"}';
+        $testServiceOne->config = json_decode('[{"listeners":[{"item1":"23.172.128.25","item2":10240}],"allowedDomains":null,"bannedDomains":null,"proxyMode":"Normal"}]', true);
+        $testServiceOne->connection_resource = json_decode('{"accessReference":["23.172.128.25:10240"],"accessConfig":null,"accessCredentials":"SPECTERO_USERNAME_PASSWORD"}', true);
         $testServiceOne->save();
     }
 
@@ -142,11 +149,11 @@ class NodesTableSeeder extends Seeder
             $service = new \App\Service();
             $service->node_id = $node->id;
             $service->type = $type;
-            $service->config = json_encode([
-                                               'DatabaseFile' => 'Database/db.sqlite',
-                                               "PasswordCostTimeThreshold" => 100.0,
-                                               "SpaCacheTime" => 1,
-                                           ]);
+            $service->config = [
+                                   'DatabaseFile' => 'Database/db.sqlite',
+                                   "PasswordCostTimeThreshold" => 100.0,
+                                   "SpaCacheTime" => 1,
+                               ];
 
             $randStr = null;
             $ref = null;
@@ -160,13 +167,13 @@ class NodesTableSeeder extends Seeder
             else
                 $ref = $this->generateAccessReferences(mt_rand(5, 10));
 
-            $service->connection_resource = json_encode([
-                                                            'accessReference' => [
-                                                                $ref
-                                                            ],
-                                                            'accessConfig' => $randStr,
-                                                            'accessCredentials' => array_random(['SPECTERO_USERNAME_PASSWORD', $node->access_token])
-                                                        ]);
+            $service->connection_resource = [
+                                                'accessReference' => [
+                                                    $ref
+                                                ],
+                                                'accessConfig' => $randStr,
+                                                'accessCredentials' => array_random(['SPECTERO_USERNAME_PASSWORD', $node->access_token])
+                                            ];
 
             $service->saveOrFail();
         }

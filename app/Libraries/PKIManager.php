@@ -4,6 +4,7 @@ namespace App\Libraries;
 
 
 use App\Errors\FatalException;
+use App\Models\Opaque\CAInfo;
 use Symfony\Component\Process\Process;
 
 class PKIManager
@@ -13,7 +14,7 @@ class PKIManager
 
     const generateUserPrivateKeyAndCSRTemplate = 'openssl req -nodes -newkey rsa:2048 -keyout %s -out %s -subj "%s"';
 
-    const generateFullPKCS12UserChainTemplate = 'openssl pkcs12 -export -in %s -inkey %s -certfile %s -out %s -passout pass:';
+    const generateFullPKCS12UserChainTemplate = 'openssl pkcs12 -export -in %s -inkey %s -certfile %s -out %s -passout pass:%s';
 
     const issueSignedUserCertTemplate = 'openssl x509 -req -in %s -CA %s -CAkey %s -CAcreateserial -out %s -days %d -sha256';
 
@@ -29,11 +30,14 @@ class PKIManager
 
     const generatedCASerialFileName = 'ca.srl';
 
-    public static function issueUserChain (string $caBlob, string $caPassword, string $userIdentifier)
+    public static function issueUserChain (CAInfo $caInfo, string $userIdentifier, string $exportPassword = '') : string
     {
         $seed = Utility::getRandomString();
         $confirmedWorkingDir = self::createTemporaryDirectory($seed);
 
+
+        $caBlob = $caInfo->blob;
+        $caPassword = $caInfo->password;
 
         // First, we decode and write the CA blob to disk so it can be processed by OpenSSL.
         $decodedBlob = base64_decode($caBlob, true);
@@ -66,19 +70,25 @@ class PKIManager
 
         // Let's now package it all up into a PKCS12 archive
         $finalPKCS12GenerationCommand = sprintf(self::generateFullPKCS12UserChainTemplate, self::createdUserCertFileName, self::createdUserCertKeyFileName,
-            self::extractedCACertFileName, self::finalizedPKCS12UserFullChainFileName);
+            self::extractedCACertFileName, self::finalizedPKCS12UserFullChainFileName, $exportPassword);
         self::runAndEnsureSuccess($finalPKCS12GenerationCommand, $confirmedWorkingDir);
 
+        // Alright, our chain file is now ready to go. Let's read it, and base64_encode it to prepare for storage.
+        $userChainAbsolutePath = Utility::joinPaths($confirmedWorkingDir, self::finalizedPKCS12UserFullChainFileName);
+        $userChainBytes = file_get_contents($userChainAbsolutePath);
+
+        if ($userChainBytes === false)
+            throw new FatalException("Despite OpenSSL command(s) succeeding, fread() failed on the generated userchain for $userIdentifier :(");
 
         // We're all done, let's clean up all our temp files.
         self::cleanup($confirmedWorkingDir, self::finalizedPKCS12UserFullChainFileName, self::createdUserCertFileName, self::createdUserCertKeyFileName,
                                                 self::createdUserCSRFileName, self::extratedCAPKCS12FileName, self::extractedCACertFileName, self::extractedCACertKeyFileName,
                                                 self::generatedCASerialFileName);
 
-        return $confirmedWorkingDir;
+        return base64_encode($userChainBytes);
     }
 
-    private static function cleanup ($baseDir, ...$files)
+    private static function cleanup ($baseDir, ...$files) : void
     {
         foreach ($files as $file)
         {

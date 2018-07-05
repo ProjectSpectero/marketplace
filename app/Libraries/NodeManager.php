@@ -36,7 +36,7 @@ class NodeManager
     private $version;
 
 
-    public function __construct (Node $node, bool $implicitConnection = false)
+    public function __construct (Node $node, bool $implicitConnection = false, bool $useCommandProxy = false)
     {
         $this->implicitConnection = $implicitConnection;
         $this->node = $node;
@@ -75,6 +75,7 @@ class NodeManager
         $rules = [
             'systemConfig' => 'required|array',
             'appSettings' => 'required|array',
+            'system' => 'required|array',
             'appSettings.BlockedRedirectUri' => 'required|equals:https://blocked.spectero.com/?reason={0}&uri={1}&data={2}',
             'appSettings.AuthCacheMinutes' => 'required|integer|max:10',
             'appSettings.LocalSubnetBanEnabled' => 'required|equals:true',
@@ -118,6 +119,7 @@ class NodeManager
 
             $ret['appSettings'] = $convergedDescriptor['appSettings'];
             $ret['systemConfig'] = $convergedDescriptor['systemConfig'];
+            $ret['systemData'] = $convergedDescriptor['system'];
 
             $ret['ipAddresses'] = $this->discoverIPAddresses();
 

@@ -3,6 +3,8 @@
 namespace App;
 
 use App\Constants\OrderResourceType;
+use App\Errors\FatalException;
+use App\Models\Opaque\CAInfo;
 use App\Models\Traits\HasOrders;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -21,6 +23,12 @@ class Node extends BaseModel
 
     protected $with = [
         'services'
+    ];
+
+    protected $casts = [
+        'app_settings' => 'array',
+        'system_config' => 'array',
+        'system_data' => 'array'
     ];
 
     public $searchAble = [
@@ -99,6 +107,11 @@ class Node extends BaseModel
         return $this->belongsTo(NodeGroup::class);
     }
 
+    public function ipAddresses ()
+    {
+        return $this->hasMany(NodeIPAddress::class);
+    }
+
     public function getOrders (String $status = null)
     {
         return $this->genericGetOrders($this, $status, OrderResourceType::NODE);
@@ -119,8 +132,26 @@ class Node extends BaseModel
         return $query;
     }
 
-    public function ipAddresses ()
+    public function getConfigKey (string $key) : string
     {
-        return $this->hasMany(NodeIPAddress::class);
+        foreach ($this->system_config as $config)
+        {
+            if ($config['key'] == $key)
+                return $config['value'];
+        }
+
+        throw new FatalException("Could not find requested key ($key) in node $this->id");
     }
+
+    public function getCertificate (string $type = 'ca') : CAInfo
+    {
+        // It's a list, index is nothing but numbers
+        $ret = new CAInfo();
+
+        $ret->blob = $this->getConfigKey("crypto.$type.blob");
+        $ret->password = $this->getConfigKey("crypto.$type.password");
+
+        return $ret;
+    }
+
 }

@@ -1,6 +1,6 @@
 {
     "name": "spectero/marketplace",
-    "description": "Proprietory Spectero Marketplace",
+    "description": "Proprietary Spectero Marketplace",
     "license": "Restrictive",
     "type": "project",
     "require": {

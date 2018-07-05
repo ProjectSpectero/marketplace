@@ -130,8 +130,8 @@ class NodeEventListener extends BaseListener
                             $newService = new Service();
                             $newService->node_id = $node->id;
                             $newService->type = $service;
-                            $newService->config = json_encode($config);
-                            $newService->connection_resource = json_encode($resource['connectionResource']);
+                            $newService->config = $config;
+                            $newService->connection_resource = $resource['connectionResource'];
 
                             $proxyManager = new HTTPProxyManager();
                             list($authKey, $password) = explode(':', $node->access_token, 2);
@@ -234,8 +234,8 @@ class NodeEventListener extends BaseListener
                     }
 
                     // If everything went well, node is now confirmed.
-                    $node->app_settings = json_encode($data['appSettings']);
-                    $node->system_config = json_encode($data['systemConfig']);
+                    $node->app_settings = $data['appSettings'];
+                    $node->system_config = $data['systemConfig'];
 
                     $node->cc = $geoData['cc'];
                     $node->asn = $geoData['asn'];

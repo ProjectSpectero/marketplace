@@ -21,6 +21,7 @@ use App\Events\BillingEvent;
 use App\Invoice;
 use App\Libraries\BillingUtils;
 use App\Libraries\PaginationManager;
+use App\Libraries\ProvisionedResourceResolver;
 use App\Libraries\SearchManager;
 use App\Libraries\TaxationManager;
 use App\Libraries\Utility;
@@ -43,7 +44,9 @@ class OrderController extends CRUDController
 
     public function show (Request $request, int $id, String $action = null) : JsonResponse
     {
+        /** @var Order $order */
         $order = Order::findOrFail($id);
+
         $this->authorizeResource($order);
 
         switch ($action)
@@ -62,19 +65,7 @@ class OrderController extends CRUDController
                 return $this->respond(null, BillingUtils::verifyOrder($order, false), $message, $statusCode);
 
             case 'resources':
-                if ($order->status != OrderStatus::ACTIVE)
-                    throw new UserFriendlyException(Errors::ORDER_NOT_ACTIVE_YET);
-
-                $resources = [];
-                foreach ($order->lineItems as $item)
-                    $resources[] = $this->getConnectionResources($item);
-
-                $out = [
-                    'accessor' => $order->accessor,
-                    'resources' => $resources
-                ];
-
-                return $this->respond($out);
+                return $this->respond(ProvisionedResourceResolver::resolve($order));
 
             default:
                 return $this->respond($order->toArray());
@@ -402,69 +393,6 @@ class OrderController extends CRUDController
        event(new BillingEvent(Events::ORDER_CREATED, $order));
 
        return $this->respond($order->toArray());
-    }
-
-    private function getConnectionResources(OrderLineItem $item)
-    {
-        $connectionResources = [
-            'id' => $item->id,
-            'resource' => [
-                'id' => $item->resource,
-                'type' => $item->type,
-                'reference' => []
-            ]
-        ];
-
-        switch ($item->type)
-        {
-            case OrderResourceType::NODE:
-                $node = Node::find($item->resource);
-                foreach ($node->services as $service)
-                {
-                    $connectionResources['resource']['reference'][] = [
-                            'type' => $service->type,
-                            'resource' => $service->connection_resource
-                        ];
-                }
-                break;
-            case OrderResourceType::NODE_GROUP:
-                $nodeGroup = NodeGroup::find($item->resource);
-                foreach ($nodeGroup->nodes as $node)
-                {
-                    foreach ($node->services as $service)
-                    {
-                        $connectionResources['resource']['reference'][] = [
-                            'type' => $service->type,
-                            'resource' => $service->connection_resource
-                        ];
-                    }
-                }
-            case OrderResourceType::ENTERPRISE:
-                // Our magnum opus
-                $enterpriseResources = EnterpriseResource::findForOrderLineItem($item)->get();
-
-                $skeletonResource = [
-                    'accessConfig' => null,
-                    'accessCredentials' => 'SPECTERO_USERNAME_PASSWORD',
-                    'accessReference' => []
-                ];
-
-
-                /** @var EnterpriseResource $enterpriseResource */
-                foreach ($enterpriseResources as $enterpriseResource)
-                {
-                    $skeletonResource['accessReference'][] = $enterpriseResource->accessor();
-                }
-
-                $connectionResources['resource']['reference'][] = [
-                    'type' => ServiceType::HTTPProxy,
-                    'resource' => $skeletonResource
-                ];
-
-                break;
-        }
-
-        return $connectionResources;
     }
 
     public function regenerateAccessor (Request $request, int $id)

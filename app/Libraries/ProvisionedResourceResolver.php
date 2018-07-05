@@ -55,20 +55,30 @@ class ProvisionedResourceResolver
         switch ($item->type)
         {
             case OrderResourceType::NODE:
+                /** @var Node $node */
                 $node = Node::find($item->resource);
-                $connectionResources['resource']['reference'] = self::resolveNode($node, $item->order);
+
+                if($node->isMarketable())
+                {
+                    $connectionResources['resource']['reference'] = self::resolveNode($node, $item->order);
+                }
                 break;
 
             case OrderResourceType::NODE_GROUP:
+                /** @var NodeGroup $nodeGroup */
                 $nodeGroup = NodeGroup::find($item->resource);
-                foreach ($nodeGroup->nodes as $node)
-                {
-                    $data = [
-                        'from' => $node->id,
-                        'services' => self::resolveNode($node, $item->order)
-                    ];
 
-                    $connectionResources['resource']['reference'][] = $data;
+                if ($nodeGroup->isMarketable())
+                {
+                    foreach ($nodeGroup->nodes as $node)
+                    {
+                        $data = [
+                            'from' => $node->id,
+                            'services' => self::resolveNode($node, $item->order)
+                        ];
+
+                        $connectionResources['resource']['reference'][] = $data;
+                    }
                 }
                 break;
 

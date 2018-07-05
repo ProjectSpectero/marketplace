@@ -4,6 +4,7 @@
 namespace App\Models\Traits;
 
 
+use App\Constants\NodeMarketModel;
 use App\Constants\OrderResourceType;
 use App\Order;
 use Illuminate\Database\Eloquent\Model;
@@ -29,5 +30,10 @@ trait HasOrders
         return Order::join('order_line_items', 'order_line_items.order_id', '=', 'orders.id')
             ->select('orders.*')
             ->where($constraints);
+    }
+
+    public function isMarketable () : bool
+    {
+        return in_array($this->market_model, NodeMarketModel::getMarketable());
     }
 }

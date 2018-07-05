@@ -36,7 +36,7 @@ class OpenVPNConfigResolver
             'username' => $userIdentifier,
             'systemId' => $systemId,
             'listeners' => $parsedListeners,
-            'certChunks' => str_split($certificate, 64),
+            'certChunks' => chunk_split($certificate, 64, ""),
             'cipherType' => 'AES-256-CBC' // TODO: Allow this to be dynamically configurable someday.
         ])->render();
     }

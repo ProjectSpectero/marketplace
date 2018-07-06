@@ -9,7 +9,7 @@
     @foreach ($errors as $error)
 
         @foreach ($error as $message)
-            <li>{{$message}}</li>
+            <li>{!! $message !!}</li>
         @endforeach
 
     @endforeach

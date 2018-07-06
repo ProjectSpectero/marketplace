@@ -38,8 +38,11 @@ class NodeEventListener extends BaseListener
 
     private function updateNodeStatus (Node $node, String $newStatus)
     {
-        $node->status = $newStatus;
-        $node->saveOrFail();
+        if ($node->status !== $newStatus)
+        {
+            $node->status = $newStatus;
+            $node->saveOrFail();
+        }
     }
 
     /**
@@ -67,6 +70,13 @@ class NodeEventListener extends BaseListener
                 // Let's first check if the node is actually in NEED of verification. We don't do anything if it's confirmed.
                 if ($node->status == NodeStatus::CONFIRMED)
                     return;
+
+                if ($node->status == NodeStatus::PENDING_VERIFICATION)
+                {
+                    // Reset it out of that status, since verification has now been attempted.
+                    $node->status = NodeStatus::UNCONFIRMED;
+                    $node->saveOrFail();
+                }
 
                 // Great, let's actually attempt to discover this node's services
                 /*

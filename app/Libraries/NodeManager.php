@@ -8,7 +8,6 @@ use App\Constants\Events;
 use App\Constants\ResponseType;
 use App\Constants\ServiceType;
 use App\Errors\FatalException;
-use App\Errors\UserFriendlyException;
 use App\Events\NodeEvent;
 use App\Node;
 use GuzzleHttp\Client;
@@ -147,6 +146,7 @@ class NodeManager
             event(new NodeEvent(Events::NODE_VERIFICATION_FAILED, $this->node, [
                 'error' => $exception->getMessage()
             ]));
+
             return null;
         }
 

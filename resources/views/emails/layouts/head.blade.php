@@ -1,7 +1,7 @@
 <head>
     <meta name="viewport" content="width=device-width" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>Simple Transactional Email</title>
+    <title>Spectero</title>
     <style>
         /* -------------------------------------
             GLOBAL RESETS
@@ -43,7 +43,7 @@
         /* Set a max-width, and make it display as block so it will automatically stretch to that width, but will also shrink down on a phone or something */
         .container {
             display: block;
-            Margin: 0 auto !important;
+            margin: 0 auto !important;
             /* makes it centered */
             max-width: 580px;
             padding: 10px;
@@ -53,7 +53,7 @@
         .content {
             box-sizing: border-box;
             display: block;
-            Margin: 0 auto;
+            margin: 0 auto;
             max-width: 580px;
             padding: 10px; }
 
@@ -76,7 +76,7 @@
 
         .footer {
             clear: both;
-            Margin-top: 10px;
+            margin-top: 10px;
             text-align: center;
             width: 100%; }
         .footer td,
@@ -99,7 +99,7 @@
             font-weight: 400;
             line-height: 1.4;
             margin: 0;
-            Margin-bottom: 30px; }
+            margin-bottom: 20px; }
 
         h1 {
             font-size: 35px;
@@ -114,7 +114,12 @@
             font-size: 14px;
             font-weight: normal;
             margin: 0;
-            Margin-bottom: 15px; }
+            margin-bottom: 15px; }
+
+        ul,
+        ol {
+            -webkit-padding-start: 12px; }
+
         p li,
         ul li,
         ol li {
@@ -124,6 +129,10 @@
         a {
             color: #3498db;
             text-decoration: underline; }
+        
+        p.no-space {
+            margin-bottom: 0;
+        }
 
         /* -------------------------------------
             BUTTONS
@@ -131,8 +140,8 @@
         .btn {
             box-sizing: border-box;
             width: 100%; }
-        .btn > tbody > tr > td {
-            padding-bottom: 15px; }
+        /* .btn > tbody > tr > td {
+            padding-bottom: 15px; } */
         .btn table {
             width: auto; }
         .btn table td {
@@ -152,14 +161,15 @@
             margin: 0;
             padding: 12px 25px;
             text-decoration: none;
-            text-transform: capitalize; }
+            text-transform: capitalize;
+            margin-bottom: 15px; }
 
         .btn-primary table td {
-            background-color: #3498db; }
+            background-color: #1D22C6; }
 
         .btn-primary a {
-            background-color: #3498db;
-            border-color: #3498db;
+            background-color: #1D22C6;
+            border-color: #1D22C6;
             color: #ffffff; }
 
         /* -------------------------------------
@@ -236,9 +246,11 @@
                 border-radius: 0 !important;
                 border-right-width: 0 !important; }
             table[class=body] .btn table {
-                width: 100% !important; }
+                width: 100% !important;
+                text-align: center; }
             table[class=body] .btn a {
-                width: 100% !important; }
+                width: 100% !important;
+                text-align: center; }
             table[class=body] .img-responsive {
                 height: auto !important;
                 max-width: 100% !important;
@@ -265,15 +277,20 @@
                 line-height: inherit !important;
                 text-decoration: none !important; }
             .btn-primary table td:hover {
-                background-color: #34495e !important; }
+                background-color: #171FAB !important; }
             .btn-primary a:hover {
-                background-color: #34495e !important;
-                border-color: #34495e !important; } }
+                background-color: #171FAB !important;
+                border-color: #171FAB !important; } }
 
-        .no-style {
-            all: unset !important;
-            color: blue !important;
-        }
+            a.no-style {
+                all: unset !important;
+                color: blue !important;
+                cursor: pointer !important;
+            }
+            a.no-style:hover {
+                background-color: transparent !important;
+                border-color: transparent !important;
+            }
 
     </style>
 </head>

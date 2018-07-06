@@ -189,13 +189,14 @@ class NodeController extends CRUDController
             // This means node doesn't exist, we're clear to proceed.
             // Add back IP (if not provided)
             // TODO: consider storing access_token encrypted
+
             $input['ip'] = $ipAddress;
             $input['status'] = NodeStatus::UNCONFIRMED;
             $node = Node::create($input);
             $node->user_id = $request->user()->id;
             $node->market_model = NodeMarketModel::UNLISTED;
             $node->version = $input['version'];
-            $node->system_data = json_encode($input['system_data']);
+            $node->system_data = $input['system_data'];
             $node->saveOrFail();
         }
 

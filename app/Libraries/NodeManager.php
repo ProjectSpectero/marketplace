@@ -75,7 +75,10 @@ class NodeManager
         $rules = [
             'systemConfig' => 'required|array',
             'appSettings' => 'required|array',
-            'system' => 'required|array',
+            'status' => 'required|array',
+            'status.cloud' => 'required|array',
+            'status.app' => 'required|array',
+            'status.system' => 'required|array',
             'appSettings.BlockedRedirectUri' => 'required|equals:https://blocked.spectero.com/?reason={0}&uri={1}&data={2}',
             'appSettings.AuthCacheMinutes' => 'required|integer|max:10',
             'appSettings.LocalSubnetBanEnabled' => 'required|equals:true',
@@ -119,7 +122,7 @@ class NodeManager
 
             $ret['appSettings'] = $convergedDescriptor['appSettings'];
             $ret['systemConfig'] = $convergedDescriptor['systemConfig'];
-            $ret['systemData'] = $convergedDescriptor['system'];
+            $ret['systemData'] = $convergedDescriptor['status']['system'];
 
             $ret['ipAddresses'] = $this->discoverIPAddresses();
 

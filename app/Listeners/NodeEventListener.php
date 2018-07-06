@@ -152,6 +152,12 @@ class NodeEventListener extends BaseListener
                             {
                                 list($ip, $port) = explode(':', $reference, 2);
 
+                                $isIPv6 = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
+
+                                // TODO: build support for verifying IPv6 proxies too, currently skipped.
+                                if ($isIPv6)
+                                    continue;
+
                                 try
                                 {
                                     $outgoingIp = $proxyManager->discover($ip, $port, $authKey, $password);
@@ -168,10 +174,11 @@ class NodeEventListener extends BaseListener
                                     return;
                                 }
 
+                                // This ensures the duplicate verification (i.e: multiple defined proxies, but with the same outgoing IP)
                                 if (in_array($outgoingIp, $outgoingIpCollection))
                                 {
                                     // Duplicate, proxies NEED to have unique IPs.
-                                    Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, $ip, "Duplicate: the outgoing IP of $outgoingIp has been seen before (encountered when verifying #$index ($reference)."));
+                                    Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, $ip, "Duplicate: the outgoing IP of $outgoingIp has been seen before (encountered when verifying $reference)."));
                                     $this->updateNodeStatus($node, NodeStatus::UNCONFIRMED);
                                     return;
                                 }

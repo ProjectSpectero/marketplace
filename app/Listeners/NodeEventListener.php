@@ -150,12 +150,13 @@ class NodeEventListener extends BaseListener
 
                             foreach ($resource['connectionResource']['accessReference'] as $index => $reference)
                             {
-                                list($ip, $port) = explode(':', $reference, 2);
+                                $parts = explode(':', $reference);
 
-                                $isIPv6 = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
+                                $port = array_pop($parts);
+                                $ip = implode(':', $parts);
 
                                 // TODO: build support for verifying IPv6 proxies too, currently skipped.
-                                if ($isIPv6)
+                                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false)
                                     continue;
 
                                 try

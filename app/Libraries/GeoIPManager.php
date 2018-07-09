@@ -15,6 +15,11 @@ class GeoIPManager
     public static function resolve (String $ip) : array
     {
         $path = base_path() . '/' . env('GEO_DB_DIR');
+
+        $city = null;
+        $isoCode = null;
+        $asn = 0;
+
         try
         {
             $cityReader = new Reader($path . '/GeoLite2-City.mmdb');
@@ -22,15 +27,7 @@ class GeoIPManager
 
             $city = $cityRecord->city->name;
             $isoCode = $cityRecord->country->isoCode;
-        }
-        catch (AddressNotFoundException $silenced)
-        {
-            $city = null;
-            $isoCode = null;
-        }
 
-        try
-        {
             $asnReader = new Reader($path . '/GeoLite2-ASN.mmdb');
             $asnRecord = $asnReader->asn($ip);
 
@@ -38,7 +35,11 @@ class GeoIPManager
         }
         catch (AddressNotFoundException $silenced)
         {
-            $asn = null;
+            // Couldn't find it in the DB, oh well.
+        }
+        catch (\Exception $exception)
+        {
+            \Log::error("Interaction with DB failed!", [ 'ctx' => $exception]);
         }
 
         return [

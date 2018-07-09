@@ -1,7 +1,7 @@
 @extends ('emails.layouts.master')
 
 @section ('content')
-    <p>Hi there,</p>
+    <p>Hi,</p>
     <p>Welcome to Spectero! We're so glad to have you on our platform.</p>
 
     <p>Please verify your email by clicking the link below:</p>

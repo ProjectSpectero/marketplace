@@ -3,7 +3,7 @@
 @section ('content')
     <h2>Thank You For Your Order</h2>
 
-    <p>Hi there,</p>
+    <p>Hi {{ $order->user->name }},</p>
     <p>We're delighted to confirm that we've received your order. Thank you again for trusting Spectero with your purchase.</p>
 
     @if($order->status == \App\Constants\OrderStatus::MANUAL_FRAUD_CHECK)

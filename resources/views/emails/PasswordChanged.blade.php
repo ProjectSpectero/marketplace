@@ -1,7 +1,7 @@
 @extends ('emails.layouts.master')
 
 @section ('content')
-    <p>Hi there,</p>
+    <p>Hi,</p>
     <p>Someone (hopefully you) requested that your {{ env('COMPANY_NAME', 'Spectero') }} password be reset. This request has been processed and your password has been successfully reset.</p>
 
     <p><b>If you didn't make this request then please contact our support team immediately.</b></p>

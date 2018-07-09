@@ -37,6 +37,7 @@ class EmailChangeNew extends BaseMail
         return $this->subject($this->formatTitle("Your e-mail address was successfully changed"))
             ->view('emails.EmailChangeNew', [
                 'verifyUrl' => $url,
+                'salutation' => $this->user->name
             ]);
     }
 }

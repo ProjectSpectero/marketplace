@@ -29,7 +29,8 @@ class OrderTerminated extends BaseMail
         $url = Utility::generateUrl('order/' . $this->order->id, 'frontend');
         return $this->subject($this->formatTitle('Your Order #' . $this->order->id . ' was terminated'))
             ->view('emails.OrderTerminated', [
-                'url' => $url
+                'url' => $url,
+                'order' => $this->order,
             ]);
     }
 }

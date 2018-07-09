@@ -1,7 +1,7 @@
 @extends ('emails.layouts.master')
 
 @section ('content')
-    <p>Hi there,</p>
+    <p>Hi,</p>
     <p>Someone requested a new password for your Spectero account. If this was you, click the link below to proceed:</p>
 
     <a target="_blank" href="{{ $resetUrl }}">Reset Password</a>

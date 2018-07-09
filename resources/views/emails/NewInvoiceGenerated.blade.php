@@ -3,7 +3,7 @@
 @section ('content')
     <h2>New Invoice Generated</h2>
 
-    <p>Hi there,</p>
+    <p>Hi {{ $invoice->user->name }},</p>
     <p>This email is to let you know that a new Spectero invoice (<b>{{ $invoice->id }}</b>) has been generated {{ $reason }}. This invoice is due on <b>{{ $invoice->due_date }}</b>. To ensure smooth operation your service(s), please make sure to submit payment in time.</p>
 
     <a target="_blank" href="{{ $manualUrl }}">View Invoice</a>

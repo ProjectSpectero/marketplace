@@ -3,7 +3,7 @@
 @section ('content')
     <h2>Your Order Has Been Provisioned</h2>
 
-    <p>Hi there,</p>
+    <p>Hi {{ $order->user->name }},</p>
     <p>We're delighted to inform you that your Spectero order <b>#{{ $order->id }}</b> has now finished being provisioned.</p>
 
     <p>This means that your ordered services/resources should now available for use.</p>

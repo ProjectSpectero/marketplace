@@ -1,7 +1,7 @@
 @extends ('emails.layouts.master')
 
 @section ('content')
-    <p>Hi there,</p>
+    <p>Hi {{ $invoice->user->name }},</p>
     <p>This email is to remind you that payment is pending for your Spectero invoice <b>#{{ $invoice->id }}</b> which is due on <b>{{ $invoice->due_date }}</b>.</p>
 
     <p>To ensure smooth operation your services, please make sure to submit payment in time.</p>

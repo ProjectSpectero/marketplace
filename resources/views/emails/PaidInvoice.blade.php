@@ -3,7 +3,7 @@
 @section ('content')
     <h2>Thank You For Your Payment</h2>
 
-    <p>Hi there,</p>
+    <p>Hi {{ $invoice->user->name }},</p>
     <p>This is an automatic message to confirm receipt of your payment on your Spectero invoice <b>#{{ $invoice->id }}</b>.</p>
     <p>You do not need to reply to this e-mail, but you may save it for your records.</p>
 

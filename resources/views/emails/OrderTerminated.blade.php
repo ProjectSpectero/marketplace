@@ -3,7 +3,7 @@
 @section ('content')
     <h2>Your Order Has Been Terminated</h2>
 
-    <p>Hi there,</p>
+    <p>Hi {{ $order->user->name }},</p>
     <p>We're sorry to inform you that your Spectero order has been terminated.</p>
     <p><b>Reason:</b> Payment was not received in time.</p>
 

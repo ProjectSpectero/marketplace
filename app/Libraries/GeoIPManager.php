@@ -39,7 +39,7 @@ class GeoIPManager
         }
         catch (\Exception $exception)
         {
-            \Log::error("Interaction with DB failed!", [ 'ctx' => $exception]);
+            \Log::error("Interaction with GeoIP DB failed!", [ 'ctx' => $exception]);
         }
 
         return [

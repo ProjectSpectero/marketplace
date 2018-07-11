@@ -38,8 +38,11 @@ class NodeEventListener extends BaseListener
 
     private function updateNodeStatus (Node $node, String $newStatus)
     {
-        $node->status = $newStatus;
-        $node->saveOrFail();
+        if ($node->status !== $newStatus)
+        {
+            $node->status = $newStatus;
+            $node->saveOrFail();
+        }
     }
 
     /**
@@ -67,6 +70,13 @@ class NodeEventListener extends BaseListener
                 // Let's first check if the node is actually in NEED of verification. We don't do anything if it's confirmed.
                 if ($node->status == NodeStatus::CONFIRMED)
                     return;
+
+                if ($node->status == NodeStatus::PENDING_VERIFICATION)
+                {
+                    // Reset it out of that status, since verification has now been attempted.
+                    $node->status = NodeStatus::UNCONFIRMED;
+                    $node->saveOrFail();
+                }
 
                 // Great, let's actually attempt to discover this node's services
                 /*
@@ -130,8 +140,8 @@ class NodeEventListener extends BaseListener
                             $newService = new Service();
                             $newService->node_id = $node->id;
                             $newService->type = $service;
-                            $newService->config = json_encode($config);
-                            $newService->connection_resource = json_encode($resource['connectionResource']);
+                            $newService->config = $config;
+                            $newService->connection_resource = $resource['connectionResource'];
 
                             $proxyManager = new HTTPProxyManager();
                             list($authKey, $password) = explode(':', $node->access_token, 2);
@@ -140,7 +150,14 @@ class NodeEventListener extends BaseListener
 
                             foreach ($resource['connectionResource']['accessReference'] as $index => $reference)
                             {
-                                list($ip, $port) = explode(':', $reference, 2);
+                                $parts = explode(':', $reference);
+
+                                $port = array_pop($parts);
+                                $ip = implode(':', $parts);
+
+                                // TODO: build support for verifying IPv6 proxies too, currently skipped.
+                                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false)
+                                    continue;
 
                                 try
                                 {
@@ -153,15 +170,16 @@ class NodeEventListener extends BaseListener
 
                                 if ($outgoingIp == false)
                                 {
-                                    Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, $ip, "Resolution: could not resolve outgoing IP for proxy $ip:$port."));
+                                    Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, $ip, "Resolution: could not resolve outgoing IP for proxy $reference."));
                                     $this->updateNodeStatus($node, NodeStatus::UNCONFIRMED);
                                     return;
                                 }
 
+                                // This ensures the duplicate verification (i.e: multiple defined proxies, but with the same outgoing IP)
                                 if (in_array($outgoingIp, $outgoingIpCollection))
                                 {
                                     // Duplicate, proxies NEED to have unique IPs.
-                                    Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, $ip, "Duplicate: the outgoing IP of $outgoingIp has been seen before."));
+                                    Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, $ip, "Duplicate: the outgoing IP of $outgoingIp has been seen before (encountered when verifying $reference)."));
                                     $this->updateNodeStatus($node, NodeStatus::UNCONFIRMED);
                                     return;
                                 }
@@ -234,8 +252,8 @@ class NodeEventListener extends BaseListener
                     }
 
                     // If everything went well, node is now confirmed.
-                    $node->app_settings = json_encode($data['appSettings']);
-                    $node->system_config = json_encode($data['systemConfig']);
+                    $node->app_settings = $data['appSettings'];
+                    $node->system_config = $data['systemConfig'];
 
                     $node->cc = $geoData['cc'];
                     $node->asn = $geoData['asn'];

@@ -13,7 +13,6 @@ use App\Constants\NodeSyncStatus;
 use App\Constants\OrderStatus;
 use App\Constants\Protocols;
 use App\Constants\ResponseType;
-use App\Errors\FatalException;
 use App\Errors\UserFriendlyException;
 use App\Events\NodeEvent;
 use App\HistoricResource;
@@ -111,9 +110,6 @@ class NodeController extends CRUDController
                 break;
 
             case 'auth':
-                if ($node->status !== NodeStatus::CONFIRMED)
-                    throw new UserFriendlyException(Errors::NODE_PENDING_VERIFICATION);
-
                 $data = $this->getFromCacheOrGenerateAuthTokens($node, $request->has('direct'));
                 break;
 
@@ -148,7 +144,7 @@ class NodeController extends CRUDController
         return PaginationManager::paginate($request, $queryBuilder);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, bool $indirect = false): JsonResponse
     {
         $this->authorizeResource();
         $rules = [
@@ -189,17 +185,25 @@ class NodeController extends CRUDController
             // This means node doesn't exist, we're clear to proceed.
             // Add back IP (if not provided)
             // TODO: consider storing access_token encrypted
+
             $input['ip'] = $ipAddress;
             $input['status'] = NodeStatus::UNCONFIRMED;
             $node = Node::create($input);
             $node->user_id = $request->user()->id;
             $node->market_model = NodeMarketModel::UNLISTED;
             $node->version = $input['version'];
-            $node->system_data = json_encode($input['system_data']);
+            $node->system_data = $input['system_data'];
             $node->saveOrFail();
         }
 
         event(new NodeEvent(Events::NODE_CREATED, $node, []));
+
+        if ($indirect)
+        {
+            // Hide attributes unauth/node should not see.
+            $node->makeHidden('user_id');
+        }
+
         return $this->respond($node->toArray(), [], null, ResponseType::CREATED);
     }
 
@@ -319,13 +323,12 @@ class NodeController extends CRUDController
         $data = [];
         try
         {
-            $manager = new NodeManager($node, true);
-            $tokenCollection = $manager->getTokens(); // TODO: This call itself should also be through the command proxy
+            $tokenCollection = NodeManager::generateAuthTokens($node);
 
             $accessExpires = $tokenCollection['access']['expires'];
             $minutesTillAccessExpires = Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($accessExpires));
 
-            $refreshExpires = $tokenCollection['refresh']['expires'];
+            // $refreshExpires = $tokenCollection['refresh']['expires'];
 
             if ($direct)
             {
@@ -356,7 +359,7 @@ class NodeController extends CRUDController
                         'ip' => $node->ip,
                         'port' => $node->port,
                         'credentials' => $tokenCollection
-                    ]) // TODO: Populate this
+                    ])
                     ->sign($signer, env('NODE_CPROXY_JWT_SIGNING_KEY'))
                     ->getToken();
 

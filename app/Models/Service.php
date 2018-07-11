@@ -5,6 +5,7 @@ namespace App;
 class Service extends BaseModel
 {
     protected $hidden = [ 'updated_at', 'config', 'connection_resource', 'node_id' ];
+    protected $casts = [ 'connection_resource' => 'array', 'config' => 'array' ];
 
     public function node ()
     {

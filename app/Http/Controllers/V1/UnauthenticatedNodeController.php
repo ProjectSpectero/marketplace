@@ -30,7 +30,7 @@ class UnauthenticatedNodeController extends V1Controller
     public function create (Request $request)
     {
         $req = $this->prepareRequest($request);
-        return $this->controller->store($req);
+        return $this->controller->store($req, true);
     }
 
     public function handleConfigPush (Request $request, int $id, String $action)

@@ -27,6 +27,8 @@
 
                                                             @yield('content')
 
+                                                            <p class="no-space">Thanks,<br>The Spectero Team</p>
+
                                                         </tbody>
                                                     </table>
                                                 </td>

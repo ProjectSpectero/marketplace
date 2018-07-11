@@ -172,8 +172,18 @@ class NodeGroupController extends CRUDController
         $this->authorizeResource($node, 'node.assign');
         $this->authorizeResource($nodeGroup, 'node_group.assign');
 
-        if ($node->status =! NodeStatus::CONFIRMED)
+        if ($node->status != NodeStatus::CONFIRMED)
             throw new UserFriendlyException(Errors::NODE_PENDING_VERIFICATION, ResponseType::FORBIDDEN);
+
+        /** @var NodeGroup $oldGroup */
+        $oldGroup = $node->group;
+
+        if ($oldGroup != null
+        && $oldGroup->getOrders(OrderStatus::ACTIVE)->count() !== 0)
+        {
+            // OK, this node belonged to a group and is now being re-assigned. It also has active orders, and thus needs to be stopped.
+            throw new UserFriendlyException(Errors::HAS_ACTIVE_ORDERS, ResponseType::FORBIDDEN);
+        }
 
         $rules = [
             'node_id' => 'required|integer',

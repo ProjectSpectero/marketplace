@@ -5,16 +5,21 @@ namespace App\Libraries;
 
 use App\Constants\Errors;
 use App\Constants\Events;
+use App\Constants\NodeConfigKey;
+use App\Constants\NodeStatus;
 use App\Constants\ResponseType;
 use App\Constants\ServiceType;
 use App\Errors\FatalException;
 use App\Errors\UserFriendlyException;
 use App\Events\NodeEvent;
 use App\Node;
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Support\Facades\Validator;
+use Lcobucci\JWT\Builder;
+use Lcobucci\JWT\Signer\Hmac\Sha512;
 
 class NodeManager
 {
@@ -35,8 +40,10 @@ class NodeManager
     private $headers;
     private $version;
 
+    const UserDataClaim = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/userdata';
 
-    public function __construct (Node $node, bool $implicitConnection = false)
+
+    public function __construct (Node $node, bool $implicitConnection = false, bool $useCommandProxy = false)
     {
         $this->implicitConnection = $implicitConnection;
         $this->node = $node;
@@ -70,11 +77,59 @@ class NodeManager
         return $this->authResponse;
     }
 
+    public static function generateAuthTokens (Node $node)
+    {
+        if ($node->status !== NodeStatus::CONFIRMED)
+            throw new UserFriendlyException(Errors::NODE_PENDING_VERIFICATION);
+
+        $expiryMinutes = env('NODE_JWT_TOKEN_EXPIRES_IN_MINUTES', 30);
+        $signingKey = $node->getConfigKey(NodeConfigKey::CryptoJwtKey);
+
+        $expires = Carbon::now()->addMinutes($expiryMinutes)->timestamp;
+
+        list($user, $password) = explode(':', $node->access_token);
+
+        // Need to build the right JWT payload to interact with the daemon-proxy now.
+        $signer = new Sha512();
+        $token = (new Builder())
+            ->setIssuer(env('APP_URL', "https://cloud.spectero.com"))
+            ->setId(uniqid("", true))
+            ->setIssuedAt(time())
+            ->setNotBefore(time())
+            ->setExpiration($expires)
+            ->set(self::UserDataClaim, [
+                'id' => 1, // Only one really guaranteed to exist, maybe we shouldn't include it at all.
+                'source' => 'SpecteroCloud',
+                'authKey' => $user,
+                'roles' => [ 'SuperAdmin' ],
+                'cert' => null,
+                'certKey' => null,
+                'encryptCertificate' => true,
+                'engagementId' => 0,
+                'fullName' => 'Spectero Cloud',
+                'emailAddress' => 'cloud@spectero.com',
+                'cloudSyncDate' => Carbon::now()->toDateTimeString(),
+            ])
+            ->sign($signer, $signingKey)
+            ->getToken();
+
+        return [
+            'access' => [ 'token' => (string) $token, 'expires' => $expires ],
+            'refresh' => [ 'token' => null, 'expires' => $expires ],
+        ];
+    }
+
     public function getAndValidateSystemDescriptor ()
     {
         $rules = [
             'systemConfig' => 'required|array',
             'appSettings' => 'required|array',
+            'status' => 'required|array',
+            'status.cloud' => 'required|array',
+            'status.app' => 'required|array',
+            'status.system' => 'required|array',
+            'status.app.environment' => 'required|equals:Production',
+            'status.app.restartNeeded' => 'required|equals:false',
             'appSettings.BlockedRedirectUri' => 'required|equals:https://blocked.spectero.com/?reason={0}&uri={1}&data={2}',
             'appSettings.AuthCacheMinutes' => 'required|integer|max:10',
             'appSettings.LocalSubnetBanEnabled' => 'required|equals:true',
@@ -102,7 +157,7 @@ class NodeManager
         return $result;
     }
 
-    public function discover (bool $loadServiceConfigs = false)
+    public function discover (bool $loadServiceConfigs = false, bool $throwException = false)
     {
         $ret = [];
 
@@ -118,6 +173,7 @@ class NodeManager
 
             $ret['appSettings'] = $convergedDescriptor['appSettings'];
             $ret['systemConfig'] = $convergedDescriptor['systemConfig'];
+            $ret['systemData'] = $convergedDescriptor['status']['system'];
 
             $ret['ipAddresses'] = $this->discoverIPAddresses();
 
@@ -142,6 +198,10 @@ class NodeManager
             event(new NodeEvent(Events::NODE_VERIFICATION_FAILED, $this->node, [
                 'error' => $exception->getMessage()
             ]));
+
+            if ($throwException)
+                throw new FatalException(Events::NODE_VERIFICATION_FAILED, ResponseType::INTERNAL_SERVER_ERROR, $exception);
+
             return null;
         }
 

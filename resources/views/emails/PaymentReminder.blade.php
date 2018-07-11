@@ -1,13 +1,12 @@
 @extends ('emails.layouts.master')
 
 @section ('content')
+    <p>Hi {{ $invoice->user->name }},</p>
+    <p>This email is to remind you that payment is pending for your Spectero invoice <b>#{{ $invoice->id }}</b> which is due on <b>{{ $invoice->due_date }}</b>.</p>
 
-    <p>Hi there,</p>
-    <p>This email is to remind you that payment is pending for invoice #{{ $invoice->id }} which is due on {{ $invoice->due_date }}.</p>
+    <p>To ensure smooth operation your services, please make sure to submit payment in time.</p>
 
-    <p>To ensure smooth operation your service(s), please make sure to submit payment in time.</p>
+    <p>Please <a target="_blank" href="{{ $manualUrl }}" class="no-style">make a payment now</a> or update your payment method in our cloud panel to be automatically billed by our system in the future.</p>
 
-    <p>Please make <a class="no-style" href="{{ $manualUrl }}">a payment manually</a> or
-        update the stored payment method to avoid this issue in the future.</p>
-
+    <a target="_blank" href="{{ $manualUrl }}">Make A Payment</a>
 @endsection

@@ -78,6 +78,8 @@ class NodeManager
             'status.cloud' => 'required|array',
             'status.app' => 'required|array',
             'status.system' => 'required|array',
+            'status.app.environment' => 'required|equals:Production',
+            'status.app.restartNeeded' => 'required|equals:false',
             'appSettings.BlockedRedirectUri' => 'required|equals:https://blocked.spectero.com/?reason={0}&uri={1}&data={2}',
             'appSettings.AuthCacheMinutes' => 'required|integer|max:10',
             'appSettings.LocalSubnetBanEnabled' => 'required|equals:true',
@@ -105,7 +107,7 @@ class NodeManager
         return $result;
     }
 
-    public function discover (bool $loadServiceConfigs = false)
+    public function discover (bool $loadServiceConfigs = false, bool $throwException = false)
     {
         $ret = [];
 
@@ -146,6 +148,9 @@ class NodeManager
             event(new NodeEvent(Events::NODE_VERIFICATION_FAILED, $this->node, [
                 'error' => $exception->getMessage()
             ]));
+
+            if ($throwException)
+                throw new FatalException(Events::NODE_VERIFICATION_FAILED, ResponseType::INTERNAL_SERVER_ERROR, $exception);
 
             return null;
         }

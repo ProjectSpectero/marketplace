@@ -127,7 +127,7 @@
             margin-left: 5px; }
 
         a {
-            color: #3498db;
+            color: #1D22C6;
             text-decoration: underline; }
         
         p.no-space {
@@ -139,21 +139,11 @@
         ------------------------------------- */
         .btn {
             box-sizing: border-box;
-            width: 100%; }
-        /* .btn > tbody > tr > td {
-            padding-bottom: 15px; } */
-        .btn table {
-            width: auto; }
-        .btn table td {
-            background-color: #ffffff;
-            border-radius: 5px;
-            text-align: center; }
-        .btn a {
-            background-color: #ffffff;
-            border: solid 1px #3498db;
+            background-color: #1D22C6;
+            border: solid 1px #1D22C6;
+            color: #ffffff;
             border-radius: 5px;
             box-sizing: border-box;
-            color: #3498db;
             cursor: pointer;
             display: inline-block;
             font-size: 14px;
@@ -163,14 +153,10 @@
             text-decoration: none;
             text-transform: capitalize;
             margin-bottom: 15px; }
-
-        .btn-primary table td {
-            background-color: #1D22C6; }
-
-        .btn-primary a {
-            background-color: #1D22C6;
-            border-color: #1D22C6;
-            color: #ffffff; }
+        .btn:hover {
+            background-color: #171fab;
+            border-color: #171fab;
+        }
 
         /* -------------------------------------
             OTHER STYLES THAT MIGHT BE USEFUL
@@ -211,9 +197,6 @@
             visibility: hidden;
             width: 0; }
 
-        .powered-by a {
-            text-decoration: none; }
-
         hr {
             border: 0;
             border-bottom: 1px solid #f6f6f6;
@@ -245,10 +228,7 @@
                 border-left-width: 0 !important;
                 border-radius: 0 !important;
                 border-right-width: 0 !important; }
-            table[class=body] .btn table {
-                width: 100% !important;
-                text-align: center; }
-            table[class=body] .btn a {
+            table[class=body] .btn {
                 width: 100% !important;
                 text-align: center; }
             table[class=body] .img-responsive {
@@ -275,22 +255,7 @@
                 font-size: inherit !important;
                 font-weight: inherit !important;
                 line-height: inherit !important;
-                text-decoration: none !important; }
-            .btn-primary table td:hover {
-                background-color: #171FAB !important; }
-            .btn-primary a:hover {
-                background-color: #171FAB !important;
-                border-color: #171FAB !important; } }
-
-            a.no-style {
-                all: unset !important;
-                color: blue !important;
-                cursor: pointer !important;
-            }
-            a.no-style:hover {
-                background-color: transparent !important;
-                border-color: transparent !important;
-            }
+                text-decoration: none !important; } }
 
     </style>
 </head>

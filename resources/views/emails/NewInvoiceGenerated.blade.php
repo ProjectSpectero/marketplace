@@ -6,7 +6,7 @@
     <p>Hi {{ $invoice->user->name }},</p>
     <p>This email is to let you know that a new Spectero invoice (<b>{{ $invoice->id }}</b>) has been generated {{ $reason }}. This invoice is due on <b>{{ $invoice->due_date }}</b>. To ensure smooth operation your service(s), please make sure to submit payment in time.</p>
 
-    <a target="_blank" href="{{ $manualUrl }}">View Invoice</a>
+    <a class="btn" target="_blank" href="{{ $manualUrl }}">View Invoice</a>
 
     <p>Payment can be made using the link above. You can also set up automatic payments from the same link.</p>
 

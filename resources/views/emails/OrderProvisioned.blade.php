@@ -10,7 +10,7 @@
 
     <p>In case you purchased access to a node or group offered by one of our marketplace sellers, you may have to wait a few moments more for synchronization to complete. This is tracked on the order page, and you can view live status updates there.</p>
 
-    <a target="_blank" href="{{ $url }}">View Order</a>
+    <a class="btn" target="_blank" href="{{ $url }}">View Order</a>
 
     <p>Have questions or comments? Email us at {{ env('COMPANY_EMAIL', 'hello@spectero.com') }} and we'll be happy to help you with anything we can.</p>
 @endsection

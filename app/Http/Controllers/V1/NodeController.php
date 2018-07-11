@@ -13,7 +13,6 @@ use App\Constants\NodeSyncStatus;
 use App\Constants\OrderStatus;
 use App\Constants\Protocols;
 use App\Constants\ResponseType;
-use App\Errors\FatalException;
 use App\Errors\UserFriendlyException;
 use App\Events\NodeEvent;
 use App\HistoricResource;
@@ -111,9 +110,6 @@ class NodeController extends CRUDController
                 break;
 
             case 'auth':
-                if ($node->status !== NodeStatus::CONFIRMED)
-                    throw new UserFriendlyException(Errors::NODE_PENDING_VERIFICATION);
-
                 $data = $this->getFromCacheOrGenerateAuthTokens($node, $request->has('direct'));
                 break;
 
@@ -327,13 +323,12 @@ class NodeController extends CRUDController
         $data = [];
         try
         {
-            $manager = new NodeManager($node, true);
-            $tokenCollection = $manager->getTokens(); // TODO: This call itself should also be through the command proxy
+            $tokenCollection = NodeManager::generateAuthTokens($node);
 
             $accessExpires = $tokenCollection['access']['expires'];
             $minutesTillAccessExpires = Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($accessExpires));
 
-            $refreshExpires = $tokenCollection['refresh']['expires'];
+            // $refreshExpires = $tokenCollection['refresh']['expires'];
 
             if ($direct)
             {
@@ -364,7 +359,7 @@ class NodeController extends CRUDController
                         'ip' => $node->ip,
                         'port' => $node->port,
                         'credentials' => $tokenCollection
-                    ]) // TODO: Populate this
+                    ])
                     ->sign($signer, env('NODE_CPROXY_JWT_SIGNING_KEY'))
                     ->getToken();
 

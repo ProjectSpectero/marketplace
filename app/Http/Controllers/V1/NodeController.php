@@ -148,7 +148,7 @@ class NodeController extends CRUDController
         return PaginationManager::paginate($request, $queryBuilder);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, bool $indirect = false): JsonResponse
     {
         $this->authorizeResource();
         $rules = [
@@ -201,6 +201,13 @@ class NodeController extends CRUDController
         }
 
         event(new NodeEvent(Events::NODE_CREATED, $node, []));
+
+        if ($indirect)
+        {
+            // Hide attributes unauth/node should not see.
+            $node->makeHidden('user_id');
+        }
+
         return $this->respond($node->toArray(), [], null, ResponseType::CREATED);
     }
 

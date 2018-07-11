@@ -18,7 +18,7 @@
                             <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td>
-                                        <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
+                                        <table border="0" cellpadding="0" cellspacing="0">
                                             <tbody>
                                             <tr>
                                                 <td align="left">

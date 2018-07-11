@@ -23,6 +23,6 @@
     @endif
 
     <p>You can view an online copy of the invoice by clicking the link below:</p>
-    <a target="_blank" href="{{ $invoiceUrl }}">View Invoice</a>
+    <a class="btn" target="_blank" href="{{ $invoiceUrl }}">View Invoice</a>
 @endsection
 

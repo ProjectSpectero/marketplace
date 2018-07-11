@@ -9,7 +9,7 @@
         <p>Error from our payment processor: <b>{{ $reason }}</b></p>
     @endif
 
-    <p>In the meantime, please consider <a class="no-style" href="{{ $manualUrl }}">making a payment now</a> and updating the stored payment method to avoid this issue in the future.</p>
+    <p>In the meantime, please consider <a href="{{ $manualUrl }}">making a payment now</a> and updating the stored payment method to avoid this issue in the future.</p>
 
-    <a target="_blank" href="{{ $manualUrl }}">Make A Payment Now</a>
+    <a class="btn" target="_blank" href="{{ $manualUrl }}">Make A Payment Now</a>
 @endsection

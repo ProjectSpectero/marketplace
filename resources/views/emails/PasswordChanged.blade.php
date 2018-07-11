@@ -8,7 +8,7 @@
 
     <p>Otherwise, you may now login to our cloud panel using your new password by clicking the link below:</p>
 
-    <a target="_blank" href="{{ $loginUrl }}">Login Now</a>
+    <a class="btn" target="_blank" href="{{ $loginUrl }}">Login Now</a>
     
     <p>This request was made from the IP address <b>{{ $requestIp }}</b>.</p>
 @endsection

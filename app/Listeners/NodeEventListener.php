@@ -199,6 +199,7 @@ class NodeEventListener extends BaseListener
 
                             break;
                         case ServiceType::OpenVPN:
+                            // TODO: Figure out how to actually validate that this is, in fact, an OpenVPN server.
                             $newService = new Service();
                             $newService->node_id = $node->id;
                             $newService->type = $service;

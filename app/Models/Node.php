@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Node extends BaseModel
 {
     use HasOrders;
-    use SoftDeletes;
 
     protected $fillable = [
         'ip', 'port', 'protocol', 'access_token', 'install_id', 'status',' user_id'

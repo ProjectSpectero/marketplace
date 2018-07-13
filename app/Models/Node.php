@@ -11,14 +11,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Node extends BaseModel
 {
     use HasOrders;
-    use SoftDeletes;
 
     protected $fillable = [
         'ip', 'port', 'protocol', 'access_token', 'install_id', 'status',' user_id'
     ];
 
     protected $hidden = [
-        'install_id', 'access_token', 'updated_at', 'deleted_at'
+        'app_settings', 'system_config', 'install_id', 'access_token', 'updated_at', 'deleted_at'
     ];
 
     protected $with = [

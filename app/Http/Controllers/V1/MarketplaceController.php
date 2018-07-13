@@ -342,15 +342,26 @@ class MarketplaceController extends V1Controller
         }
 
         $ipCollection = [];
-        foreach (NodeIPAddress::where('node_id', $node->id)->get() as $ip)
+        foreach ($node->ipAddresses as $ip)
         {
             // We just hide the physical IP itself, everything else is disclosed.
             unset($ip->ip);
             $ipCollection[] = $ip;
         }
 
+        $services = [];
+        foreach ($node->services as $service)
+        {
+            $services[] = $service->type;
+        }
+
+        // HAX: services is the name of a relation. We're applying additional parsing atop.
+        unset($node->services);
+        $node->services = $services;
+
         $node->ip_addresses = $ipCollection;
-        $hiddenBase = [ 'ip', 'port', 'protocol', 'user_id', 'deleted_at' ];
+
+        $hiddenBase = [ 'ip', 'port', 'protocol', 'user_id', 'deleted_at', 'system_data' ];
 
         if ($groupExceptionOverride)
         {

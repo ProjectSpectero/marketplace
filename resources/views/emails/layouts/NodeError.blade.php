@@ -4,7 +4,7 @@
     <h2>Node Verification Failed</h2>
 
     <p>Hi {{ $node->user->name }},</p>
-    <p>This email is to notify you that we were unable to verify your Spectero node <b>#{{ $node->id }} "{{ $node->friendly_name }}"</b> with IP address <b>{{ $node->ip }}</b>.</p>
+    <p>This email is to notify you that we were unable to verify your Spectero node <b>#{{ $node->id }}</b> with IP address <b>{{ $node->ip }}</b>.</p>
 
     @yield ('error')
 

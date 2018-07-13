@@ -128,7 +128,6 @@ class NodeManager
             'status.cloud' => 'required|array',
             'status.app' => 'required|array',
             'status.system' => 'required|array',
-            'status.app.environment' => 'required|equals:Production',
             'status.app.restartNeeded' => 'required|equals:false',
             'appSettings.BlockedRedirectUri' => 'required|equals:https://blocked.spectero.com/?reason={0}&uri={1}&data={2}',
             'appSettings.AuthCacheMinutes' => 'required|integer|max:10',
@@ -141,6 +140,9 @@ class NodeManager
             'appSettings.AutoStartServices' => 'required|equals:true',
             'identity' => 'required|alpha_dash'
         ];
+
+        if (Environment::isProduction())
+            $rules['status.app.environment'] =  'required|equals:Production';
 
         $response = $this->request('get', $this->getUrl('cloud/descriptor'));
         $result = $response['result'];
@@ -184,8 +186,27 @@ class NodeManager
 
                 $config = $loadServiceConfigs ? $this->getServiceConfig($service) : null;
 
-                // TODO: Make this capable of getting resources from all services
-                $connectionResource = $service == 'HTTPProxy' ? $this->getServiceConnectionResources($service) : null;
+                $connectionResource = null;
+
+                if (ServiceType::isDiscoverable($service))
+                    $connectionResource = $this->getServiceConnectionResources($service);
+
+                if ($service === 'OpenVPN' && !empty($config))
+                {
+                    // We need to condition the config a bit if OpenVPN.
+                    $listeners = [];
+                    foreach ($config as $instance)
+                    {
+                        if (isset($instance['listener']))
+                            $listeners[] = $instance['listener'];
+                    }
+
+                    $commons = $config[0];
+                    unset($commons['listener']);
+                    $commons['listeners'] = $listeners;
+
+                    $config = $commons;
+                }
 
                 $ret['services'][$service] = [
                     'config' => $config,

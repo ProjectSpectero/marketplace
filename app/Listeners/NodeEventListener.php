@@ -199,6 +199,15 @@ class NodeEventListener extends BaseListener
 
                             break;
                         case ServiceType::OpenVPN:
+                            // TODO: Figure out how to actually validate that this is, in fact, an OpenVPN server.
+                            $newService = new Service();
+                            $newService->node_id = $node->id;
+                            $newService->type = $service;
+                            $newService->config = $resource['config'];
+                            $newService->connection_resource = $resource['connectionResource'];
+
+                            $serviceCollection[] = $newService;
+
                             break;
                     }
                 }
@@ -237,18 +246,22 @@ class NodeEventListener extends BaseListener
                         /** @var Service $service */
                         $service = $holder;
                         $service->saveOrFail();
+                    }
 
-                        // TODO: think about whether to ban IPv6 here. It could be an exploit to artificially inflate the count despite not being what clients are after.
-                        foreach ($ipCollection as $ipDetails)
-                        {
-                            $persistedIp = new NodeIPAddress();
-                            $persistedIp->ip = $ipDetails['ip'];
-                            $persistedIp->node_id = $node->id;
-                            $persistedIp->cc = $ipDetails['cc'];
-                            $persistedIp->city = $ipDetails['city'];
-                            $persistedIp->asn = $ipDetails['asn'];
-                            $persistedIp->saveOrFail();
-                        }
+                    foreach ($ipCollection as $ipDetails)
+                    {
+                        // That means this thing is a IPv6 IP
+                        // TODO: Add support for proper accounting + distinguishment of IPv6 IPs at a later date.
+                        if (filter_var($ipDetails['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false)
+                            continue;
+
+                        $persistedIp = new NodeIPAddress();
+                        $persistedIp->ip = $ipDetails['ip'];
+                        $persistedIp->node_id = $node->id;
+                        $persistedIp->cc = $ipDetails['cc'];
+                        $persistedIp->city = $ipDetails['city'];
+                        $persistedIp->asn = $ipDetails['asn'];
+                        $persistedIp->saveOrFail();
                     }
 
                     // If everything went well, node is now confirmed.

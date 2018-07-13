@@ -293,24 +293,18 @@ class NodeController extends CRUDController
         $this->authorizeResource($node);
 
         // A node group for which at least one active order exists cannot be destroyed. Cancel the order first.
-        if ($node->getOrders(OrderStatus::ACTIVE)->count() != 0)
+        if ($node->getOrders(OrderStatus::ACTIVE)->count() > 0)
             throw new UserFriendlyException(Errors::ORDERS_EXIST, ResponseType::FORBIDDEN);
 
-        HistoricResource::createCopy($node, ['services', 'ipAddresses'], $request->user());
-        $this->removeNodeServicesAndIPAddresses($node);
+        HistoricResource::createCopy($node, ['services', 'ipAddresses'], $node->user);
+
+        $node->services()->delete();
+        $node->ipAddresses()->delete();
 
         $node->delete();
+
         event(new NodeEvent(Events::NODE_DELETED, $node));
-        return $this->respond(null, [], Messages::USER_DESTROYED, ResponseType::NO_CONTENT);
-    }
-
-    private function removeNodeServicesAndIPAddresses(Node $node)
-    {
-        foreach ($node->services as $service)
-            $service->delete();
-
-        foreach ($node->ipAddresses as $addr)
-            $addr->delete();
+        return $this->respond(null, [], Messages::NODE_DELETED, ResponseType::NO_CONTENT);
     }
 
     private function getFromCacheOrGenerateAuthTokens (Node $node, bool $direct = false)

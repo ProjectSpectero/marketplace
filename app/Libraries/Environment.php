@@ -6,6 +6,7 @@ class Environment
 {
     const PRODUCTION = 'PRODUCTION';
     const DEVELOPMENT = 'DEVELOPMENT';
+    const LOCAL = 'LOCAL';
 
     /*
      * @param String $a
@@ -17,8 +18,23 @@ class Environment
         return strcasecmp($a, $b) == 0;
     }
 
+    public static function is (string $environment)
+    {
+        return static::compare(app()->environment(), $environment);
+    }
+
     public static function isProduction ()
     {
-        return static::compare(app()->environment(), 'production');
+        return static::is(self::PRODUCTION);
+    }
+
+    public static function isDevelopment ()
+    {
+        return static::is(self::DEVELOPMENT);
+    }
+
+    public static function isLocal ()
+    {
+        return static::is(self::LOCAL);
     }
 }

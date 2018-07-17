@@ -224,9 +224,19 @@ class NodeController extends CRUDController
             'port' => 'required|integer|min:1024|max:65534',
             'access_token' => 'sometimes|min:5|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
             'friendly_name' => 'sometimes|alpha_dash|max:64',
-            'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstraints()) ],
-            'price' => 'required_with:market_model|numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999)
+            'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstraints()) ]
         ];
+
+        if ($request->has('price'))
+        {
+            if ($request->has('market_model'))
+                $marketModel = $request->get('market_model');
+            else
+                $marketModel = $node->market_model;
+
+            if (in_array($marketModel, NodeMarketModel::getMarketable()))
+                $rules['price'] = 'numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999);
+        }
 
         $reverifyRules = [
             'ip', 'port', 'access_token', 'protocol'
@@ -235,12 +245,16 @@ class NodeController extends CRUDController
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
-        if ($request->has('market_model') && $node->market_model != $input['market_model'])
+        if ($request->has('market_model'))
         {
             // Indicating that this is an update
-            if ($node->getOrders(OrderStatus::ACTIVE)->count() > 0)
+            if ($node->market_model != $input['market_model'] &&
+                $node->getOrders(OrderStatus::ACTIVE)->count() > 0)
+            {
                 throw new UserFriendlyException(Errors::HAS_ACTIVE_ORDERS);
+            }
         }
+
 
         foreach ($input as $key => $value)
         {
@@ -253,7 +267,10 @@ class NodeController extends CRUDController
             }
         }
 
-        $node->saveOrFail();
+        if ($request->has('price') && in_array($node->market_model, NodeMarketModel::getMarketable()))
+
+
+            $node->saveOrFail();
 
         event(new NodeEvent(Events::NODE_REVERIFY, $node));
         return $this->respond($node->toArray(), [], Messages::NODE_UPDATED);

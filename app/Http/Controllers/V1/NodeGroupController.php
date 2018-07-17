@@ -75,8 +75,18 @@ class NodeGroupController extends CRUDController
         $rules = [
             'friendly_name' => 'sometimes|alpha_dash',
             'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstants()) ],
-            'price' => 'required_with:market_model|numeric|min:5'
         ];
+
+        if ($request->has('price'))
+        {
+            if ($request->has('market_model'))
+                $marketModel = $request->get('market_model');
+            else
+                $marketModel = $nodeGroup->market_model;
+
+            if (in_array($marketModel, NodeMarketModel::getMarketable()))
+                $rules['price'] = 'numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999);
+        }
 
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);

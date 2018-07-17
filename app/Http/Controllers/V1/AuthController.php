@@ -54,7 +54,7 @@ class AuthController extends V1Controller
             catch (ModelNotFoundException $silenced)
             {
                 // Not this user's first time logging in anymore.
-                UserMeta::addOrUpdateMeta($user, UserMetaKeys::FirstTimeAuthenticating, false);
+                Utility::incrementLoginCount($user);
 
                 // User either doesn't have two factor turned on, or user's secret key somehow (!) doesn't exist
                 // Return response as normal

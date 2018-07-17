@@ -5,9 +5,12 @@ namespace App\Libraries;
 use App\Constants\CRUDActions;
 use App\Constants\Errors;
 use App\Constants\ResponseType;
+use App\Constants\UserMetaKeys;
 use App\Constants\UserStatus;
 use App\User;
+use App\UserMeta;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Laravel\Lumen\Routing\Router;
 
@@ -151,6 +154,21 @@ class Utility
             DIRECTORY_SEPARATOR,
             $path
         );
+    }
+
+    public static function incrementLoginCount (User $user)
+    {
+        $value = 0;
+        try
+        {
+            $value = UserMeta::loadMeta($user, UserMetaKeys::LoginCount, true)->meta_value;
+        }
+        catch (ModelNotFoundException $silenced)
+        {
+
+        }
+
+        UserMeta::addOrUpdateMeta($user, UserMetaKeys::LoginCount, $value + 1);
     }
 
 }

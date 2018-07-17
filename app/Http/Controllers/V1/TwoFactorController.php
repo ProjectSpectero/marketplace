@@ -54,6 +54,7 @@ class TwoFactorController extends V1Controller
 
         try
         {
+            /** @var User $user */
             $user = User::findOrFail($userId);
             $partialAuth = PartialAuth::where('user_id', $userId)
                 ->where('two_factor_token', $twoFactorToken)
@@ -73,7 +74,7 @@ class TwoFactorController extends V1Controller
         if (MultifactorVerifier::verify($user, $totpToken))
         {
             // Not this user's first time logging in anymore.
-            UserMeta::addOrUpdateMeta($user, UserMetaKeys::FirstTimeAuthenticating, false);
+            Utility::incrementLoginCount($user);
 
             $partialAuth->delete();
             return $this->respond(\json_decode($partialAuth->data, true), [], Messages::OAUTH_TOKEN_ISSUED);

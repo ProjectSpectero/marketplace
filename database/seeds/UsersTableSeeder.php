@@ -126,8 +126,9 @@ class UsersTableSeeder extends Seeder
                 UserMeta::addOrUpdateMeta($user, UserMetaKeys::Country, 'US');
                 UserMeta::addOrUpdateMeta($user, UserMetaKeys::PostCode, 19801);
                 UserMeta::addOrUpdateMeta($user, UserMetaKeys::StripeCardToken, array_random($stripeTokens));
-                // Not this user's first time logging in anymore.
-                UserMeta::addOrUpdateMeta($user, UserMetaKeys::FirstTimeAuthenticating, true);
+                // How many logins have we seen?
+                UserMeta::addOrUpdateMeta($user, UserMetaKeys::LoginCount, 0);
+                UserMeta::addOrUpdateMeta($user, UserMetaKeys::ShowSplashScreen, true);
             }
             catch (\App\Errors\FatalException $e)
             {

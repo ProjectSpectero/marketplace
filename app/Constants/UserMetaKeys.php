@@ -27,7 +27,10 @@ class UserMetaKeys extends Holder
     const StoredCardIdentifier = 'stored_card_identifier';
 
     // This key tracks an user's first-time authentication, and is default initialized to true
-    const FirstTimeAuthenticating = 'first_time_authenticating';
+    const LoginCount = 'login_count';
+
+    // This key tracks if the user should be showed the welcome splash screen
+    const ShowSplashScreen = 'show_splash_screen';
 
     static function getPublicMetaKeys()
     {
@@ -42,7 +45,8 @@ class UserMetaKeys extends Holder
             self::TaxIdentification,
             self::Organization,
             self::TwoFactorEnabled,
-            self::FirstTimeAuthenticating
+            self::LoginCount,
+            self::ShowSplashScreen
         ];
     }
 }

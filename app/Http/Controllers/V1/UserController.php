@@ -97,7 +97,8 @@ class UserController extends CRUDController
             UserMetaKeys::Country => 'sometimes|country|max:64',
             UserMetaKeys::PhoneNumber => 'sometimes|min:1|max:64',
             UserMetaKeys::Organization => 'sometimes|min:1|max:64',
-            UserMetaKeys::TaxIdentification => 'sometimes|min:1|max:96'
+            UserMetaKeys::TaxIdentification => 'sometimes|min:1|max:96',
+            UserMetaKeys::ShowSplashScreen => 'sometimes|boolean'
         ];
 
         $this->validate($request, $rules);
@@ -172,7 +173,8 @@ class UserController extends CRUDController
             UserMetaKeys::Country => 'required|country',
             UserMetaKeys::PhoneNumber => 'sometimes|max:64',
             UserMetaKeys::Organization => 'sometimes|max:64',
-            UserMetaKeys::TaxIdentification => 'sometimes|max:96'
+            UserMetaKeys::TaxIdentification => 'sometimes|max:96',
+            UserMetaKeys::ShowSplashScreen => 'sometimes|boolean'
         ];
 
         $this->validate($request, $rules);

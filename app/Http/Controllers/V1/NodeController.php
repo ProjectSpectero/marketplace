@@ -19,6 +19,7 @@ use App\HistoricResource;
 use App\Libraries\CommandProxyManager;
 use App\Libraries\NodeManager;
 use App\Libraries\PaginationManager;
+use App\Mail\NodeAdded;
 use App\Node;
 use App\Libraries\SearchManager;
 use App\OrderLineItem;
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Hmac\Sha512;
@@ -197,6 +199,9 @@ class NodeController extends CRUDController
         }
 
         event(new NodeEvent(Events::NODE_CREATED, $node, []));
+
+        // Why here instead of NodeEventListener? That's because there happens to be some collapsed handling there for REVERIFY + CREATED.
+        Mail::to($node->user->email)->queue(new NodeAdded($node));
 
         if ($indirect)
         {

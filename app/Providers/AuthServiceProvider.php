@@ -38,7 +38,8 @@ class AuthServiceProvider extends ServiceProvider
             }
         });
 
-        Passport::tokensExpireIn(Carbon::now()->addMinutes(env('TOKEN_EXPIRY')));
-        Passport::refreshTokensExpireIn(Carbon::now()->addMinutes(env('REFRESH_TOKEN_EXPIRY')));
+        \Dusterio\LumenPassport\LumenPassport::allowMultipleTokens();
+        Passport::tokensExpireIn(Carbon::now()->addMinutes(env('TOKEN_EXPIRY', 10)));
+        Passport::refreshTokensExpireIn(Carbon::now()->addMinutes(env('REFRESH_TOKEN_EXPIRY', 20)));
     }
 }

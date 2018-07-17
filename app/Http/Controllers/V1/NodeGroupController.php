@@ -172,8 +172,11 @@ class NodeGroupController extends CRUDController
         $this->authorizeResource($node, 'node.assign');
         $this->authorizeResource($nodeGroup, 'node_group.assign');
 
-        if ($node->status != NodeStatus::CONFIRMED)
-            throw new UserFriendlyException(Errors::NODE_PENDING_VERIFICATION, ResponseType::FORBIDDEN);
+        /*
+         * Commented out as per MAR-163, we'll revisit this someday.
+         *  if ($node->status != NodeStatus::CONFIRMED)
+                throw new UserFriendlyException(Errors::NODE_PENDING_VERIFICATION, ResponseType::FORBIDDEN);
+         */
 
         /** @var NodeGroup $oldGroup */
         $oldGroup = $node->group;

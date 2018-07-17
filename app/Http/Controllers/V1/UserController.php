@@ -52,16 +52,22 @@ class UserController extends CRUDController
         $data['plans'] = BillingUtils::getUserPlans($user);
 
         $roles = [];
+        $abilities = [];
 
         foreach ($user->roles as $role)
+        {
             $roles[] = $role['name'];
+
+            foreach ($role->abilities as $ability)
+            {
+                $abilities[] = [ 'name' => $ability['name'], 'only_owned' => $ability['only_owned'] ];
+            }
+        }
 
         $data['roles'] = $roles;
 
-        $abilities = [];
-
         foreach ($user->abilities as $ability)
-            $abilities[] = $ability['name'];
+            $abilities[] = [ 'name' => $ability['name'], 'only_owned' => $ability['only_owned'] ];
 
         $data['abilities'] = $abilities;
 

@@ -26,6 +26,9 @@ class UserMetaKeys extends Holder
     const StoredCardValid = 'stored_card_valid';
     const StoredCardIdentifier = 'stored_card_identifier';
 
+    // This key tracks an user's first-time authentication, and is default initialized to true
+    const FirstTimeAuthenticating = 'first_time_authenticating';
+
     static function getPublicMetaKeys()
     {
         return [
@@ -38,7 +41,8 @@ class UserMetaKeys extends Holder
             self::PhoneNumber,
             self::TaxIdentification,
             self::Organization,
-            self::TwoFactorEnabled
+            self::TwoFactorEnabled,
+            self::FirstTimeAuthenticating
         ];
     }
 }

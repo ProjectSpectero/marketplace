@@ -27,7 +27,11 @@ class UserMeta extends BaseModel
             $meta = static::loadMeta($user, $key);
 
             if ($meta instanceof static)
-                $value = $meta->meta_value;
+            {
+                $property = $meta->meta_value;
+                settype($property, $meta->value_type);
+                $value = $property;
+            }
             else
                 $value = null;
 

@@ -72,6 +72,9 @@ class TwoFactorController extends V1Controller
         // Someone correct me if this (^) is not always true.
         if (MultifactorVerifier::verify($user, $totpToken))
         {
+            // Not this user's first time logging in anymore.
+            UserMeta::addOrUpdateMeta($user, UserMetaKeys::FirstTimeAuthenticating, false);
+
             $partialAuth->delete();
             return $this->respond(\json_decode($partialAuth->data, true), [], Messages::OAUTH_TOKEN_ISSUED);
         }

@@ -51,6 +51,20 @@ class UserController extends CRUDController
         $data['card'] = $cardInfo;
         $data['plans'] = BillingUtils::getUserPlans($user);
 
+        $roles = [];
+
+        foreach ($user->roles as $role)
+            $roles[] = $role['name'];
+
+        $data['roles'] = $roles;
+
+        $abilities = [];
+
+        foreach ($user->abilities as $ability)
+            $abilities[] = $ability['name'];
+
+        $data['abilities'] = $abilities;
+
         return $this->respond($data);
     }
 
@@ -109,6 +123,7 @@ class UserController extends CRUDController
                 UserMeta::addOrUpdateMeta($user, $key, $value);
         }
 
+        UserMeta::addOrUpdateMeta($user, UserMetaKeys::FirstTimeAuthenticating, true);
         PermissionManager::assign($user, UserRoles::USER);
 
         event(new UserEvent(Events::USER_CREATED, $user));

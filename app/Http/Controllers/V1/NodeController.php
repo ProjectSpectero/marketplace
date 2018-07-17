@@ -206,7 +206,7 @@ class NodeController extends CRUDController
         if ($indirect)
         {
             // Hide attributes unauth/node should not see.
-            $node->makeHidden('user_id');
+            $node->makeHidden([ 'user_id', 'user' ]);
         }
 
         return $this->respond($node->toArray(), [], null, ResponseType::CREATED);

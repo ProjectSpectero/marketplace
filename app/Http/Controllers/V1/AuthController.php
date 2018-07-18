@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Constants\Authority;
 use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
+use App\Constants\UserRoles;
 use App\Constants\UserStatus;
+use App\Errors\UserFriendlyException;
 use App\Libraries\Utility;
 use App\Models\Opaque\OAuthResponse;
 use App\Models\Opaque\TwoFactorResponse;
@@ -81,6 +84,41 @@ class AuthController extends V1Controller
         }
         else
             return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], Errors::REQUEST_FAILED, ResponseType::FORBIDDEN);
+    }
+
+    public function impersonate(Request $request, int $id)
+    {
+        /** @var User $user */
+        $user = User::findOrFail($id);
+
+        /** @var User $requestingUser */
+        $requestingUser = $request->user();
+
+        if ($user->id == $requestingUser->id)
+            throw new UserFriendlyException(Messages::CANNOT_IMPERSONATE_YOURSELF);
+
+        if ($user->isAn(UserRoles::ADMIN))
+            throw new UserFriendlyException(Messages::CANNOT_IMPERSONATE_ADMINS, ResponseType::FORBIDDEN);
+
+        $this->authorizeResource($user, Authority::ImpersonateUsers);
+
+        $key = 'impersonation.tokens.' . $user->id;
+
+        if (\Cache::has($key))
+            $ret = \Cache::get($key);
+        else
+        {
+            $issuedToken = $user->createToken("Impersonated by $requestingUser->email #($requestingUser->id)");
+            $ret = new OAuthResponse();
+
+            $ret->accessToken = $issuedToken->accessToken;
+            $ret->expiry = env('TOKEN_EXPIRY', 10) * 60;
+            $ret->success = true;
+
+            \Cache::put($key, $ret, env('TOKEN_EXPIRY', 10));
+        }
+
+        return $this->respond($ret->toArray());
     }
 
 

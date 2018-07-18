@@ -49,6 +49,7 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->get('auth/multifactor/first-time', [ 'middleware' => 'enforce-tfa', 'uses' => 'TwoFactorController@firstTimeMultiFactor' ]);
         $api->get('auth/multifactor/codes', 'TwoFactorController@showUserBackupCodes');
         $api->get('auth/multifactor/codes/regenerate', 'TwoFactorController@regenerateUserBackupCodes');
+        $api->post('auth/impersonate/{id}', 'AuthController@impersonate');
 
         // Search/Filtering routes
         $api->post('search', 'SearchController@handleSearch');

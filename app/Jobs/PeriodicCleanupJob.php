@@ -28,12 +28,22 @@ class PeriodicCleanupJob extends BaseJob
     {
         \Log::info("Cleaning up stale tokens/resources.");
 
-        DB::table('password_reset_tokens')
+        $prtCount = DB::table('password_reset_tokens')
             ->where('expires', '<=', Carbon::now())
             ->delete();
 
-        DB::table('partial_auth')
+        \Log::info("$prtCount expired password reset token(s) were removed.");
+
+        $paCount = DB::table('partial_auth')
             ->where('expires', '<=', Carbon::now())
             ->delete();
+
+        \Log::info("$paCount expired partial-auth (two-factor) token(s) were removed.");
+
+        $oatCount = DB::table('oauth_access_tokens')
+            ->where('expires_at', '<=', Carbon::now('UTC'))
+            ->delete();
+
+        \Log::info("$oatCount expired access token(s) (oAuth) were removed.");
     }
 }

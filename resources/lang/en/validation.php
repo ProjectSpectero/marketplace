@@ -7,6 +7,7 @@ return [
     'alpha_num' => \App\Constants\Errors::FIELD_ALPHANUM . '::attribute:',
     'alpha_dash' => \App\Constants\Errors::FIELD_ALPHADASH . '::attribute:',
     'alpha_dash_spaces' => \App\Constants\Errors::FIELD_ALPHADASHSPACES . '::attribute:',
+    'array' => \App\Constants\Errors::FIELD_OBJECT . '::attribute:',
     'min' => [
         'numeric' => \App\Constants\Errors::FIELD_MINVALUE . '::attribute::min',
         'string' => \App\Constants\Errors::FIELD_MINLENGTH . '::attribute::min',

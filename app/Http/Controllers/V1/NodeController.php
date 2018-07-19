@@ -4,6 +4,7 @@
 namespace App\Http\Controllers\V1;
 
 
+use App\Constants\DaemonVersion;
 use App\Constants\Errors;
 use App\Constants\Events;
 use App\Constants\Messages;
@@ -155,8 +156,11 @@ class NodeController extends CRUDController
             'port' => 'required|integer|min:1024|max:65534',
             'access_token' => 'required|min:5|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
             'install_id' => 'required|alpha_dash|size:36',
-            'version' => 'required|max:32',
-            'system_data' => 'required|array'
+            'version' => [ 'required', Rule::in(DaemonVersion::getConstants()) ],
+            'system_data' => 'required|array',
+            'system_data.CPU' => 'required|array',
+            'system_data.Memory' => 'required|array',
+            'system_data.Environment' => 'required|array'
         ];
 
         $this->validate($request, $rules);
@@ -175,7 +179,6 @@ class NodeController extends CRUDController
                     $message = Messages::RESOURCE_ALREADY_EXISTS_ON_OWN_ACCOUNT;
                     $data = $node->toArray();
                 }
-
                 else
                     $message = Errors::REQUEST_FAILED;
 

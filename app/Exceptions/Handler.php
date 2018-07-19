@@ -59,13 +59,16 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $e)
     {
-        // This means the env is NOT production, we're free to throw whatever we feel like.
-        if (! Environment::isProduction())
+        // This means the env supports disclosing errors via Developer Exception Pages. Well, OK boi.
+        if (Environment::shouldDiscloseErrors())
             return parent::render($request, $e);
 
         $returnCode = $e->getCode() != 0 ? $e->getCode() : 400;
         $message = $e->getMessage();
-        $data = method_exists($e, 'getData') ? $e->getData() : '';
+
+        // This does not seem used, commented for now.
+        //$data = method_exists($e, 'getData') ? $e->getData() : '';
+
         $version = null;
 
         $matchedRoute = $request->route();

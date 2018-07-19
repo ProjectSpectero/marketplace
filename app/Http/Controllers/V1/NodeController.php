@@ -156,7 +156,7 @@ class NodeController extends CRUDController
             'access_token' => 'required|min:5|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
             'install_id' => 'required|alpha_dash|size:36',
             'version' => 'required|max:32',
-            'system_data' => 'required'
+            'system_data' => 'required|array'
         ];
 
         $this->validate($request, $rules);
@@ -223,7 +223,7 @@ class NodeController extends CRUDController
             'ip' => 'required|ip',
             'port' => 'required|integer|min:1024|max:65534',
             'access_token' => 'sometimes|min:5|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
-            'friendly_name' => 'sometimes|alpha_dash|max:64',
+            'friendly_name' => 'sometimes|alpha_dash_spaces|max:64',
             'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstraints()) ]
         ];
 

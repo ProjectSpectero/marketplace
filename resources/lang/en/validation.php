@@ -6,6 +6,7 @@ return [
     'unique' => \App\Constants\Errors::FIELD_UNIQUE . '::attribute:',
     'alpha_num' => \App\Constants\Errors::FIELD_ALPHANUM . '::attribute:',
     'alpha_dash' => \App\Constants\Errors::FIELD_ALPHADASH . '::attribute:',
+    'alpha_dash_spaces' => \App\Constants\Errors::FIELD_ALPHADASHSPACES . '::attribute:',
     'min' => [
         'numeric' => \App\Constants\Errors::FIELD_MINVALUE . '::attribute::min',
         'string' => \App\Constants\Errors::FIELD_MINLENGTH . '::attribute::min',

@@ -46,10 +46,17 @@ class NodeGroupController extends CRUDController
         $this->authorizeResource();
 
         $rules = [
-            'friendly_name' => 'required|alpha_dash|max:64',
+            'friendly_name' => 'required|alpha_dash_spaces|max:64',
             'market_model' => [ 'required', Rule::in(NodeMarketModel::getConstraints()) ],
-            'price' => 'required|numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999)
         ];
+
+        if ($request->has('price'))
+        {
+            $marketModel = $request->get('market_model');
+
+            if (in_array($marketModel, NodeMarketModel::getMarketable()))
+                $rules['price'] = 'numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999);
+        }
 
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
@@ -73,7 +80,7 @@ class NodeGroupController extends CRUDController
         $this->authorizeResource($nodeGroup);
 
         $rules = [
-            'friendly_name' => 'sometimes|alpha_dash',
+            'friendly_name' => 'sometimes|alpha_dash_spaces|max:64',
             'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstants()) ],
         ];
 

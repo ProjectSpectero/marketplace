@@ -130,7 +130,9 @@ class UserController extends CRUDController
                 UserMeta::addOrUpdateMeta($user, $key, $value);
         }
 
-        UserMeta::addOrUpdateMeta($user, UserMetaKeys::FirstTimeAuthenticating, true);
+        UserMeta::addOrUpdateMeta($user, UserMetaKeys::ShowSplashScreen, true);
+        UserMeta::addOrUpdateMeta($user, UserMetaKeys::LoginCount, 0);
+
         PermissionManager::assign($user, UserRoles::USER);
 
         event(new UserEvent(Events::USER_CREATED, $user));

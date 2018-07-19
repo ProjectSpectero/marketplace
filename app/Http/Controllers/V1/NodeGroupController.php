@@ -66,7 +66,7 @@ class NodeGroupController extends CRUDController
         $nodeGroup->status = NodeStatus::CONFIRMED;
         $nodeGroup->user_id = $request->user()->id;
         $nodeGroup->market_model = $input['market_model'];
-        $nodeGroup->price = $input['price'];
+        $nodeGroup->price = $input['price'] ?? 0;
 
         $nodeGroup->saveOrFail();
 

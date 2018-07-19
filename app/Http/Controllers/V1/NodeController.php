@@ -270,10 +270,7 @@ class NodeController extends CRUDController
             }
         }
 
-        if ($request->has('price') && in_array($node->market_model, NodeMarketModel::getMarketable()))
-
-
-            $node->saveOrFail();
+        $node->saveOrFail();
 
         event(new NodeEvent(Events::NODE_REVERIFY, $node));
         return $this->respond($node->toArray(), [], Messages::NODE_UPDATED);

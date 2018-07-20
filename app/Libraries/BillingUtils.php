@@ -474,7 +474,8 @@ class BillingUtils
 
                 case PaymentProcessor::ACCOUNT_CREDIT:
                     if ($invoiceUser->credit > 0 &&
-                        $invoiceUser->credit_currency === $invoice->currency
+                        $invoiceUser->credit_currency === $invoice->currency &&
+                        $invoice->type !== InvoiceType::CREDIT
                     )
                         $valid[] = $lowerCaseValue;
 

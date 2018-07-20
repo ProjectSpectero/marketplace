@@ -7,6 +7,7 @@ class Environment
     const PRODUCTION = 'PRODUCTION';
     const DEVELOPMENT = 'DEVELOPMENT';
     const LOCAL = 'LOCAL';
+    const STAGING = 'STAGING';
 
     /*
      * @param String $a
@@ -36,5 +37,15 @@ class Environment
     public static function isLocal ()
     {
         return static::is(self::LOCAL);
+    }
+
+    public static function isStaging ()
+    {
+        return static::is(self::STAGING);
+    }
+
+    public static function shouldDiscloseErrors () : bool
+    {
+        return static::isDevelopment() || static::isLocal();
     }
 }

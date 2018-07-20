@@ -8,7 +8,7 @@
 
     @yield ('error')
 
-    <p>If you've resolved the issue, you're welcome to retry verification at any time. Simply click the link below to retry verification:</p>
+    <p>If you've resolved the issue, you're welcome to retry verification at any time. Simply click below to get started.</p>
     <a class="btn" target="_blank" href="{{ $retryUrl }}">Retry Verification</a>
 
 @endsection

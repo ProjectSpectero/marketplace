@@ -10,6 +10,7 @@ class PaymentProcessor extends Holder
     const STRIPE = 'STRIPE';
     const ACCOUNT_CREDIT = 'ACCOUNT_CREDIT';
     const MANUAL = 'MANUAL';
+    const CRYPTO = 'CRYPTO';
 
     public static function getCreditAddAllowedVia () : array
     {

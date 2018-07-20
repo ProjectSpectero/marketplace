@@ -51,6 +51,26 @@ class UserController extends CRUDController
         $data['card'] = $cardInfo;
         $data['plans'] = BillingUtils::getUserPlans($user);
 
+        $roles = [];
+        $abilities = [];
+
+        foreach ($user->roles as $role)
+        {
+            $roles[] = $role['name'];
+
+            foreach ($role->abilities as $ability)
+            {
+                $abilities[] = [ 'name' => $ability['name'], 'only_owned' => $ability['only_owned'] ];
+            }
+        }
+
+        $data['roles'] = $roles;
+
+        foreach ($user->abilities as $ability)
+            $abilities[] = [ 'name' => $ability['name'], 'only_owned' => $ability['only_owned'] ];
+
+        $data['abilities'] = $abilities;
+
         return $this->respond($data);
     }
 
@@ -83,7 +103,8 @@ class UserController extends CRUDController
             UserMetaKeys::Country => 'sometimes|country|max:64',
             UserMetaKeys::PhoneNumber => 'sometimes|min:1|max:64',
             UserMetaKeys::Organization => 'sometimes|min:1|max:64',
-            UserMetaKeys::TaxIdentification => 'sometimes|min:1|max:96'
+            UserMetaKeys::TaxIdentification => 'sometimes|min:1|max:96',
+            UserMetaKeys::ShowSplashScreen => 'sometimes|boolean'
         ];
 
         $this->validate($request, $rules);
@@ -108,6 +129,9 @@ class UserController extends CRUDController
             if (! is_null($value) && $value != "")
                 UserMeta::addOrUpdateMeta($user, $key, $value);
         }
+
+        UserMeta::addOrUpdateMeta($user, UserMetaKeys::ShowSplashScreen, true);
+        UserMeta::addOrUpdateMeta($user, UserMetaKeys::LoginCount, 0);
 
         PermissionManager::assign($user, UserRoles::USER);
 
@@ -157,7 +181,8 @@ class UserController extends CRUDController
             UserMetaKeys::Country => 'required|country',
             UserMetaKeys::PhoneNumber => 'sometimes|max:64',
             UserMetaKeys::Organization => 'sometimes|max:64',
-            UserMetaKeys::TaxIdentification => 'sometimes|max:96'
+            UserMetaKeys::TaxIdentification => 'sometimes|max:96',
+            UserMetaKeys::ShowSplashScreen => 'sometimes|boolean'
         ];
 
         $this->validate($request, $rules);

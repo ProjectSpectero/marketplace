@@ -4,6 +4,7 @@
 namespace App\Http\Controllers\V1;
 
 
+use App\Constants\DaemonVersion;
 use App\Constants\Errors;
 use App\Constants\Events;
 use App\Constants\Messages;
@@ -19,6 +20,7 @@ use App\HistoricResource;
 use App\Libraries\CommandProxyManager;
 use App\Libraries\NodeManager;
 use App\Libraries\PaginationManager;
+use App\Mail\NodeAdded;
 use App\Node;
 use App\Libraries\SearchManager;
 use App\OrderLineItem;
@@ -28,6 +30,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Hmac\Sha512;
@@ -153,8 +156,11 @@ class NodeController extends CRUDController
             'port' => 'required|integer|min:1024|max:65534',
             'access_token' => 'required|min:5|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
             'install_id' => 'required|alpha_dash|size:36',
-            'version' => 'required|max:32',
-            'system_data' => 'required'
+            'version' => [ 'required', Rule::in(DaemonVersion::getConstants()) ],
+            'system_data' => 'required|array',
+            'system_data.CPU' => 'required|array',
+            'system_data.Memory' => 'required|array',
+            'system_data.Environment' => 'required|array'
         ];
 
         $this->validate($request, $rules);
@@ -173,7 +179,6 @@ class NodeController extends CRUDController
                     $message = Messages::RESOURCE_ALREADY_EXISTS_ON_OWN_ACCOUNT;
                     $data = $node->toArray();
                 }
-
                 else
                     $message = Errors::REQUEST_FAILED;
 
@@ -198,10 +203,13 @@ class NodeController extends CRUDController
 
         event(new NodeEvent(Events::NODE_CREATED, $node, []));
 
+        // Why here instead of NodeEventListener? That's because there happens to be some collapsed handling there for REVERIFY + CREATED.
+        Mail::to($node->user->email)->queue(new NodeAdded($node));
+
         if ($indirect)
         {
             // Hide attributes unauth/node should not see.
-            $node->makeHidden('user_id');
+            $node->makeHidden([ 'user_id', 'user' ]);
         }
 
         return $this->respond($node->toArray(), [], null, ResponseType::CREATED);
@@ -218,10 +226,20 @@ class NodeController extends CRUDController
             'ip' => 'required|ip',
             'port' => 'required|integer|min:1024|max:65534',
             'access_token' => 'sometimes|min:5|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
-            'friendly_name' => 'sometimes|alpha_dash|max:64',
-            'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstraints()) ],
-            'price' => 'required_with:market_model|numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999)
+            'friendly_name' => 'sometimes|alpha_dash_spaces|max:64',
+            'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstraints()) ]
         ];
+
+        if ($request->has('price'))
+        {
+            if ($request->has('market_model'))
+                $marketModel = $request->get('market_model');
+            else
+                $marketModel = $node->market_model;
+
+            if (in_array($marketModel, NodeMarketModel::getMarketable()))
+                $rules['price'] = 'numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999);
+        }
 
         $reverifyRules = [
             'ip', 'port', 'access_token', 'protocol'
@@ -230,12 +248,16 @@ class NodeController extends CRUDController
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
-        if ($request->has('market_model') && $node->market_model != $input['market_model'])
+        if ($request->has('market_model'))
         {
             // Indicating that this is an update
-            if ($node->getOrders(OrderStatus::ACTIVE)->count() > 0)
+            if ($node->market_model != $input['market_model'] &&
+                $node->getOrders(OrderStatus::ACTIVE)->count() > 0)
+            {
                 throw new UserFriendlyException(Errors::HAS_ACTIVE_ORDERS);
+            }
         }
+
 
         foreach ($input as $key => $value)
         {

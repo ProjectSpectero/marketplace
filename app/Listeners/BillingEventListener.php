@@ -81,6 +81,8 @@ class BillingEventListener extends BaseListener
                                 $order = $invoice->order;
                                 if ($order->status != OrderStatus::CANCELLED)
                                 {
+                                    $oldOrderStatus = $order->status;
+
                                     $order->status = OrderStatus::ACTIVE;
                                     foreach ($order->lineItems as $item)
                                     {
@@ -91,7 +93,9 @@ class BillingEventListener extends BaseListener
                                     $order->due_next = $order->due_next->addDays($order->term);
                                     $order->saveOrFail();
 
-                                    Mail::to($user->email)->queue(new OrderProvisionedMail($order));
+                                    // Only send this if the order is actually being activated (and not on standard renewals).
+                                    if ($oldOrderStatus != OrderStatus::ACTIVE)
+                                        Mail::to($user->email)->queue(new OrderProvisionedMail($order));
                                 }
                             }
 

@@ -46,10 +46,17 @@ class NodeGroupController extends CRUDController
         $this->authorizeResource();
 
         $rules = [
-            'friendly_name' => 'required|alpha_dash|max:64',
+            'friendly_name' => 'required|alpha_dash_spaces|max:64',
             'market_model' => [ 'required', Rule::in(NodeMarketModel::getConstraints()) ],
-            'price' => 'required|numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999)
         ];
+
+        if ($request->has('price'))
+        {
+            $marketModel = $request->get('market_model');
+
+            if (in_array($marketModel, NodeMarketModel::getMarketable()))
+                $rules['price'] = 'numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999);
+        }
 
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
@@ -59,7 +66,7 @@ class NodeGroupController extends CRUDController
         $nodeGroup->status = NodeStatus::CONFIRMED;
         $nodeGroup->user_id = $request->user()->id;
         $nodeGroup->market_model = $input['market_model'];
-        $nodeGroup->price = $input['price'];
+        $nodeGroup->price = $input['price'] ?? 0;
 
         $nodeGroup->saveOrFail();
 
@@ -73,10 +80,20 @@ class NodeGroupController extends CRUDController
         $this->authorizeResource($nodeGroup);
 
         $rules = [
-            'friendly_name' => 'sometimes|alpha_dash',
+            'friendly_name' => 'sometimes|alpha_dash_spaces|max:64',
             'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstants()) ],
-            'price' => 'required_with:market_model|numeric|min:5'
         ];
+
+        if ($request->has('price'))
+        {
+            if ($request->has('market_model'))
+                $marketModel = $request->get('market_model');
+            else
+                $marketModel = $nodeGroup->market_model;
+
+            if (in_array($marketModel, NodeMarketModel::getMarketable()))
+                $rules['price'] = 'numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999);
+        }
 
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
@@ -172,8 +189,11 @@ class NodeGroupController extends CRUDController
         $this->authorizeResource($node, 'node.assign');
         $this->authorizeResource($nodeGroup, 'node_group.assign');
 
-        if ($node->status != NodeStatus::CONFIRMED)
-            throw new UserFriendlyException(Errors::NODE_PENDING_VERIFICATION, ResponseType::FORBIDDEN);
+        /*
+         * Commented out as per MAR-163, we'll revisit this someday.
+         *  if ($node->status != NodeStatus::CONFIRMED)
+                throw new UserFriendlyException(Errors::NODE_PENDING_VERIFICATION, ResponseType::FORBIDDEN);
+         */
 
         /** @var NodeGroup $oldGroup */
         $oldGroup = $node->group;

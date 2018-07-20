@@ -67,7 +67,7 @@ class NodesTableSeeder extends Seeder
         $realNode->port = 6024;
         $realNode->friendly_name = 'Real Test Node 1';
         $realNode->protocol = 'http';
-        $realNode->access_token = 'spectero:P1a1-5o--e2Ap-6S';
+        $realNode->access_token = 'spectero:_Bv80f4--_oTG-_N';
         $realNode->install_id = '23d0a0c4-dc91-4960-b6fc-2d874fb9f50f';
         $realNode->status = \App\Constants\NodeStatus::CONFIRMED;
         $realNode->market_model = \App\Constants\NodeMarketModel::LISTED_SHARED;

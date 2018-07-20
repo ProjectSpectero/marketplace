@@ -4,6 +4,7 @@
 namespace App\Libraries;
 
 
+use App\Constants\Authority;
 use App\Constants\Currency;
 use App\Constants\Errors;
 use App\Constants\InvoiceStatus;
@@ -11,10 +12,12 @@ use App\Constants\InvoiceType;
 use App\Constants\NodeMarketModel;
 use App\Constants\OrderResourceType;
 use App\Constants\OrderStatus;
+use App\Constants\PaymentProcessor;
 use App\Constants\PaymentProcessorResponseType;
 use App\Constants\PaymentType;
 use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
+use App\Constants\UserRoles;
 use App\Errors\UserFriendlyException;
 use App\Invoice;
 use App\Libraries\Payment\AccountCreditProcessor;
@@ -435,4 +438,58 @@ class BillingUtils
         throw new UserFriendlyException(Errors::INVOICE_STATUS_MISMATCH);
     }
 
+    // Smelly code, should make the providers disclose the rules instead of centralizing like this.
+    // Every time a provider is added, this place needs maintenance. Bad design, to be fixed later.
+    public static function resolveUsableGateways (Invoice $invoice, User $user = null)
+    {
+        $invoiceUser = $invoice->user;
+
+        $valid = [];
+
+        $providers = PaymentProcessor::getConstants();
+
+        // Flow is that everything is valid by default, unless one or more rules fail.
+        // TODO: Integrate fraud-scores in this decision-making process.
+        foreach ($providers as $provider)
+        {
+            $lowerCaseValue = strtolower($provider);
+
+            switch ($provider)
+            {
+                case PaymentProcessor::PAYPAL:
+                case PaymentProcessor::CRYPTO:
+                    // Paypal is allowed everywhere for now.
+                    // Crypto is allowed everywhere for now.
+
+                    $valid[] = $lowerCaseValue;
+
+                    break;
+
+                case PaymentProcessor::STRIPE:
+                    // Stripe is currently allowed for all non-credit payments
+                    if ($invoice->type !== InvoiceType::CREDIT)
+                        $valid[] = $lowerCaseValue;
+
+                    break;
+
+                case PaymentProcessor::ACCOUNT_CREDIT:
+                    if ($invoiceUser->credit > 0 &&
+                        $invoiceUser->credit_currency === $invoice->currency
+                    )
+                        $valid[] = $lowerCaseValue;
+
+                    break;
+
+                case
+                    PaymentProcessor::MANUAL:
+                    if ($user != null &&  ($user->can(Authority::ManualPay) || $user->isAn(UserRoles::ADMIN)))
+                        $valid[] = $lowerCaseValue;
+
+                    break;
+            }
+
+        }
+
+        return $valid;
+    }
 }

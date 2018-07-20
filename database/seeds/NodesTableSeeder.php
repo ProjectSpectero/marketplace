@@ -61,6 +61,15 @@ class NodesTableSeeder extends Seeder
 
     private function seedRealNodes ()
     {
+        /* Required Daemon Side SQL
+            UPDATE `Configuration` SET `Value`='True' WHERE `Key`='cloud.connect.status';
+            UPDATE `Configuration` SET `Value`='23d0a0c4-dc91-4960-b6fc-2d874fb9f50f' WHERE `Key`='sys.id';
+            UPDATE `Configuration` SET `Value`='b96rU_Y2-5gj5r1Kfx40M51Qz-_1ps_PH19_--__E_9-_7vH' WHERE `Key`='crypto.jwt.key';
+            UPDATE `User` SET `Password`='$2a$10$6Etg74BdeweUXOl6/RlyuOsb8q6Lm2RhqwRD9IA/T77ErdMdnd85m' WHERE `AuthKey`='spectero';
+            INSERT INTO `Configuration`(`Key`,`Value`,`CreatedDate`,`UpdatedDate`) VALUES ('cloud.connect.id','101','2018-07-19 23:33:01.4711129','2018-07-19 23:33:01.4711129');
+            INSERT INTO `Configuration`(`Key`,`Value`,`CreatedDate`,`UpdatedDate`) VALUES ('cloud.connect.node-key','25e7e751047aad89f9fd7fa19fe806618ee9e944cbeb861398f8e4534498659a','2018-07-19 23:33:01.4711129','2018-07-19 23:33:01.4711129');
+        */
+
         $realNode = new \App\Node();
         $realNode->id = 101;
         $realNode->ip = '23.158.64.30';

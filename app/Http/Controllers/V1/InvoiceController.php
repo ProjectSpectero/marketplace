@@ -13,12 +13,14 @@ use App\Invoice;
 use App\Libraries\BillingUtils;
 use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
+use App\Libraries\Utility;
 use App\Mail\NewInvoiceGeneratedMail;
 use App\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class InvoiceController extends CRUDController
 {
@@ -48,13 +50,13 @@ class InvoiceController extends CRUDController
         $this->authorizeResource();
 
         $rules = [
-            'order_id' => 'required',
-            'user_id' => 'required',
-            'amount' => 'required',
-            'tax' => 'required',
-            'currency' => 'sometimes',
-            'status' => 'required',
-            'due_date' => 'required'
+            'order_id' => 'required|integer|exists:orders,id',
+            'user_id' => 'required|integer|exists:users,id',
+            'amount' => 'required|numeric',
+            'tax' => 'required|numeric',
+            'currency' => [ 'sometimes', Rule::in(Currency::getConstants()) ],
+            'status' => [ 'required'. Rule::in(InvoiceStatus::getConstants()) ],
+            'due_date' => 'required|date'
         ];
 
         $this->validate($request, $rules);
@@ -130,23 +132,34 @@ class InvoiceController extends CRUDController
 
     public function show (Request $request, int $id, String $action = null) : JsonResponse
     {
+        /** @var Invoice $invoice */
         $invoice = Invoice::findOrFail($id);
         $this->authorizeResource($invoice);
 
+        $dataHolder = [];
+
         switch ($action)
         {
-            case 'transactions':
-                return PaginationManager::paginate($request, Transaction::findForInvoice($invoice)->noEagerLoads());
             case 'due':
                 $amount = BillingUtils::getInvoiceDueAmount($invoice);
-
                 if ($amount < 0)
                     $amount = 0;
 
-                return $this->respond([ 'amount' => $amount, 'currency' => $invoice->currency ]);
+                $dataHolder = [ 'amount' => $amount, 'currency' => $invoice->currency ];
+                break;
+
+            case 'gateways':
+                $dataHolder = BillingUtils::resolveUsableGateways($invoice, $request->user());
+                break;
+
+            case 'transactions':
+                return PaginationManager::paginate($request, Transaction::findForInvoice($invoice)->noEagerLoads());
+
             default:
-                return $this->respond($invoice->toArray());
+                $dataHolder = $invoice->toArray();
         }
+
+        return $this->respond($dataHolder);
     }
 
     public function render (Request $request, int $id)

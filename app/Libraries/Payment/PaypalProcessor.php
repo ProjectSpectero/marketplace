@@ -83,7 +83,7 @@ class PaypalProcessor extends BasePaymentProcessor
             $invoiceId = $this->getMajorInvoiceIdFromPartialId($checkoutData['INVNUM']);
 
             // We cannot account for a payment without the relevant invoice
-            $invoice = Invoice::findOrFail($invoiceId);
+            $invoice = Invoice::findOrWarn($invoiceId, $checkoutData);
 
             $data = $this->processInvoice($invoice, $mode);
 

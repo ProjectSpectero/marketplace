@@ -454,29 +454,34 @@ class BillingUtils
         {
             $lowerCaseValue = strtolower($provider);
 
+            if ($invoice->type == InvoiceType::CREDIT &&
+                ! in_array($provider, PaymentProcessor::getCreditAddAllowedVia()))
+                continue;
+
             switch ($provider)
             {
                 case PaymentProcessor::PAYPAL:
-                case PaymentProcessor::CRYPTO:
                     // Paypal is allowed everywhere for now.
+                    if (env('PAYPAL_ENABLED', false) == true)
+                        $valid[] = $lowerCaseValue;
+                    break;
+
+                case PaymentProcessor::CRYPTO:
                     // Crypto is allowed everywhere for now.
-
-                    $valid[] = $lowerCaseValue;
-
+                    if (env('CRYPTO_ENABLED', false) == true)
+                        $valid[] = $lowerCaseValue;
                     break;
 
                 case PaymentProcessor::STRIPE:
                     // Stripe is currently allowed for all non-credit payments
-                    if ($invoice->type !== InvoiceType::CREDIT)
+                    if (env('STRIPE_ENABLED', false) == true)
                         $valid[] = $lowerCaseValue;
 
                     break;
 
                 case PaymentProcessor::ACCOUNT_CREDIT:
                     if ($invoiceUser->credit > 0 &&
-                        $invoiceUser->credit_currency === $invoice->currency &&
-                        $invoice->type !== InvoiceType::CREDIT
-                    )
+                        $invoiceUser->credit_currency === $invoice->currency)
                         $valid[] = $lowerCaseValue;
 
                     break;

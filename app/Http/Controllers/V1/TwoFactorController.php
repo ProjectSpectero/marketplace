@@ -108,6 +108,10 @@ class TwoFactorController extends V1Controller
             UserMeta::addOrUpdateMeta($user, UserMetaKeys::TwoFactorSecretKey, $secretKey);
 
             // Let us generate an URL to the QR code
+            // This makes the secret key visible in the URI, however it's fine for now (still HTTPS)
+            // TODO: Look into local (secure) QR code generation.
+
+            $twoFactorService->setAllowInsecureCallToGoogleApis(true);
             $qrCodeUrl = $twoFactorService->getQRCodeGoogleUrl(env('COMPANY_NAME', 'smartplace'),
                 $user->email,
                 $secretKey

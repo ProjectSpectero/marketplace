@@ -4,7 +4,9 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use ErrorException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Log;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -13,6 +15,21 @@ class BaseModel extends Model
     public static function findForUser (int $id)
     {
         return static::where('user_id', $id);
+    }
+
+    public static function findOrWarn(int $id, array $payload = [])
+    {
+        try
+        {
+            $model = static::findOrFail($id);
+        }
+        catch (ModelNotFoundException $silenced)
+        {
+            Log::warning("Couldn't find id -> " . $id . ' when looking for ' . get_called_class() . ' (despite expecting to find it).', [ 'ctx' => $payload ]);
+            throw $silenced;
+        }
+
+        return $model;
     }
 
     public function scopeNoEagerLoads($query)

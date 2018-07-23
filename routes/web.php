@@ -25,7 +25,11 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->post('auth/multifactor', 'TwoFactorController@verifyToken');
         $api->post('user', 'UserController@store');
         $api->get('user/verify/{email}/{token}', 'UserController@verify');
+
+        // Paypal IPN like provider callbacks, some providers do get, some do POST.
         $api->get('payment/{processor}/callback', 'PaymentController@callback');
+        $api->post('payment/{processor}/callback', 'PaymentController@callback');
+
         $api->post('password-reset', 'PasswordResetController@generateToken');
         $api->get('password-reset/{token}', 'PasswordResetController@callback');
 

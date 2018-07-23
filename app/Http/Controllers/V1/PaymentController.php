@@ -20,6 +20,7 @@ use App\Invoice;
 use App\Libraries\BillingUtils;
 use App\Libraries\Payment\AccountCreditProcessor;
 use App\Libraries\Payment\BasePaymentProcessor;
+use App\Libraries\Payment\CryptoProcessor;
 use App\Libraries\Payment\IPaymentProcessor;
 use App\Libraries\Payment\ManualPaymentProcessor;
 use App\Libraries\Payment\PaypalProcessor;
@@ -41,6 +42,7 @@ class PaymentController extends V1Controller
 
     public function process (Request $request, String $processor, int $invoiceId) : JsonResponse
     {
+        /** @var Invoice $invoice */
         $invoice = Invoice::findOrFail($invoiceId);
         $this->authorizeResource($invoice, 'invoice.pay');
 
@@ -48,9 +50,8 @@ class PaymentController extends V1Controller
             throw new UserFriendlyException(Errors::INVOICE_STATUS_MISMATCH);
 
         // Credit-add invoices are ONLY payable with Paypal, we will NOT charge cards to add-credit (lowers liability).
-        if ($invoice->type == InvoiceType::CREDIT
-            && ! in_array(strtoupper($processor), PaymentProcessor::getCreditAddAllowedVia()))
-                throw new UserFriendlyException(Errors::GATEWAY_DISABLED_FOR_PURPOSE, ResponseType::FORBIDDEN);
+        if (! in_array($processor, BillingUtils::resolveUsableGateways($invoice, $request->user())))
+            throw new UserFriendlyException(Errors::GATEWAY_DISABLED_FOR_PURPOSE, ResponseType::FORBIDDEN);
 
         // The invoice user needs to have a complete billing profile, this call enforces that.
         BillingUtils::compileDetails($invoice->user);
@@ -84,7 +85,8 @@ class PaymentController extends V1Controller
      * @param Request $request
      * @param String $processor
      * @return JsonResponse
-     * @throws FatalException
+     * @throws UserFriendlyException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function callback (Request $request, String $processor)
     {
@@ -101,7 +103,7 @@ class PaymentController extends V1Controller
      * @param int $transactionId (the transaction ID, this is NOT the provider reference)
      * @return JsonResponse
      * @throws UserFriendlyException
-     * @throws FatalException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function refund (Request $request, int $transactionId) : JsonResponse
     {
@@ -176,6 +178,10 @@ class PaymentController extends V1Controller
 
             case strtolower(PaymentProcessor::MANUAL):
                 $init = new ManualPaymentProcessor($request);
+                break;
+
+            case strtolower(PaymentProcessor::CRYPTO):
+                $init = new CryptoProcessor($request);
                 break;
 
             default:

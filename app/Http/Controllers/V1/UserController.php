@@ -67,7 +67,7 @@ class UserController extends CRUDController
         $data['roles'] = $roles;
 
         foreach ($user->abilities as $ability)
-            $abilities[] = [ 'name' => $ability['name'], 'only_owned' => $ability['only_owned'] ];
+            $abilities[] = [ 'name' => $ability['name'], 'only_owned' => (bool) $ability['only_owned'] ];
 
         $data['abilities'] = $abilities;
 

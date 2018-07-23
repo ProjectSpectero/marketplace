@@ -15,7 +15,7 @@ class PaymentProcessor extends Holder
     public static function getCreditAddAllowedVia () : array
     {
         return [
-          self::PAYPAL
+          self::PAYPAL, self::CRYPTO
         ];
     }
 }

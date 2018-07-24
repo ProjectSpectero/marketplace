@@ -41,6 +41,12 @@ class NodesTableSeeder extends Seeder
             $group->save();
         }
 
+        foreach (\App\Node::all()->random(20) as $node)
+        {
+            $node->plan = \App\Constants\SubscriptionPlan::PRO;
+            $node->save();
+        }
+
         foreach (\App\NodeGroup::all() as $group)
         {
             foreach ($group->nodes as $node)
@@ -85,7 +91,7 @@ class NodesTableSeeder extends Seeder
         $realNode->asn = 133535;
         $realNode->city = 'Seattle';
         $realNode->cc = 'US';
-        $realNode->version = 'v0.1-alpha';
+        $realNode->version = \App\Constants\DaemonVersion::ZERO_ONE_ALPHA;
         $realNode->system_data = json_decode('{"CPU":{"Model":"Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":40,"Cache Size":"8192 KB"},"Memory":{"Physical":{"Used":222289920,"Free":851451904,"Total":1073741824}},"Environment":{"Hostname":"daemon-test-0","OS Version":{"Platform":4,"ServicePack":"","Version":{"Major":2,"Minor":6,"Build":32,"Revision":42,"MajorRevision":0,"MinorRevision":42},"VersionString":"Unix 2.6.32.42"},"64-Bits":true}}', true);
         $realNode->app_settings = json_decode('{
 			"BlockedRedirectUri": "https://blocked.spectero.com/?reason={0}&uri={1}&data={2}",

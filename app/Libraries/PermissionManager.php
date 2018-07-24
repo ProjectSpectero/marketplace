@@ -9,7 +9,7 @@ use App\User;
 
 class PermissionManager
 {
-    public static function assign (User $user, String $role)
+    public static function assign (User $user, string $role)
     {
         $resources = config('resources');
         $nodeResource = $resources['node'];

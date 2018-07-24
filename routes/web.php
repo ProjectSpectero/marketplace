@@ -23,7 +23,12 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->post('auth', 'AuthController@auth');
         $api->post('auth/refresh', 'AuthController@refreshToken');
         $api->post('auth/multifactor', 'TwoFactorController@verifyToken');
+
+        // User registration (normal, and easy) routes
         $api->post('user', 'UserController@store');
+        $api->post('user/easy', 'UserController@easyStore');
+
+        // Email verification link(s), these get posted to the user via email.
         $api->get('user/verify/{email}/{token}', 'UserController@verify');
 
         // Paypal IPN like provider callbacks, some providers do get, some do POST.

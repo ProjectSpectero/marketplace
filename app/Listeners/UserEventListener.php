@@ -60,13 +60,33 @@ class UserEventListener extends BaseListener
         switch ($event->type)
         {
             case Events::USER_CREATED:
-                $template = $user->status == UserStatus::EMAIL_VERIFICATION_NEEDED ? 'WelcomeWithEmailValidation' : 'Welcome';
-                $class = "\App\Mail\\" . $template;
+                $easy = $event->dataBag['easy'] ?? false;
+                $resetToken = $event->dataBag['resetToken'] ?? null;
 
-                $verifyToken = $this->generateVerifyToken($user);
+                if ($user->status == UserStatus::EMAIL_VERIFICATION_NEEDED)
+                {
+                    if ($easy)
+                    {
+                        $params = [
+                            'for' => $user->email,
+                            'easy' => true
+                        ];
+
+                        $queryString = http_build_query($params);
+
+                        $url = Utility::generateUrl("password-reset/$resetToken?$queryString", 'frontend');
+
+                    }
+                    else
+                        $url = Utility::generateUrl('verify/' . $user->email . '/' . $this->generateVerifyToken($user), 'frontend');
+
+                    $mail = new WelcomeWithEmailValidation($user, $url, $easy);
+                }
+                else
+                    $mail = new Welcome();
 
                 Mail::to($user->email)
-                    ->queue(new $class($user, $verifyToken));
+                    ->queue($mail);
 
                 break;
             case Events::USER_UPDATED:

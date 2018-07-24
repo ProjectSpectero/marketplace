@@ -80,8 +80,15 @@ class PasswordResetController extends V1Controller
             return $this->respond(null, [ Errors::RESOURCE_NOT_FOUND ], ResponseType::NOT_FOUND);
         }
 
+        $rules = [
+            'password' => 'sometimes|min:5|max:72'
+        ];
+
+        $this->validate($request, $rules);
+        $input = $this->cherryPick($request, $rules);
+
         $user = $resetToken->user;
-        $newPassword = Utility::getRandomString();
+        $newPassword = $input['password'] ?? Utility::getRandomString();
         $user->password = Hash::make($newPassword);
         $user->save();
 

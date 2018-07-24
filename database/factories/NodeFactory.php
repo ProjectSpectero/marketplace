@@ -13,6 +13,7 @@ $factory->define(App\Node::class, function (Faker\Generator $faker) {
         'price' => $faker->numberBetween(5, 100),
         'market_model' => array_random(\App\Constants\NodeMarketModel::getConstants()),
         'group_id' => $faker->numberBetween(1, 50),
+        'version' => array_random(\App\Constants\DaemonVersion::getConstants()),
         'asn' => $faker->numberBetween(1, 65534),
         'city' => $faker->city,
         'cc' => $faker->countryCode,

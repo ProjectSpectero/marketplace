@@ -282,7 +282,7 @@ class CryptoProcessor extends BasePaymentProcessor
 
         if ($error)
         {
-            Log::error("Unexpected response from Crypto API: " . \GuzzleHttp\json_encode($response) . "\n for data: " . json_encode($sentData));
+            Log::error("Unexpected response from Crypto API: " . json_encode($response) . "\n for data: " . json_encode($sentData));
             throw new UserFriendlyException(Errors::PAYMENT_FAILED, ResponseType::SERVICE_UNAVAILABLE);
         }
     }

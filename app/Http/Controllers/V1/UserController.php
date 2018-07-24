@@ -110,8 +110,6 @@ class UserController extends CRUDController
 
         $user->saveOrFail();
 
-        $this->afterCreation($user, [ 'easy' => true ]);
-
         $resetToken = PasswordResetToken::create([
                                                      'token' => Utility::getRandomString(1),
                                                      'user_id' => $user->id,

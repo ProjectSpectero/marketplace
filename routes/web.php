@@ -25,8 +25,8 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->post('auth/multifactor', 'TwoFactorController@verifyToken');
 
         // User registration (normal, and easy) routes
-        $api->post('user', 'UserController@store');
         $api->post('user/easy', 'UserController@easyStore');
+        $api->post('user', 'UserController@store');
 
         // Email verification link(s), these get posted to the user via email.
         $api->get('user/verify/{email}/{token}', 'UserController@verify');

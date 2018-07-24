@@ -48,4 +48,49 @@ class Order extends BaseModel
     {
         return $this->isOfType(OrderResourceType::ENTERPRISE);
     }
+
+    public function associatedPlans () : array
+    {
+        $plans = [];
+        foreach ($this->lineItems as $lineItem)
+        {
+            $resource = null;
+            switch ($lineItem->type)
+            {
+                case OrderResourceType::NODE:
+                    $resource = Node::find($lineItem->resource);
+                    break;
+
+                case OrderResourceType::NODE_GROUP:
+                    $resource = NodeGroup::find($lineItem->resource);
+                    break;
+            }
+
+            if ($resource != null &&
+                ! empty($resource->plan) &&
+                isset(config('plans')[$resource->plan])
+                && ! in_array($resource->plan, $plans))
+            {
+                $plans[] = $resource->plan;
+            }
+        }
+
+        return $plans;
+    }
+
+    public function canBypassBillingProfileCheck () : bool
+    {
+        $plans = config('plans');
+
+        foreach ($this->associatedPlans() as $plan)
+        {
+            // Yep, we redefined the variable (since the original is useless).
+            $plan = $plans[$plan] ?? null;
+
+            if (isset($plan['easy_allowed']) && $plan['easy_allowed'] == true)
+                return true;
+        }
+
+        return false;
+    }
 }

@@ -54,10 +54,18 @@ class PaymentController extends V1Controller
         if (! in_array($processor, BillingUtils::resolveUsableGateways($invoice, $request->user())))
             throw new UserFriendlyException(Errors::GATEWAY_DISABLED_FOR_PURPOSE, ResponseType::FORBIDDEN);
 
+        /** @var Order $order */
         $order = $invoice->order;
 
-        // The invoice user needs to have a complete billing profile, this call enforces that.
-        BillingUtils::compileDetails($invoice->user);
+        // Billing profile completeness check is bypassed for plans at this moment.
+        // We need to fix this before we start associating plans with resources not belonging to us.
+        // TODO: Come up with a more robust way to handle billing completeness check bypass for orders with associated plan(s).
+        if (! $order->canBypassBillingProfileCheck())
+        {
+            // The invoice user needs to have a complete billing profile, this call enforces that.
+            BillingUtils::compileDetails($invoice->user);
+        }
+
 
         if ($invoice->type == InvoiceType::STANDARD)
         {

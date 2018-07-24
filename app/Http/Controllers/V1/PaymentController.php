@@ -31,6 +31,7 @@ use App\Order;
 use App\Transaction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends V1Controller
 {
@@ -53,17 +54,21 @@ class PaymentController extends V1Controller
         if (! in_array($processor, BillingUtils::resolveUsableGateways($invoice, $request->user())))
             throw new UserFriendlyException(Errors::GATEWAY_DISABLED_FOR_PURPOSE, ResponseType::FORBIDDEN);
 
+        $order = $invoice->order;
+
         // The invoice user needs to have a complete billing profile, this call enforces that.
         BillingUtils::compileDetails($invoice->user);
 
         if ($invoice->type == InvoiceType::STANDARD)
         {
             // Before proceeding further, we need to check that if the invoice has an order associated with it, and all line items are currently available for purchase.
-            $order = $invoice->order;
 
             // This is not supposed to happen, if it does we gotta catch and bail appropriately.
             if ($order == null)
+            {
+                Log::error("Processing payment for invoice #$invoice->id failed, associated order could NOT be found!");
                 throw new UserFriendlyException(Errors::PAYMENT_FAILED);
+            }
 
             if (! in_array($order->status, OrderStatus::getPayable()))
                 throw new UserFriendlyException(Errors::ORDER_STATUS_MISMATCH);

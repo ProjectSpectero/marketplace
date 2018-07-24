@@ -32,15 +32,20 @@ class Order extends BaseModel
         return $this->belongsTo(User::class);
     }
 
-    public function isEnterprise () : bool
+    public function isOfType (string $orderResourceType) : bool
     {
         foreach ($this->lineItems as $lineItem)
         {
             if ($lineItem->status == OrderStatus::ACTIVE
-            && $lineItem->type == OrderResourceType::ENTERPRISE)
+                && $lineItem->type == $orderResourceType)
                 return true;
         }
 
         return false;
+    }
+
+    public function isEnterprise () : bool
+    {
+        return $this->isOfType(OrderResourceType::ENTERPRISE);
     }
 }

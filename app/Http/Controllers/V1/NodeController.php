@@ -286,20 +286,11 @@ class NodeController extends CRUDController
      */
     public function reverify (Request $request, int $id) : JsonResponse
     {
+        /** @var Node $node */
         $node = Node::findOrFail($id);
 
-        $err = "";
-        switch ($node->status)
-        {
-            case NodeStatus::CONFIRMED:
-                $err = Errors::NODE_ALREADY_VERIFIED;
-                break;
-            case NodeStatus::PENDING_VERIFICATION:
-                $err = Errors::NODE_PENDING_VERIFICATION;
-                break;
-        }
-        if (! empty($err))
-            throw new UserFriendlyException($err, ResponseType::CONFLICT);
+        if ($node->status !== NodeStatus::UNCONFIRMED)
+            throw new UserFriendlyException(Errors::NODE_STATUS_MISMATCH);
 
         $node->status = NodeStatus::PENDING_VERIFICATION;
         $node->saveOrFail();

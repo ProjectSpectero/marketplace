@@ -63,11 +63,17 @@ trait MetaTrait
         return $modelMeta;
     }
 
-    public static function deleteMeta (Model $model, String $key)
+    public static function deleteMeta (Model $model, String $key) : void
     {
         $modelMeta = static::loadMeta($model, $key);
         if (! empty($modelMeta))
             $modelMeta->delete();
+
+        $cacheKey = static::getMetaCacheKey($model, $key);
+
+        // The exception will never be thrown since we don't delete without checking for existence.
+        if (\Cache::has($cacheKey))
+            \Cache::delete($cacheKey);
     }
 
     public function getValue()

@@ -99,7 +99,7 @@ class PasswordResetController extends V1Controller
 
         if ($user->status == UserStatus::EMAIL_VERIFICATION_NEEDED)
         {
-            $wasUserEasySignedUp = UserMeta::cacheLoadMeta($user, UserMetaKeys::SourcedFromEasySignup);
+            $wasUserEasySignedUp = UserMeta::cacheLoad($user, UserMetaKeys::SourcedFromEasySignup);
             if ($wasUserEasySignedUp)
             {
                 UserMeta::deleteMeta($user, UserMetaKeys::SourcedFromEasySignup);

@@ -45,7 +45,7 @@ class Authenticate
         $error = Utility::resolveStatusError($request->user());
         if (! empty($error))
             return Utility::generateResponse(null, [ $error ], Errors::REQUEST_FAILED, 'v1',
-                                                    ResponseType::FORBIDDEN);
+                                                    ResponseType::NOT_AUTHORIZED);
 
         return $next($request);
     }

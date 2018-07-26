@@ -35,11 +35,9 @@ class NodesTableSeeder extends Seeder
             $node->save();
         }
 
-        foreach (\App\NodeGroup::all()->random(25) as $group)
-        {
-            $group->plan = \App\Constants\SubscriptionPlan::PRO; // TODO: Clean this up in production.
-            $group->save();
-        }
+        $proGroup = \App\NodeGroup::find(25);
+        $proGroup->plan = \App\Constants\SubscriptionPlan::PRO;
+        $proGroup->saveOrFail();
 
         foreach (\App\Node::all()->random(20) as $node)
         {

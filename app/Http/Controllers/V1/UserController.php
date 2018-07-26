@@ -119,14 +119,15 @@ class UserController extends CRUDController
 
         $this->afterCreation($user, [ 'easy' => true, 'resetToken' => $resetToken->token ]);
 
+        UserMeta::addOrUpdateMeta($user, UserMetaKeys::SourcedFromEasySignup, true);
+
         $issuedToken = $user->createToken("Direct issuance based on easy signup.");
 
         $data = [
             'user' => $user->toArray(),
             'auth' => [
-                'token' => $issuedToken->accessToken,
-                'expires' => env('TOKEN_EXPIRY', 10) * 60,
-                'password' => $temporaryPassword
+                'accessToken' => $issuedToken->accessToken,
+                'expiry' => env('TOKEN_EXPIRY', 10) * 60
             ]
         ];
 

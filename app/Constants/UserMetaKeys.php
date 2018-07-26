@@ -32,6 +32,9 @@ class UserMetaKeys extends Holder
     // This key tracks if the user should be showed the welcome splash screen
     const ShowSplashScreen = 'show_splash_screen';
 
+    // This key tracks whether this user was an "easy signup" user, removed on the first actual password being set.
+    const SourcedFromEasySignup = 'user.easy_signup';
+
     static function getPublicMetaKeys()
     {
         return [

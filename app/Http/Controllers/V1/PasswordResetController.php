@@ -6,6 +6,8 @@ use App\Constants\Errors;
 use App\Constants\Events;
 use App\Constants\Messages;
 use App\Constants\ResponseType;
+use App\Constants\UserMetaKeys;
+use App\Constants\UserStatus;
 use App\Events\UserEvent;
 use App\Http\Controllers\V1\V1Controller;
 use App\Libraries\Utility;
@@ -13,6 +15,7 @@ use App\Mail\PasswordChanged;
 use App\Mail\PasswordReset;
 use App\PasswordResetToken;
 use App\User;
+use App\UserMeta;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -93,6 +96,18 @@ class PasswordResetController extends V1Controller
         $user->save();
 
         Mail::to($user->email)->queue(new PasswordChanged($newPassword, $resetToken->ip));
+
+        if ($user->status == UserStatus::EMAIL_VERIFICATION_NEEDED)
+        {
+            $wasUserEasySignedUp = UserMeta::cacheLoadMeta($user, UserMetaKeys::SourcedFromEasySignup);
+            if ($wasUserEasySignedUp)
+            {
+                UserMeta::deleteMeta($user, UserMetaKeys::SourcedFromEasySignup);
+                $user->status = UserStatus::ACTIVE;
+
+                $user->saveOrFail();
+            }
+        }
 
         event(new UserEvent(Events::USER_PASSWORD_UPDATED, $user));
         return $this->respond([

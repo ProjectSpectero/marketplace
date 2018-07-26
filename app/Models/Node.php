@@ -96,6 +96,11 @@ class Node extends BaseModel
         return $this->belongsTo(User::class);
     }
 
+    public function meta ()
+    {
+        return $this->hasMany(NodeMeta::class);
+    }
+
     public function services ()
     {
         return $this->hasMany(Service::class);

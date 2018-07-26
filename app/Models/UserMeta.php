@@ -3,8 +3,11 @@
 namespace App;
 
 use App\Constants\UserMetaKeys;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\MetaTrait;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserMeta extends BaseModel
 {
@@ -39,4 +42,6 @@ class UserMeta extends BaseModel
         }
         return $userMeta;
     }
+
+
 }

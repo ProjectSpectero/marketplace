@@ -118,17 +118,29 @@ class Utility
 
     public static function resolveStatusError (User $user) : string
     {
+        $data = "";
+
         switch ($user->status)
         {
             case UserStatus::EMAIL_VERIFICATION_NEEDED:
-                return Errors::EMAIL_VERIFICATION_NEEDED;
+
+                $wasUserEasySignedUp = UserMeta::cacheLoad($user, UserMetaKeys::SourcedFromEasySignup);
+
+                if (! $wasUserEasySignedUp)
+                    $data = Errors::EMAIL_VERIFICATION_NEEDED;
+
+                break;
+
             case UserStatus::ACTIVE:
-                return "";
+                break;
+
             default:
                 // Yeah -_-
-                return Errors::AUTHENTICATION_NOT_ALLOWED;
+                $data = Errors::AUTHENTICATION_NOT_ALLOWED;
                 break;
         }
+
+        return $data;
     }
 
     public static function alphaDashRule(String $str)

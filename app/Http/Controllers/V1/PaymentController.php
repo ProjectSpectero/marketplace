@@ -204,4 +204,25 @@ class PaymentController extends V1Controller
         $init->setCaller($this);
         return $init;
     }
+
+    public function profileCheck (Request $request) : JsonResponse
+    {
+        $complete = true;
+        $data = [];
+
+        try
+        {
+            $data = BillingUtils::compileDetails($request->user());
+        }
+        catch (UserFriendlyException $silenced)
+        {
+            $complete = false;
+        }
+
+
+        return $this->respond([
+            'complete' => $complete,
+            'data' => $data
+           ]);
+    }
 }

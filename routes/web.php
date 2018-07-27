@@ -96,6 +96,9 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->post('payment/refund/{transactionId}', 'PaymentController@refund');
         $api->delete('payment/{processor}/clear', 'PaymentController@clear');
 
+        $api->get('payment/profile', 'PaymentController@profileCheck');
+
+
         $api->post('order/cart', 'OrderController@cart');
         \App\Libraries\Utility::defineResourceRoute('transaction', 'TransactionController', $api, []);
 

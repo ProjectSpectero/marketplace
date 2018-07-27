@@ -49,6 +49,9 @@ class BillingUtils
     {
         try
         {
+            if (empty($user->name))
+                throw new ModelNotFoundException(Errors::FIELD_REQUIRED);
+
             $addrLine1 = UserMeta::loadMeta($user, UserMetaKeys::AddressLineOne, true)->meta_value;
 
             $city = UserMeta::loadMeta($user, UserMetaKeys::City, true)->meta_value;
@@ -68,14 +71,15 @@ class BillingUtils
         }
 
         return [
-            'addrLine1' => $addrLine1,
-            'addrLine2' => ($addrLine2 instanceof Builder  || $addrLine2 == null) ? null : $addrLine2->meta_value,
-            'city' => $city,
-            'state' => $state,
-            'country' => $country,
-            'postCode' => $postCode,
-            'organization' => ($organization instanceof Builder || $organization == null) ? null : $organization->meta_value,
-            'taxId' => ($taxId instanceof Builder || $taxId == null) ? null : $taxId->meta_value
+            'customer_name' => $user->name,
+            UserMetaKeys::AddressLineOne => $addrLine1,
+            UserMetaKeys::AddressLineTwo => ($addrLine2 instanceof Builder  || $addrLine2 == null) ? null : $addrLine2->meta_value,
+            UserMetaKeys::City => $city,
+            UserMetaKeys::State => $state,
+            UserMetaKeys::Country => $country,
+            UserMetaKeys::PostCode => $postCode,
+            UserMetaKeys::Organization => ($organization instanceof Builder || $organization == null) ? null : $organization->meta_value,
+            UserMetaKeys::TaxIdentification => ($taxId instanceof Builder || $taxId == null) ? null : $taxId->meta_value
         ];
     }
 

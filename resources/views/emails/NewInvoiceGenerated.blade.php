@@ -4,11 +4,17 @@
     <h2>New Invoice Generated</h2>
 
     <p>Hi {{ $invoice->user->name }},</p>
-    <p>This email is to let you know that a new Spectero invoice (<b>{{ $invoice->id }}</b>) has been generated {{ $reason }}. This invoice is due on <b>{{ $invoice->due_date }}</b>. To ensure smooth operation your service(s), please make sure to submit payment in time.</p>
+    <p>This email is to let you know that a new Spectero invoice (<b>#{{ $invoice->id }}</b>) has been generated {{ $reason }}. This invoice is due on <b>{{ $invoice->due_date }}</b>. </p>
+
+    <p>To ensure smooth operation your service(s), please make sure to submit payment in time.</p>
 
     <a class="btn" target="_blank" href="{{ $manualUrl }}">View Invoice</a>
 
-    <p>Payment can be made using the link above. You can also set up automatic payments from the same link.</p>
+    <p>Payment can be made using the link above.
+        @if($invoice->type != \App\Constants\InvoiceType::CREDIT)
+            You can also set up automatic payments from the same link.
+        @endif
+    </p>
 
     @if($invoice->type == \App\Constants\InvoiceType::STANDARD)
         <p>We generate invoices {{ env("EARLY_INVOICE_GENERATION_DAYS", 14) }} days early to give you ample time to arrange payment.</p>

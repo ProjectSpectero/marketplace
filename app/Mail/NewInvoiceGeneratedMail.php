@@ -36,7 +36,7 @@ class NewInvoiceGeneratedMail extends BaseMail
         switch ($this->invoice->type)
         {
             case InvoiceType::CREDIT:
-                $reasonString = 'for your request to add account-credit.';
+                $reasonString = 'for your request to add account-credit';
                 break;
 
             case InvoiceType::STANDARD:

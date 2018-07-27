@@ -20,7 +20,9 @@ use App\Order;
 use App\Transaction;
 use App\User;
 use App\UserMeta;
+use Cartalyst\Stripe\Exception\CardErrorException;
 use Cartalyst\Stripe\Exception\MissingParameterException;
+use Cartalyst\Stripe\Exception\StripeException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -72,11 +74,8 @@ class StripeProcessor extends BasePaymentProcessor
             $customerId = UserMeta::loadMeta($user, UserMetaKeys::StripeCustomerIdentifier);
         }
 
-        if ($customerId == null && $token == null)
-            throw new UserFriendlyException(Errors::INVALID_STRIPE_TOKEN);
-
         // This builder check is completely idiotic, but necessary because Eloquent scopes cannnot return null.
-        if ($customerId instanceof Builder)
+        if ($token == null && ($customerId == null || $customerId instanceof Builder))
             throw new UserFriendlyException(Errors::NO_STORED_CARD);
 
         if ($customerId instanceof UserMeta)
@@ -117,10 +116,10 @@ class StripeProcessor extends BasePaymentProcessor
                 ->charges()
                 ->create($descriptor);
         }
-        catch (MissingParameterException $silenced)
+        catch (StripeException $silenced)
         {
             $this->logIfAppropriate($silenced);
-            throw new UserFriendlyException(Errors::INVALID_STRIPE_TOKEN);
+            throw new UserFriendlyException(Errors::PAYMENT_FAILED);
         }
 
         $this->ensureSuccess($charge);
@@ -220,10 +219,10 @@ class StripeProcessor extends BasePaymentProcessor
                                  'source' => $token
                              ]);
             }
-            catch (MissingParameterException $silenced)
+            catch (StripeException $silenced)
             {
                 $this->logIfAppropriate($silenced);
-                throw new UserFriendlyException(Errors::INVALID_STRIPE_TOKEN);
+                throw new UserFriendlyException(Errors::PAYMENT_FAILED);
             }
 
             if ($save)
@@ -253,7 +252,7 @@ class StripeProcessor extends BasePaymentProcessor
                 {
                     // This can also trigger if the customer ID is invalid. But we're not too concerned ATM. FYI however.
                     $this->logIfAppropriate($exception);
-                    throw new UserFriendlyException(Errors::INVALID_STRIPE_TOKEN);
+                    throw new UserFriendlyException(Errors::PAYMENT_FAILED);
                 }
 
                 UserMeta::addOrUpdateMeta($user, UserMetaKeys::StripeCardToken, $token);
@@ -331,8 +330,16 @@ class StripeProcessor extends BasePaymentProcessor
     private function isInvalidToken (\Exception $exception)
     {
         $message = $exception->getMessage();
+        $code = $exception->getCode();
 
-        return strpos($message, 'No such token') !== false;
+        $invalid = false;
+
+        if (strpos($message, 'No such token') !== false)
+            $invalid = true;
+        elseif (strpos($message, 'The zip code you supplied failed validation') !== false)
+            $invalid = true;
+
+        return $invalid;
     }
 
     private function isInvalidCustomer (\Exception $exception)

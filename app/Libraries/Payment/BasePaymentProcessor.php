@@ -52,14 +52,14 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
                                     String $reason, String $rawData,
                                     int $originalTransactionId = -1) : Transaction
     {
+        $actualDue = BillingUtils::getInvoiceDueAmount($invoice);
+        if ($amount > $actualDue)
+            Log::warning("Overpayment detected on invoice #" . $invoice->id . ", paid: $amount, actual due: $actualDue");
+
         $transaction = BillingUtils::addTransaction($processor, $invoice, $amount, $fee, $transactionId, $transactionType, $reason, $rawData, $originalTransactionId);
 
         $invoice->status = InvoiceStatus::PROCESSING;
         $invoice->saveOrFail();
-
-        $actualDue = BillingUtils::getInvoiceDueAmount($invoice);
-        if ($amount > $actualDue)
-            Log::warning("Overpayment detected on invoice #" . $invoice->id . ", paid: $amount, actual due: $actualDue");
 
         event(new BillingEvent(Events::BILLING_TRANSACTION_ADDED, $transaction));
         return $transaction;

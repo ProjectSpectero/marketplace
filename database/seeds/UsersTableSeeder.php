@@ -96,12 +96,12 @@ class UsersTableSeeder extends Seeder
                                         'node_key' => \App\Libraries\Utility::getRandomString(2)
                                     ]);
 
-        $this->addMeta($blank);
+        $this->addMeta($blank, true);
         PermissionManager::assign($blank, UserRoles::USER);
 
     }
 
-        private function addMeta(\App\User $user)
+        private function addMeta(\App\User $user, bool $isBlank = false)
         {
             $stripeTokens = [
                 'tok_visa',
@@ -117,15 +117,19 @@ class UsersTableSeeder extends Seeder
 
             try
             {
-                UserMeta::addOrUpdateMeta($user,UserMetaKeys::AddressLineOne, "300 Delaware Ave.");
-                UserMeta::addOrUpdateMeta($user,UserMetaKeys::Organization, 'Spectero');
-                UserMeta::addOrUpdateMeta($user, UserMetaKeys::TaxIdentification, 'FRC-3-612A1521');
-                UserMeta::addOrUpdateMeta($user, UserMetaKeys::PreferredCurrency, 'USD');
-                UserMeta::addOrUpdateMeta($user, UserMetaKeys::City, 'Wilmington');
-                UserMeta::addOrUpdateMeta($user, UserMetaKeys::State, 'Delaware');
-                UserMeta::addOrUpdateMeta($user, UserMetaKeys::Country, 'US');
-                UserMeta::addOrUpdateMeta($user, UserMetaKeys::PostCode, 19801);
-                UserMeta::addOrUpdateMeta($user, UserMetaKeys::StripeCardToken, array_random($stripeTokens));
+                if (! $isBlank)
+                {
+                    UserMeta::addOrUpdateMeta($user,UserMetaKeys::AddressLineOne, "300 Delaware Ave.");
+                    UserMeta::addOrUpdateMeta($user,UserMetaKeys::Organization, 'Spectero');
+                    UserMeta::addOrUpdateMeta($user, UserMetaKeys::TaxIdentification, 'FRC-3-612A1521');
+                    UserMeta::addOrUpdateMeta($user, UserMetaKeys::PreferredCurrency, 'USD');
+                    UserMeta::addOrUpdateMeta($user, UserMetaKeys::City, 'Wilmington');
+                    UserMeta::addOrUpdateMeta($user, UserMetaKeys::State, 'Delaware');
+                    UserMeta::addOrUpdateMeta($user, UserMetaKeys::Country, 'US');
+                    UserMeta::addOrUpdateMeta($user, UserMetaKeys::PostCode, 19801);
+                    UserMeta::addOrUpdateMeta($user, UserMetaKeys::StripeCardToken, array_random($stripeTokens));
+                }
+
                 // How many logins have we seen?
                 UserMeta::addOrUpdateMeta($user, UserMetaKeys::LoginCount, 0);
                 UserMeta::addOrUpdateMeta($user, UserMetaKeys::ShowSplashScreen, true);

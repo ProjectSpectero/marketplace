@@ -4,7 +4,7 @@
     <h2>New Invoice Generated</h2>
 
     <p>Hi {{ $invoice->user->name }},</p>
-    <p>This email is to let you know that a new Spectero invoice (<b>#{{ $invoice->id }}</b>) has been generated {{ $reason }}. This invoice is due on <b>{{ $invoice->due_date }}</b>. </p>
+    <p>This email is to let you know that a new Spectero invoice (<b>#{{ $invoice->id }}</b>) has been generated {{ $reason }}. This invoice is due on <b>{{ $invoice->due_date->format(\App\Constants\DateFormat::EMAIL) }}</b>. </p>
 
     <p>To ensure smooth operation your service(s), please make sure to submit payment in time.</p>
 

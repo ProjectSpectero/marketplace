@@ -375,7 +375,8 @@ class OrderController extends CRUDController
 
         // Why this useless call when we don't care about the billing details? Because this checks for billing profile completeness.
         // Will send people a nice 403 if they try to submit orders without a complete billing profile.
-        BillingUtils::compileDetails($request->user());
+        // MAR-194: pre-order billing-profile-completeness check is now disabled. This check is now enforced on payment instead.
+        // BillingUtils::compileDetails($request->user());
 
         $rules = [
             'items' => 'array|min:1',

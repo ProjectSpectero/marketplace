@@ -17,7 +17,7 @@ class BaseModel extends Model
         return static::where('user_id', $id);
     }
 
-    public static function findOrWarn(int $id, array $payload = [])
+    public static function findOrLogAndFail(int $id, array $payload = [])
     {
         try
         {

@@ -78,6 +78,7 @@ $app->configure('services');
 $app->configure('mail');
 $app->configure('plans');
 $app->configure('pools');
+$app->configure('logging');
 
 $app->withFacades();
 

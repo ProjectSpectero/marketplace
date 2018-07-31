@@ -134,10 +134,10 @@ class CryptoProcessor extends BasePaymentProcessor
         $event = $data['event'];
 
         /** @var Invoice $invoice */
-        $invoice = Invoice::findOrWarn($event['data']['metadata']['invoice']['id'], $data);
+        $invoice = Invoice::findOrLogAndFail($event['data']['metadata']['invoice']['id'], $data);
 
         /** @var User $user */
-        $user = User::findOrWarn($event['data']['metadata']['user']['id'], $data);
+        $user = User::findOrLogAndFail($event['data']['metadata']['user']['id'], $data);
 
         $ret = null;
 

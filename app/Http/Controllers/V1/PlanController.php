@@ -46,7 +46,7 @@ class PlanController extends V1Controller
             $resolved = ResourceUtils::resolve($resource['type'], $resource['id']);
 
             $returnedPlan['resources'][] = [
-                'id' => $resource['id'],
+                'id' => (int) $resource['id'],
                 'type' => $resource['type'],
                 'price' => (float) $resolved->price,
                 'currency' => Currency::USD // TODO: Make this multi currency aware, someday.

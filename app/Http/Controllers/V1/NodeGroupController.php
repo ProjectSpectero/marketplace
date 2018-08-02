@@ -181,13 +181,15 @@ class NodeGroupController extends CRUDController
 
     public function assign(Request $request)
     {
-        $groupId = $request->get('group_id');
-        $nodeGroup = NodeGroup::findOrFail($groupId);
+        $rules = [
+            'node_id' => 'required|integer',
+            'group_id' => 'required|integer'
+        ];
+
+        $this->validate($request, $rules);
 
         $node = Node::findOrFail($request->get('node_id'));
-
         $this->authorizeResource($node, 'node.assign');
-        $this->authorizeResource($nodeGroup, 'node_group.assign');
 
         /*
          * Commented out as per MAR-163, we'll revisit this someday.
@@ -205,14 +207,20 @@ class NodeGroupController extends CRUDController
             throw new UserFriendlyException(Errors::HAS_ACTIVE_ORDERS, ResponseType::FORBIDDEN);
         }
 
-        $rules = [
-            'node_id' => 'required|integer',
-            'group_id' => 'required|integer'
-        ];
+        $groupId = $request->get('group_id');
 
-        $this->validate($request, $rules);
+        // This enforces a simple existence check. 0 implies a reset to the "UNCATEGORIZED" pseudo-group.
+        if ($groupId != 0)
+        {
+            $nodeGroup = NodeGroup::findOrFail($groupId);
 
-        $node->group_id = $groupId;
+            // This checks if this user has the assign permission for this group.
+            $this->authorizeResource($nodeGroup, 'node_group.assign');
+
+            $node->group_id = $groupId;
+        }
+        else
+            $node->group_id = null;
 
         $node->saveOrFail();
 

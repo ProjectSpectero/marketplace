@@ -38,11 +38,12 @@ class NodesTableSeeder extends Seeder
         $proGroup = \App\NodeGroup::find(25);
         $proGroup->plan = \App\Constants\SubscriptionPlan::PRO;
         $proGroup->market_model = \App\Constants\NodeMarketModel::LISTED_SHARED;
+        $proGroup->price = 9.99;
         $proGroup->saveOrFail();
 
         foreach (\App\Node::all()->random(20) as $node)
         {
-            $node->plan = \App\Constants\SubscriptionPlan::PRO;
+            $node->group_id = $proGroup->id;
             $node->save();
         }
 

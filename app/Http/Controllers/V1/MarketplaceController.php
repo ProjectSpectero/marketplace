@@ -361,7 +361,7 @@ class MarketplaceController extends V1Controller
 
         $node->ip_addresses = $ipCollection;
 
-        $hiddenBase = [ 'ip', 'port', 'protocol', 'user_id', 'deleted_at', 'system_data' ];
+        $hiddenBase = [ 'ip', 'port', 'protocol', 'user_id', 'version', 'deleted_at', 'system_data' ];
 
         if ($groupExceptionOverride)
         {

@@ -10,7 +10,7 @@ class NodeGroup extends BaseModel
     use HasOrders;
 
     protected $with = [ 'nodes' ];
-    protected $hidden = [ 'user_id', 'updated_at' ];
+    protected $hidden = [ 'purchase_limit', 'status', 'user_id', 'updated_at' ];
 
     public $searchAble = [
         'friendly_name', 'status', 'model', 'price'

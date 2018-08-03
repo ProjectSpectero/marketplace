@@ -271,7 +271,7 @@ class OrderController extends CRUDController
                     /*
                      * Flow:
                      * Check if node is part of a group, deny if so.
-                     * Check if node has any active orders, and its market model is LISTED_DEDICATED
+                     * Check if node has any active orders, and its market model is LISTED_DEDICATED (enforced later)
                      * Check if node's model is UNLISTED, deny if yes
                      */
                     if ($resource->group != null)
@@ -288,11 +288,11 @@ class OrderController extends CRUDController
                     /*
                      * Flow:
                      * Check the model, if UNLISTED, deny
-                     * If LISTED_DEDICATED, check if at least one active order exists. Deny if it does
+                     * If LISTED_DEDICATED, check if at least one active order exists. Deny if it does (enforced later)
                      */
                     break;
                 default:
-                    // TODO: Add handling for ent order type here.
+                    // TODO: Add handling for ent order type here, eventually.
                     BillingUtils::cancelOrder($order);
                     throw new UserFriendlyException(Errors::RESOURCE_NOT_FOUND);
             }
@@ -301,7 +301,7 @@ class OrderController extends CRUDController
             {
                 case NodeMarketModel::UNLISTED:
                     BillingUtils::cancelOrder($order);
-                    throw new UserFriendlyException(Errors::RESOURCE_UNLISTED);
+                    throw new UserFriendlyException(Errors::RESOURCE_NOT_FOUND); // Prevent ID enumeration
 
                 case NodeMarketModel::LISTED_DEDICATED:
                     if ($resource->getOrders(OrderStatus::ACTIVE)->count() != 0)
@@ -309,6 +309,12 @@ class OrderController extends CRUDController
                         BillingUtils::cancelOrder($order);
                         throw new UserFriendlyException(Errors::RESOURCE_SOLD_OUT);
                     }
+            }
+
+            if ($resource->user_id == $order->user_id)
+            {
+                BillingUtils::cancelOrder($order);
+                throw new UserFriendlyException(Errors::OWN_RESOURCE);
             }
 
             // Single item price calculation

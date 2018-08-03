@@ -54,6 +54,7 @@ class Errors extends Holder
     const RESOURCE_UNLISTED = 'RESOURCE_UNLISTED';
     const RESOURCE_SOLD_OUT = 'RESOURCE_SOLD_OUT';
     const RESOURCE_STATUS_MISMATCH = 'RESOURCE_STATUS_MISMATCH';
+    const OWN_RESOURCE = 'OWN_RESOURCE';
 
     // Invoice+Billing related
 

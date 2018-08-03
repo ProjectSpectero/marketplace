@@ -14,12 +14,10 @@ use App\Libraries\PaginationManager;
 use App\Libraries\Utility;
 use App\Node;
 use App\NodeGroup;
-use App\NodeIPAddress;
-use function GuzzleHttp\default_ca_bundle;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 
 class MarketplaceController extends V1Controller
 {
@@ -85,21 +83,21 @@ class MarketplaceController extends V1Controller
         // Never pick up on unlisted nodes, and only return nodes that are verified/confirmed.
         // Don't return nodes that are a part of a group.
         $originalQuery->where('nodes.status', '=', NodeStatus::CONFIRMED);
-
-        $unallowedModels = array_keys(array_diff(NodeMarketModel::getConstants(), NodeMarketModel::getMarketable()));
-        foreach ($unallowedModels as $unallowedModel)
-        {
-            $originalQuery->where('nodes.market_model', '!=', $unallowedModel);
-        }
+        $originalQuery->whereIn('nodes.market_model', NodeMarketModel::getMarketable());
 
         $query = clone $originalQuery;
+
         $query->leftJoin('node_groups', 'nodes.group_id', '=', 'node_groups.id')
-            ->whereRaw('(node_groups.market_model != "UNLISTED" OR node_groups.market_model IS NULL)');
+            ->where(function($query)
+            {
+                $query->whereIn('node_groups.market_model', NodeMarketModel::getMarketable())
+                    ->orWhereNull('node_groups.market_model');
+            });
 
         $includeGrouped = $request->has('includeGrouped') ? true : false;
 
         if (! $includeGrouped)
-            $query->where('nodes.group_id', null);
+            $query->whereNull('nodes.group_id');
 
         $sortParams = null;
 
@@ -239,7 +237,8 @@ class MarketplaceController extends V1Controller
             }
         }
 
-        $query->groupBy([ 'nodes.id' ]);
+        // This prevents it from returning wrong grouped nodes.
+        $query->groupBy(DB::raw('IFNULL(`nodes`.`group_id`, `nodes`.`id`)'));
 
         if (is_array($sortParams))
         {
@@ -256,9 +255,10 @@ class MarketplaceController extends V1Controller
         else
             $query->orderBy('nodes.id');
 
-
         $query->select(Node::$publicFields)
             ->noEagerLoads();
+
+        //dd($query->toSql());
 
         $results = PaginationManager::internalPaginate($request, $query);
 
@@ -267,6 +267,7 @@ class MarketplaceController extends V1Controller
         if ($results->total() != 0)
         {
             // Means we actually found something, let's go validate them.
+
             foreach ($results->items() as $node)
             {
                 $groupId = $node->group_id;
@@ -291,8 +292,8 @@ class MarketplaceController extends V1Controller
                     if ($resource instanceof Builder)
                         continue;
 
-                    if ($resource->market_model == NodeMarketModel::LISTED_DEDICATED
-                    && $resource->getEngagements(OrderStatus::ACTIVE)->count() != 0)
+                    if ($resource->market_model == NodeMarketModel::LISTED_DEDICATED &&
+                        $resource->getEngagements(OrderStatus::ACTIVE)->count() != 0)
                         continue;
                 }
                 $data[] = $resource;

@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Constants\Errors;
 use App\Constants\ResponseType;
-use App\Constants\UserStatus;
+use App\Errors\UserFriendlyException;
 use App\Libraries\Utility;
 use Closure;
 use Illuminate\Contracts\Auth\Factory as Auth;
@@ -40,7 +40,7 @@ class Authenticate
     public function handle($request, Closure $next, $guard = null)
     {
         if ($this->auth->guard($guard)->guest())
-            return Utility::generateResponse(null, [ Errors::UNAUTHORIZED ], null, 'v1', ResponseType::NOT_AUTHORIZED);
+            throw new UserFriendlyException(Errors::UNAUTHORIZED, ResponseType::NOT_AUTHORIZED);
 
         $error = Utility::resolveStatusError($request->user());
         if (! empty($error))

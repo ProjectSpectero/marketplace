@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\Errors\FatalException;
 use App\Libraries\Utility;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -104,8 +105,12 @@ trait MetaTrait
 
         $storedMeta = static::loadMeta($model, $key, $throwsException);
 
-        \Cache::put($cacheKey, $storedMeta, Carbon::now()->addSeconds(env('META_CACHE_SECONDS', 15)));
+        if ($storedMeta != null || ! $storedMeta instanceof Builder)
+        {
+            \Cache::put($cacheKey, $storedMeta, Carbon::now()->addSeconds(env('META_CACHE_SECONDS', 15)));
+            return $storedMeta;
+        }
 
-        return $storedMeta;
+        return null;
     }
 }

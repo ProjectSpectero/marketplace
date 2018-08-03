@@ -105,7 +105,7 @@ trait MetaTrait
 
         $storedMeta = static::loadMeta($model, $key, $throwsException);
 
-        if ($storedMeta != null || ! $storedMeta instanceof Builder)
+        if ($storedMeta != null && ! $storedMeta instanceof Builder)
         {
             \Cache::put($cacheKey, $storedMeta, Carbon::now()->addSeconds(env('META_CACHE_SECONDS', 15)));
             return $storedMeta;

@@ -36,7 +36,7 @@ class NodesTableSeeder extends Seeder
         }
 
         $proGroup = \App\NodeGroup::find(25);
-        $proGroup->name = 'Spectero Pro';
+        $proGroup->friendly_name = 'Spectero Pro';
         $proGroup->plan = \App\Constants\SubscriptionPlan::PRO;
         $proGroup->market_model = \App\Constants\NodeMarketModel::LISTED_SHARED;
         $proGroup->price = 9.99;

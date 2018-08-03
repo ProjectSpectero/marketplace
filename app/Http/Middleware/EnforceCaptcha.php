@@ -17,24 +17,28 @@ class EnforceCaptcha
 
     public function __construct()
     {
-        $this->recaptcha = new ReCaptcha(env('G_RECAPTCHA_SECRET_KEY', ""));
+        if (env('CAPTCHA_ENABLED', false))
+            $this->recaptcha = new ReCaptcha(env('CAPTCHA_SECRET_KEY', ""));
     }
 
     public function handle(Request $request, Closure $next)
     {
-        // Get the context values required
-        $providedChallengeResponse = $request->header('X-CAPTCHA-RESPONSE', "");
-        $requesterIp = $request->ip();
+        if (env('CAPTCHA_ENABLED', false))
+        {
+            // Get the context values required
+            $providedChallengeResponse = $request->header('X-CAPTCHA-RESPONSE', "");
+            $requesterIp = $request->ip();
 
-        if (empty($providedChallengeResponse))
-            throw new UserFriendlyException(Errors::CAPTCHA_MISSING);
+            if (empty($providedChallengeResponse))
+                throw new UserFriendlyException(Errors::CAPTCHA_MISSING);
 
-        $response = $this->recaptcha->verify($providedChallengeResponse, $requesterIp);
+            $response = $this->recaptcha->verify($providedChallengeResponse, $requesterIp);
 
-        if (! $response->isSuccess())
-            throw new UserFriendlyException(Errors::CAPTCHA_INVALID, ResponseType::FORBIDDEN);
+            if (! $response->isSuccess())
+                throw new UserFriendlyException(Errors::CAPTCHA_INVALID, ResponseType::FORBIDDEN);
+        }
 
-        // Forward the request on, since the guy either didn't have TFA turned on, or passed it
+        // Forward the request on, captcha was passed.
         return $next($request);
     }
 }

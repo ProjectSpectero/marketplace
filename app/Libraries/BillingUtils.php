@@ -291,49 +291,18 @@ class BillingUtils
         if (Cache::has($cacheKey))
             return Cache::get($cacheKey);
 
-
         /** @var array<Order> $orders */
         $orders = Order::findForUser($user->id)
             ->where('status', OrderStatus::ACTIVE)
             ->get();
 
         $plans = [];
-        $definedPlans = config('plans', []);
 
         /** @var Order $order */
         foreach ($orders as $order)
         {
-            foreach ($order->lineItems as $lineItem)
-            {
-                // Perks are only bestowed based on current, active subscriptions.
-                if ($lineItem->status !== OrderStatus::ACTIVE)
-                    continue;
-
-                switch ($lineItem->type)
-                {
-                    case OrderResourceType::ENTERPRISE:
-                        if (! in_array(strtolower(OrderResourceType::ENTERPRISE), $plans))
-                            $plans[] = strtolower(OrderResourceType::ENTERPRISE);
-
-                        break;
-
-                    case OrderResourceType::NODE:
-                        $node = Node::find($lineItem->resource);
-                        if ($node != null && $node->plan != null
-                            && isset($definedPlans[$node->plan]) && ! in_array($node->plan, $plans))
-                            $plans[] = $node->plan;
-
-                        break;
-
-                    case OrderResourceType::NODE_GROUP:
-                        $group = NodeGroup::find($lineItem->resource);
-                        if ($group != null && $group->plan != null
-                            && isset($definedPlans[$group->plan])  && ! in_array($group->plan, $plans))
-                            $plans[] = $group->plan;
-
-                        break;
-                }
-            }
+            $currentPlans = $order->plans();
+            $plans = array_unique(array_merge($plans, $currentPlans));
         }
 
         Cache::put($cacheKey, $plans, env('USER_PLANS_CACHE_MINUTES', 1));

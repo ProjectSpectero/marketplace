@@ -49,7 +49,7 @@ class Order extends BaseModel
         return $this->isOfType(OrderResourceType::ENTERPRISE);
     }
 
-    public function associatedPlans () : array
+    public function plans () : array
     {
         $plans = [];
         foreach ($this->lineItems as $lineItem)
@@ -59,16 +59,22 @@ class Order extends BaseModel
             {
                 case OrderResourceType::NODE:
                     $resource = Node::find($lineItem->resource);
+
                     break;
 
                 case OrderResourceType::NODE_GROUP:
                     $resource = NodeGroup::find($lineItem->resource);
+
+                    break;
+
+                case OrderResourceType::ENTERPRISE:
+                    if (! in_array(strtolower(OrderResourceType::ENTERPRISE), $plans))
+                        $plans[] = strtolower(OrderResourceType::ENTERPRISE);
+
                     break;
             }
 
-            if ($resource != null &&
-                ! empty($resource->plan) &&
-                isset(config('plans')[$resource->plan])
+            if ($resource != null && isset(config('plans')[$resource->plan])
                 && ! in_array($resource->plan, $plans))
             {
                 $plans[] = $resource->plan;
@@ -82,7 +88,7 @@ class Order extends BaseModel
     {
         $plans = config('plans');
 
-        foreach ($this->associatedPlans() as $plan)
+        foreach ($this->plans() as $plan)
         {
             // Yep, we redefined the variable (since the original is useless).
             $plan = $plans[$plan] ?? null;

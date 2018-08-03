@@ -68,7 +68,10 @@ class OrderController extends CRUDController
                 return $this->respond(ProvisionedResourceResolver::resolve($order));
 
             default:
-                return $this->respond($order->toArray());
+                $data = $order->toArray();
+                $data['easy_enabled'] = $order->canBypassBillingProfileCheck();
+
+                return $this->respond($data);
         }
     }
 

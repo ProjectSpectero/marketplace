@@ -24,9 +24,9 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->post('auth/refresh', 'AuthController@refreshToken');
         $api->post('auth/multifactor', 'TwoFactorController@verifyToken');
 
-        // User registration (normal, and easy) routes
-        $api->post('user/easy', 'UserController@easyStore');
-        $api->post('user', 'UserController@store');
+        // User registration (normal, and easy) routes. Requires ReCaptcha verification.
+        $api->post('user/easy',  [ 'middleware' => 'captcha', 'uses' => 'UserController@easyStore' ]);
+        $api->post('user',  [ 'middleware' => 'captcha', 'uses' => 'UserController@store' ]);
 
         // Email verification link(s), these get posted to the user via email.
         $api->get('user/verify/{email}/{token}', 'UserController@verify');

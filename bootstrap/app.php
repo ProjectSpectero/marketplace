@@ -103,6 +103,7 @@ $app->middleware([
  $app->routeMiddleware([
      'auth' => App\Http\Middleware\Authenticate::class,
      'enforce-tfa' => App\Http\Middleware\EnforceTwoFactorVerification::class,
+     'captcha' => App\Http\Middleware\EnforceCaptcha::class
  ]);
 
 /*

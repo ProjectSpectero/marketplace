@@ -129,6 +129,11 @@ class Errors extends Holder
 
     const CONTACT_ACCOUNT_REPRESENTATIVE = 'CONTACT_ACCOUNT_REPRESENTATIVE';
 
+    // Crypto gateway related
     const HMAC_HEADER_MISSING = 'HMAC_HEADER_MISSING';
     const HMAC_MISMATCH = 'HMAC_MISMATCH';
+
+    // Captcha
+    const CAPTCHA_MISSING = 'CAPTCHA_MISSING';
+    const CAPTCHA_INVALID = 'CAPTCHA_INVALID';
 }

@@ -60,7 +60,7 @@ class BillingSeeder extends Seeder
                     $resourceId = mt_rand(1, 50);
                 elseif ($determinedType == \App\Constants\OrderResourceType::ENTERPRISE)
                 {
-                    $resourceId = mt_rand(1, 100);
+                    $resourceId = mt_rand(1, 1000);
                     // The loop needs to stop after this iteration, ent orders are always solo.
                     $items = 0;
                     // To enforce ^, let's get rid of all its existing lineitems.
@@ -69,7 +69,7 @@ class BillingSeeder extends Seeder
                     $totalAmount = $iterationAmount;
                 }
                 else
-                    $resourceId = mt_rand(1, 100);
+                    $resourceId = mt_rand(1, 1000);
 
                 $res = null;
 

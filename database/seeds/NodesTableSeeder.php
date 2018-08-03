@@ -11,9 +11,12 @@ class NodesTableSeeder extends Seeder
      */
     public function run()
     {
-        factory(App\Node::class, 100)->create();
-        factory(App\NodeGroup::class, 50)->create();
-        factory(App\NodeIPAddress::class, 1000)->create();
+        // Let's add the only real nodes
+        $this->seedRealNodes();
+
+        factory(App\Node::class, 2000)->create();
+        factory(App\NodeGroup::class, 100)->create();
+        factory(App\NodeIPAddress::class, 8000)->create();
 
         $systemTemplates = [
             '{"CPU":{"Model":"Intel(R) Core(TM) i7-3770K CPU @ 3.50GHz","Cores":4,"Threads":8,"Cache Size":1024},"Memory":{"Physical":{"Used":16171319296,"Free":9536708608,"Total":25708027904},"Virtual":{"Used":27597258752,"Free":6432268288,"Total":34029527040}},"Environment":{"Hostname":"BLEU","OS Version":{"platform":2,"servicePack":"","version":{"major":6,"minor":2,"build":9200,"revision":0,"majorRevision":0,"minorRevision":0},"versionString":"Microsoft Windows NT 6.2.9200.0"},"64-Bits":true}}',
@@ -60,9 +63,6 @@ class NodesTableSeeder extends Seeder
                 }
             }
         }
-
-        // Let's add the only real nodes
-        $this->seedRealNodes();
     }
 
     private function seedRealNodes ()

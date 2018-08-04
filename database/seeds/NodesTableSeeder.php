@@ -27,6 +27,9 @@ class NodesTableSeeder extends Seeder
 
         foreach (\App\Node::all() as $node)
         {
+            if ($node->id ==  101)
+                continue;
+
             $this->createServices($node);
             $node->system_data = array_random($system_data);
             $node->saveOrFail();

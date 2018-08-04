@@ -8,6 +8,7 @@ use App\Constants\Messages;
 use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
 use App\Constants\UserStatus;
+use App\Errors\UserFriendlyException;
 use App\Events\UserEvent;
 use App\Http\Controllers\V1\V1Controller;
 use App\Libraries\Utility;
@@ -26,7 +27,7 @@ use Illuminate\Support\Facades\Hash;
 class PasswordResetController extends V1Controller
 {
     // This is the one that looks up an email address and emails them a reset link
-    public function generateToken (Request $request) : JsonResponse
+    public function generate (Request $request) : JsonResponse
     {
         // Remember to prevent user enumeration. At no point should we confirm or deny a specific email/user exists
         // Just say that IF a user exists with the email address you've shared, they'll receive an email.
@@ -67,22 +68,18 @@ class PasswordResetController extends V1Controller
         return $this->respond(null, [], Messages::PASSWORD_RESET_TOKEN_ISSUED);
     }
 
-    /**
-     * @param Request $request
-     * @param String $token
-     * @return JsonResponse
-     */
-    public function callback (Request $request, String $token) : JsonResponse
+    public function show (Request $request, string $token) : JsonResponse
     {
-        try
-        {
-            $resetToken = PasswordResetToken::where('token', '=', $token)->firstOrFail();
-        }
-        catch (ModelNotFoundException $e)
-        {
-            return $this->respond(null, [ Errors::RESOURCE_NOT_FOUND ], ResponseType::NOT_FOUND);
-        }
+        $resetToken = PasswordResetToken::where('token', '=', $token)->firstOrFail();
 
+        if ($request->ip() !== $resetToken->ip)
+            throw new UserFriendlyException(Errors::IP_ADDRESS_MISMATCH, ResponseType::FORBIDDEN);
+
+        return $this->respond($resetToken->toArray());
+    }
+
+    public function reset(Request $request, string $token)
+    {
         $rules = [
             'password' => 'sometimes|min:5|max:72'
         ];
@@ -90,12 +87,15 @@ class PasswordResetController extends V1Controller
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
+        $resetToken = PasswordResetToken::where('token', '=', $token)->firstOrFail();
+
+        if ($request->ip() !== $resetToken->ip)
+            throw new UserFriendlyException(Errors::IP_ADDRESS_MISMATCH, ResponseType::FORBIDDEN);
+
         $user = $resetToken->user;
         $newPassword = $input['password'] ?? Utility::getRandomString();
         $user->password = Hash::make($newPassword);
         $user->save();
-
-        Mail::to($user->email)->queue(new PasswordChanged($newPassword, $resetToken->ip));
 
         if ($user->status == UserStatus::EMAIL_VERIFICATION_NEEDED)
         {
@@ -109,9 +109,13 @@ class PasswordResetController extends V1Controller
             }
         }
 
+        Mail::to($user->email)->queue(new PasswordChanged($newPassword, $resetToken->ip));
         event(new UserEvent(Events::USER_PASSWORD_UPDATED, $user));
+
+        $resetToken->delete();
+
         return $this->respond([
-                'new_password' => $newPassword
-            ], [], Messages::PASSWORD_RESET_SUCCESS);
+                                  'new_password' => $newPassword
+                              ], [], Messages::PASSWORD_RESET_SUCCESS);
     }
 }

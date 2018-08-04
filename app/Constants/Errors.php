@@ -137,4 +137,9 @@ class Errors extends Holder
     // Captcha
     const CAPTCHA_MISSING = 'CAPTCHA_MISSING';
     const CAPTCHA_INVALID = 'CAPTCHA_INVALID';
+
+    // Password reset
+    const IP_ADDRESS_MISMATCH = 'IP_ADDRESS_MISMATCH';
+
+
 }

@@ -35,8 +35,9 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->get('payment/{processor}/callback', 'PaymentController@callback');
         $api->post('payment/{processor}/callback', 'PaymentController@callback');
 
-        $api->post('password-reset', 'PasswordResetController@generateToken');
-        $api->get('password-reset/{token}', 'PasswordResetController@callback');
+        $api->post('password-reset', 'PasswordResetController@generate');
+        $api->get('password-reset/{token}', 'PasswordResetController@show');
+        $api->post('password-reset/{token}', 'PasswordResetController@reset');
 
         $api->post('unauth/node', 'UnauthenticatedNodeController@create');
         $api->post('unauth/node/{id}/{action}', 'UnauthenticatedNodeController@handleConfigPush');

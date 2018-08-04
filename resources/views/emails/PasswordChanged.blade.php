@@ -6,7 +6,7 @@
 
     <p><b>If you didn't make this request then please contact our support team immediately.</b></p>
 
-    <p>Otherwise, you may now login to our cloud panel using your new password by clicking the link below:</p>
+    <p>Otherwise, you may now login to our cloud panel using your new password by clicking the link below.</p>
 
     <a class="btn" target="_blank" href="{{ $loginUrl }}">Login Now</a>
     

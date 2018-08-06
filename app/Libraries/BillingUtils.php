@@ -206,6 +206,8 @@ class BillingUtils
 
         foreach ($order->lineItems as $item)
         {
+            $isGroup = false;
+
             switch ($item->type)
             {
                 case OrderResourceType::NODE:
@@ -213,6 +215,7 @@ class BillingUtils
                     break;
                 case OrderResourceType::NODE_GROUP:
                     $resource = NodeGroup::find($item->resource);
+                    $isGroup = true;
                     break;
                 // TODO: Add proper handling for enterprise, and at that point get a proper verification routine going.
                 case OrderResourceType::ENTERPRISE:
@@ -232,6 +235,17 @@ class BillingUtils
                 ];
 
                 continue;
+            }
+
+            if ($isGroup && ! $resource->hasMarketEligibleNodes())
+            {
+                if ($throwsExceptions)
+                    throw new UserFriendlyException(Errors::RESOURCE_EMPTY, ResponseType::FORBIDDEN);
+
+                $errors[] = [
+                    'id' => $item->id,
+                    'reason' => Errors::RESOURCE_EMPTY
+                ];
             }
 
             switch ($resource->market_model)

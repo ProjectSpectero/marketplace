@@ -20,6 +20,7 @@ use App\Invoice;
 use App\Libraries\BillingUtils;
 use App\Libraries\Payment\AccountCreditProcessor;
 use App\Libraries\Payment\BasePaymentProcessor;
+use App\Libraries\Payment\CryptoProcessor;
 use App\Libraries\Payment\IPaymentProcessor;
 use App\Libraries\Payment\ManualPaymentProcessor;
 use App\Libraries\Payment\PaypalProcessor;
@@ -30,6 +31,7 @@ use App\Order;
 use App\Transaction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends V1Controller
 {
@@ -41,6 +43,7 @@ class PaymentController extends V1Controller
 
     public function process (Request $request, String $processor, int $invoiceId) : JsonResponse
     {
+        /** @var Invoice $invoice */
         $invoice = Invoice::findOrFail($invoiceId);
         $this->authorizeResource($invoice, 'invoice.pay');
 
@@ -48,21 +51,32 @@ class PaymentController extends V1Controller
             throw new UserFriendlyException(Errors::INVOICE_STATUS_MISMATCH);
 
         // Credit-add invoices are ONLY payable with Paypal, we will NOT charge cards to add-credit (lowers liability).
-        if ($invoice->type == InvoiceType::CREDIT
-            && ! in_array(strtoupper($processor), PaymentProcessor::getCreditAddAllowedVia()))
-                throw new UserFriendlyException(Errors::GATEWAY_DISABLED_FOR_PURPOSE, ResponseType::FORBIDDEN);
+        if (! in_array($processor, BillingUtils::resolveUsableGateways($invoice, $request->user())))
+            throw new UserFriendlyException(Errors::GATEWAY_DISABLED_FOR_PURPOSE, ResponseType::FORBIDDEN);
 
-        // The invoice user needs to have a complete billing profile, this call enforces that.
-        BillingUtils::compileDetails($invoice->user);
+        /** @var Order $order */
+        $order = $invoice->order;
+
+        // Billing profile completeness check is bypassed for plans at this moment.
+        // We need to fix this before we start associating plans with resources not belonging to us.
+        // TODO: Come up with a more robust way to handle billing completeness check bypass for orders with associated plan(s).
+        if (! $order->canBypassBillingProfileCheck())
+        {
+            // The invoice user needs to have a complete billing profile, this call enforces that.
+            BillingUtils::compileDetails($invoice->user);
+        }
+
 
         if ($invoice->type == InvoiceType::STANDARD)
         {
             // Before proceeding further, we need to check that if the invoice has an order associated with it, and all line items are currently available for purchase.
-            $order = $invoice->order;
 
             // This is not supposed to happen, if it does we gotta catch and bail appropriately.
             if ($order == null)
+            {
+                Log::error("Processing payment for invoice #$invoice->id failed, associated order could NOT be found!");
                 throw new UserFriendlyException(Errors::PAYMENT_FAILED);
+            }
 
             if (! in_array($order->status, OrderStatus::getPayable()))
                 throw new UserFriendlyException(Errors::ORDER_STATUS_MISMATCH);
@@ -84,7 +98,8 @@ class PaymentController extends V1Controller
      * @param Request $request
      * @param String $processor
      * @return JsonResponse
-     * @throws FatalException
+     * @throws UserFriendlyException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function callback (Request $request, String $processor)
     {
@@ -101,7 +116,7 @@ class PaymentController extends V1Controller
      * @param int $transactionId (the transaction ID, this is NOT the provider reference)
      * @return JsonResponse
      * @throws UserFriendlyException
-     * @throws FatalException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function refund (Request $request, int $transactionId) : JsonResponse
     {
@@ -178,11 +193,36 @@ class PaymentController extends V1Controller
                 $init = new ManualPaymentProcessor($request);
                 break;
 
+            case strtolower(PaymentProcessor::CRYPTO):
+                $init = new CryptoProcessor($request);
+                break;
+
             default:
                 throw new UserFriendlyException(Errors::UNKNOWN_PAYMENT_PROCESSOR);
         }
 
         $init->setCaller($this);
         return $init;
+    }
+
+    public function profileCheck (Request $request) : JsonResponse
+    {
+        $complete = true;
+        $data = [];
+
+        try
+        {
+            $data = BillingUtils::compileDetails($request->user());
+        }
+        catch (UserFriendlyException $silenced)
+        {
+            $complete = false;
+        }
+
+
+        return $this->respond([
+            'complete' => $complete,
+            'data' => $data
+           ]);
     }
 }

@@ -11,9 +11,12 @@ class NodesTableSeeder extends Seeder
      */
     public function run()
     {
-        factory(App\Node::class, 100)->create();
-        factory(App\NodeGroup::class, 50)->create();
-        factory(App\NodeIPAddress::class, 600)->create();
+        // Let's add the only real nodes
+        $this->seedRealNodes();
+
+        factory(App\Node::class, 2000)->create();
+        factory(App\NodeGroup::class, 100)->create();
+        factory(App\NodeIPAddress::class, 8000)->create();
 
         $systemTemplates = [
             '{"CPU":{"Model":"Intel(R) Core(TM) i7-3770K CPU @ 3.50GHz","Cores":4,"Threads":8,"Cache Size":1024},"Memory":{"Physical":{"Used":16171319296,"Free":9536708608,"Total":25708027904},"Virtual":{"Used":27597258752,"Free":6432268288,"Total":34029527040}},"Environment":{"Hostname":"BLEU","OS Version":{"platform":2,"servicePack":"","version":{"major":6,"minor":2,"build":9200,"revision":0,"majorRevision":0,"minorRevision":0},"versionString":"Microsoft Windows NT 6.2.9200.0"},"64-Bits":true}}',
@@ -24,6 +27,9 @@ class NodesTableSeeder extends Seeder
 
         foreach (\App\Node::all() as $node)
         {
+            if ($node->id ==  101)
+                continue;
+
             $this->createServices($node);
             $node->system_data = array_random($system_data);
             $node->saveOrFail();
@@ -35,10 +41,18 @@ class NodesTableSeeder extends Seeder
             $node->save();
         }
 
-        foreach (\App\NodeGroup::all()->random(25) as $group)
+        $proGroup = \App\NodeGroup::find(env('PRO_PLAN_GROUP_ID'));
+        $proGroup->friendly_name = 'Spectero Pro';
+        $proGroup->plan = \App\Constants\SubscriptionPlan::PRO;
+        $proGroup->market_model = \App\Constants\NodeMarketModel::LISTED_SHARED;
+        $proGroup->price = 9.99;
+        $proGroup->saveOrFail();
+
+        foreach (\App\Node::all()->random(45) as $node)
         {
-            $group->plan = \App\Constants\SubscriptionPlan::PRO; // TODO: Clean this up in production.
-            $group->save();
+            $node->market_model = \App\Constants\NodeMarketModel::LISTED_SHARED;
+            $node->group_id = $proGroup->id;
+            $node->save();
         }
 
         foreach (\App\NodeGroup::all() as $group)
@@ -52,11 +66,6 @@ class NodesTableSeeder extends Seeder
                 }
             }
         }
-
-        // Let's add the only real nodes
-        $this->seedRealNodes();
-
-
     }
 
     private function seedRealNodes ()
@@ -85,7 +94,7 @@ class NodesTableSeeder extends Seeder
         $realNode->asn = 133535;
         $realNode->city = 'Seattle';
         $realNode->cc = 'US';
-        $realNode->version = 'v0.1-alpha';
+        $realNode->version = \App\Constants\DaemonVersion::ZERO_ONE_ALPHA;
         $realNode->system_data = json_decode('{"CPU":{"Model":"Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":40,"Cache Size":"8192 KB"},"Memory":{"Physical":{"Used":222289920,"Free":851451904,"Total":1073741824}},"Environment":{"Hostname":"daemon-test-0","OS Version":{"Platform":4,"ServicePack":"","Version":{"Major":2,"Minor":6,"Build":32,"Revision":42,"MajorRevision":0,"MinorRevision":42},"VersionString":"Unix 2.6.32.42"},"64-Bits":true}}', true);
         $realNode->app_settings = json_decode('{
 			"BlockedRedirectUri": "https://blocked.spectero.com/?reason={0}&uri={1}&data={2}",
@@ -207,6 +216,10 @@ class NodesTableSeeder extends Seeder
     {
         foreach (\App\Constants\ServiceType::getConstants() as $type)
         {
+            // Let's not always create 4 services.
+            if (mt_rand(1, 10) % 2 == 0)
+                break;
+
             $service = new \App\Service();
             $service->node_id = $node->id;
             $service->type = $type;

@@ -78,6 +78,7 @@ $app->configure('services');
 $app->configure('mail');
 $app->configure('plans');
 $app->configure('pools');
+$app->configure('logging');
 
 $app->withFacades();
 
@@ -102,6 +103,7 @@ $app->middleware([
  $app->routeMiddleware([
      'auth' => App\Http\Middleware\Authenticate::class,
      'enforce-tfa' => App\Http\Middleware\EnforceTwoFactorVerification::class,
+     'captcha' => App\Http\Middleware\EnforceCaptcha::class
  ]);
 
 /*

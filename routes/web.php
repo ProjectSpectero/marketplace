@@ -23,11 +23,21 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->post('auth', 'AuthController@auth');
         $api->post('auth/refresh', 'AuthController@refreshToken');
         $api->post('auth/multifactor', 'TwoFactorController@verifyToken');
-        $api->post('user', 'UserController@store');
+
+        // User registration (normal, and easy) routes. Requires ReCaptcha verification.
+        $api->post('user/easy',  [ 'middleware' => 'captcha', 'uses' => 'UserController@easyStore' ]);
+        $api->post('user',  [ 'middleware' => 'captcha', 'uses' => 'UserController@store' ]);
+
+        // Email verification link(s), these get posted to the user via email.
         $api->get('user/verify/{email}/{token}', 'UserController@verify');
+
+        // Paypal IPN like provider callbacks, some providers do get, some do POST.
         $api->get('payment/{processor}/callback', 'PaymentController@callback');
-        $api->post('password-reset', 'PasswordResetController@generateToken');
-        $api->get('password-reset/{token}', 'PasswordResetController@callback');
+        $api->post('payment/{processor}/callback', 'PaymentController@callback');
+
+        $api->post('password-reset', 'PasswordResetController@generate');
+        $api->get('password-reset/{token}', 'PasswordResetController@show');
+        $api->post('password-reset/{token}', 'PasswordResetController@reset');
 
         $api->post('unauth/node', 'UnauthenticatedNodeController@create');
         $api->post('unauth/node/{id}/{action}', 'UnauthenticatedNodeController@handleConfigPush');
@@ -86,6 +96,9 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->post('payment/{processor}/subscribe/{invoiceId}', 'PaymentController@subscribe');
         $api->post('payment/refund/{transactionId}', 'PaymentController@refund');
         $api->delete('payment/{processor}/clear', 'PaymentController@clear');
+
+        $api->get('payment/profile', 'PaymentController@profileCheck');
+
 
         $api->post('order/cart', 'OrderController@cart');
         \App\Libraries\Utility::defineResourceRoute('transaction', 'TransactionController', $api, []);

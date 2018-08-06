@@ -31,7 +31,7 @@ class InvoicePaid extends BaseMail
      */
     public function build()
     {
-        $invoiceUrl = Utility::generateUrl('invoices/' . $this->invoice->id, 'frontend');
+        $invoiceUrl = Utility::generateUrl('invoice/' . $this->invoice->id, 'frontend');
 
         return $this->subject($this->formatTitle('Thank you for your payment'))
             ->view('emails.PaidInvoice', [

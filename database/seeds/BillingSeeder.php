@@ -41,7 +41,8 @@ class BillingSeeder extends Seeder
                 $amount = mt_rand(1, 100);
                 $qtyEach = mt_rand(1, 5);
 
-                $totalAmount += $amount * $qtyEach;
+                $iterationAmount = $amount * $qtyEach;
+                $totalAmount += $iterationAmount;
 
                 $determinedType = array_random(\App\Constants\OrderResourceType::getConstants());
 
@@ -59,16 +60,16 @@ class BillingSeeder extends Seeder
                     $resourceId = mt_rand(1, 50);
                 elseif ($determinedType == \App\Constants\OrderResourceType::ENTERPRISE)
                 {
-                    $resourceId = mt_rand(1, 100);
+                    $resourceId = mt_rand(1, 1000);
                     // The loop needs to stop after this iteration, ent orders are always solo.
                     $items = 0;
                     // To enforce ^, let's get rid of all its existing lineitems.
                     $order->lineItems()->delete();
                     // Let's fix the total-amount too.
-                    $totalAmount = $amount;
+                    $totalAmount = $iterationAmount;
                 }
                 else
-                    $resourceId = mt_rand(1, 100);
+                    $resourceId = mt_rand(1, 1000);
 
                 $res = null;
 
@@ -110,7 +111,10 @@ class BillingSeeder extends Seeder
                     $hostingIPCount = $hostingIPs->count();
 
                     if ($hostingIPCount == 0)
+                    {
+                        $lineItem->delete();
                         continue;
+                    }
 
                     $resourcesToCreate = mt_rand(1, $hostingIPCount);
 

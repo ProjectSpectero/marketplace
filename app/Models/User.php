@@ -41,7 +41,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
         'name', 'email', 'node_key'
     ];
 
-    public function userMeta ()
+    public function meta ()
     {
         return $this->hasMany(UserMeta::class);
     }

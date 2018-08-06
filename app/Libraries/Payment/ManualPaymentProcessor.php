@@ -6,6 +6,7 @@ namespace App\Libraries\Payment;
 
 use App\Constants\Currency;
 use App\Constants\Errors;
+use App\Constants\PaymentProcessor;
 use App\Constants\PaymentProcessorResponseType;
 use App\Constants\PaymentType;
 use App\Constants\TransactionReasons;
@@ -30,7 +31,7 @@ class ManualPaymentProcessor extends BasePaymentProcessor
 
     function getName(): string
     {
-        return "MANUAL";
+        return PaymentProcessor::MANUAL;
     }
 
     function getValidationRules(String $method): array

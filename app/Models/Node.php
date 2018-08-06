@@ -17,7 +17,7 @@ class Node extends BaseModel
     ];
 
     protected $hidden = [
-        'app_settings', 'system_config', 'install_id', 'access_token', 'updated_at', 'deleted_at'
+        'app_settings', 'system_config', 'install_id', 'access_token', 'purchase_limit', 'updated_at', 'deleted_at'
     ];
 
     protected $with = [
@@ -94,6 +94,11 @@ class Node extends BaseModel
     public function user ()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function meta ()
+    {
+        return $this->hasMany(NodeMeta::class);
     }
 
     public function services ()

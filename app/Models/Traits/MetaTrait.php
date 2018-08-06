@@ -4,6 +4,8 @@ namespace App\Traits;
 
 use App\Errors\FatalException;
 use App\Libraries\Utility;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -22,10 +24,9 @@ trait MetaTrait
     public function scopeLoadMeta($query, Model $model, $key = '', $throwsException = false)
     {
         $modelName = self::getModelName($model);
-        $modelMeta = $modelName . 'Meta';
 
         if (empty($key))
-            return $model->$modelMeta;
+            return $model->meta;
 
         $constraint = $query->where([$modelName.'_id' => $model->id, 'meta_key' => $key]);
 
@@ -41,7 +42,7 @@ trait MetaTrait
 
         if ($type == 'string' && strlen($value) > 255)
             throw new FatalException("Length of string type " . strlen($value) .
-                " longer than what the meta_value column can handle");
+                                     " longer than what the meta_value column can handle");
 
         try
         {
@@ -53,21 +54,27 @@ trait MetaTrait
         catch (ModelNotFoundException $silenced)
         {
             $modelMeta = static::create([
-                $modelName.'_id' => $model->id,
-                'meta_key' => $key,
-                'value_type' => $type,
-                'meta_value' => $value
-            ]);
+                                            $modelName.'_id' => $model->id,
+                                            'meta_key' => $key,
+                                            'value_type' => $type,
+                                            'meta_value' => $value
+                                        ]);
         }
 
         return $modelMeta;
     }
 
-    public static function deleteMeta (Model $model, String $key)
+    public static function deleteMeta (Model $model, String $key) : void
     {
         $modelMeta = static::loadMeta($model, $key);
         if (! empty($modelMeta))
             $modelMeta->delete();
+
+        $cacheKey = static::getMetaCacheKey($model, $key);
+
+        // The exception will never be thrown since we don't delete without checking for existence.
+        if (\Cache::has($cacheKey))
+            \Cache::delete($cacheKey);
     }
 
     public function getValue()
@@ -82,5 +89,28 @@ trait MetaTrait
     private static function getModelName(Model $model)
     {
         return str_singular($model->getTable());
+    }
+
+    private static function getMetaCacheKey (Model $model, string $key)
+    {
+        return sprintf('%s.%d.meta.%s', $model->getTable(), $model->id, $key);
+    }
+
+    public static function cacheLoad (Model $model, string $key, bool $throwsException = false)
+    {
+        $cacheKey = static::getMetaCacheKey($model, $key);
+
+        if (\Cache::has($cacheKey))
+            return \Cache::get($cacheKey);
+
+        $storedMeta = static::loadMeta($model, $key, $throwsException);
+
+        if ($storedMeta != null && ! $storedMeta instanceof Builder)
+        {
+            \Cache::put($cacheKey, $storedMeta, Carbon::now()->addSeconds(env('META_CACHE_SECONDS', 15)));
+            return $storedMeta;
+        }
+
+        return null;
     }
 }

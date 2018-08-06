@@ -11,7 +11,7 @@
         <p>Our verification team will be in touch shortly about this. A support ticket has been created in our portal to track this event.</p>
         <a class="btn" target="_blank" href="{{ $url }}">View Order</a>
     @elseif($order->status == \App\Constants\OrderStatus::PENDING)
-        <p><b>Your order requires you to complete payment before activation.</b> Please click the link below to proceed to payment:</p>
+        <p><b>Your order requires you to complete payment before activation.</b> Please click the link below to proceed to payment.</p>
         <a class="btn" target="_blank" href="{{ $url }}">View Order &amp; Pay</a>
     @endif
 

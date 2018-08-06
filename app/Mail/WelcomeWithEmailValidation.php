@@ -3,30 +3,28 @@
 
 namespace App\Mail;
 
-
-
-use App\Libraries\Utility;
+use App\User;
 
 class WelcomeWithEmailValidation extends BaseMail
 {
 
     private $user;
-    private $verifyToken;
+    private $url;
+    private $easy;
 
-    public function __construct($user, $verifyToken)
+    public function __construct(User $user, string $url, bool $easy = false)
     {
         $this->user = $user;
-        $this->verifyToken = $verifyToken;
+        $this->url = $url;
+        $this->easy = $easy;
     }
 
     public function build()
     {
-
-        $url = Utility::generateUrl('verify/' . $this->user->email . '/' . $this->verifyToken, 'frontend');
-
         return $this->subject($this->formatTitle('Welcome!'))
             ->view('emails.WelcomeWithEmailValidation', [
-                'verifyUrl' => $url,
+                'url' => $this->url,
+                'easy' => $this->easy
             ]);
     }
 }

@@ -83,7 +83,7 @@ class PaypalProcessor extends BasePaymentProcessor
             $invoiceId = $this->getMajorInvoiceIdFromPartialId($checkoutData['INVNUM']);
 
             // We cannot account for a payment without the relevant invoice
-            $invoice = Invoice::findOrFail($invoiceId);
+            $invoice = Invoice::findOrLogAndFail($invoiceId, $checkoutData);
 
             $data = $this->processInvoice($invoice, $mode);
 
@@ -292,7 +292,7 @@ class PaypalProcessor extends BasePaymentProcessor
                 return true;
         }
 
-        Log::error("Unexpected response from Paypal API: " . http_build_query($response) . "\n for data: " . http_build_query($data));
+        Log::error("Unexpected response from Paypal API: " . json_encode($response) . "\n for data: " . json_encode($data));
         throw new UserFriendlyException(Errors::PAYMENT_FAILED, ResponseType::SERVICE_UNAVAILABLE);
     }
     private function createRecurringPaymentsProfile(Invoice $invoice, String $token)

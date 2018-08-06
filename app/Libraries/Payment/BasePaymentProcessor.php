@@ -14,6 +14,7 @@ use App\Invoice;
 use App\Libraries\BillingUtils;
 use App\Libraries\Utility;
 use App\Transaction;
+use Illuminate\Support\Facades\Log;
 
 abstract class BasePaymentProcessor implements IPaymentProcessor
 {
@@ -21,6 +22,12 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
     protected $request;
 
     protected $automated = false;
+
+    const METHOD_PROCESS = 'process';
+    const METHOD_CALLBACK = 'callback';
+    const METHOD_SUBSCRIBE = 'subscribe';
+    const METHOD_UNSUBSCRIBE = 'unsusbscribe';
+    const METHOD_REFUND = 'refund';
 
     public function __construct(Request $request)
     {
@@ -45,6 +52,10 @@ abstract class BasePaymentProcessor implements IPaymentProcessor
                                     String $reason, String $rawData,
                                     int $originalTransactionId = -1) : Transaction
     {
+        $actualDue = BillingUtils::getInvoiceDueAmount($invoice);
+        if ($amount > $actualDue)
+            Log::warning("Overpayment detected on invoice #" . $invoice->id . ", paid: $amount, actual due: $actualDue");
+
         $transaction = BillingUtils::addTransaction($processor, $invoice, $amount, $fee, $transactionId, $transactionType, $reason, $rawData, $originalTransactionId);
 
         $invoice->status = InvoiceStatus::PROCESSING;

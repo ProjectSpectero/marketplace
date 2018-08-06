@@ -49,6 +49,9 @@ class BillingUtils
     {
         try
         {
+            if (empty($user->name))
+                throw new ModelNotFoundException(Errors::FIELD_REQUIRED);
+
             $addrLine1 = UserMeta::loadMeta($user, UserMetaKeys::AddressLineOne, true)->meta_value;
 
             $city = UserMeta::loadMeta($user, UserMetaKeys::City, true)->meta_value;
@@ -68,14 +71,15 @@ class BillingUtils
         }
 
         return [
-            'addrLine1' => $addrLine1,
-            'addrLine2' => ($addrLine2 instanceof Builder  || $addrLine2 == null) ? null : $addrLine2->meta_value,
-            'city' => $city,
-            'state' => $state,
-            'country' => $country,
-            'postCode' => $postCode,
-            'organization' => ($organization instanceof Builder || $organization == null) ? null : $organization->meta_value,
-            'taxId' => ($taxId instanceof Builder || $taxId == null) ? null : $taxId->meta_value
+            'customer_name' => $user->name,
+            UserMetaKeys::AddressLineOne => $addrLine1,
+            UserMetaKeys::AddressLineTwo => ($addrLine2 instanceof Builder  || $addrLine2 == null) ? null : $addrLine2->meta_value,
+            UserMetaKeys::City => $city,
+            UserMetaKeys::State => $state,
+            UserMetaKeys::Country => $country,
+            UserMetaKeys::PostCode => $postCode,
+            UserMetaKeys::Organization => ($organization instanceof Builder || $organization == null) ? null : $organization->meta_value,
+            UserMetaKeys::TaxIdentification => ($taxId instanceof Builder || $taxId == null) ? null : $taxId->meta_value
         ];
     }
 
@@ -287,49 +291,18 @@ class BillingUtils
         if (Cache::has($cacheKey))
             return Cache::get($cacheKey);
 
-
         /** @var array<Order> $orders */
         $orders = Order::findForUser($user->id)
             ->where('status', OrderStatus::ACTIVE)
             ->get();
 
         $plans = [];
-        $definedPlans = config('plans', []);
 
         /** @var Order $order */
         foreach ($orders as $order)
         {
-            foreach ($order->lineItems as $lineItem)
-            {
-                // Perks are only bestowed based on current, active subscriptions.
-                if ($lineItem->status !== OrderStatus::ACTIVE)
-                    continue;
-
-                switch ($lineItem->type)
-                {
-                    case OrderResourceType::ENTERPRISE:
-                        if (! in_array(strtolower(OrderResourceType::ENTERPRISE), $plans))
-                            $plans[] = strtolower(OrderResourceType::ENTERPRISE);
-
-                        break;
-
-                    case OrderResourceType::NODE:
-                        $node = Node::find($lineItem->resource);
-                        if ($node != null && $node->plan != null
-                            && isset($definedPlans[$node->plan]) && ! in_array($node->plan, $plans))
-                            $plans[] = $node->plan;
-
-                        break;
-
-                    case OrderResourceType::NODE_GROUP:
-                        $group = NodeGroup::find($lineItem->resource);
-                        if ($group != null && $group->plan != null
-                            && isset($definedPlans[$group->plan])  && ! in_array($group->plan, $plans))
-                            $plans[] = $group->plan;
-
-                        break;
-                }
-            }
+            $currentPlans = $order->plans();
+            $plans = array_unique(array_merge($plans, $currentPlans));
         }
 
         Cache::put($cacheKey, $plans, env('USER_PLANS_CACHE_MINUTES', 1));
@@ -454,29 +427,34 @@ class BillingUtils
         {
             $lowerCaseValue = strtolower($provider);
 
+            if ($invoice->type == InvoiceType::CREDIT &&
+                ! in_array($provider, PaymentProcessor::getCreditAddAllowedVia()))
+                continue;
+
             switch ($provider)
             {
                 case PaymentProcessor::PAYPAL:
-                case PaymentProcessor::CRYPTO:
                     // Paypal is allowed everywhere for now.
+                    if (env('PAYPAL_ENABLED', false) == true)
+                        $valid[] = $lowerCaseValue;
+                    break;
+
+                case PaymentProcessor::CRYPTO:
                     // Crypto is allowed everywhere for now.
-
-                    $valid[] = $lowerCaseValue;
-
+                    if (env('CRYPTO_ENABLED', false) == true)
+                        $valid[] = $lowerCaseValue;
                     break;
 
                 case PaymentProcessor::STRIPE:
                     // Stripe is currently allowed for all non-credit payments
-                    if ($invoice->type !== InvoiceType::CREDIT)
+                    if (env('STRIPE_ENABLED', false) == true)
                         $valid[] = $lowerCaseValue;
 
                     break;
 
                 case PaymentProcessor::ACCOUNT_CREDIT:
                     if ($invoiceUser->credit > 0 &&
-                        $invoiceUser->credit_currency === $invoice->currency &&
-                        $invoice->type !== InvoiceType::CREDIT
-                    )
+                        $invoiceUser->credit_currency === $invoice->currency)
                         $valid[] = $lowerCaseValue;
 
                     break;

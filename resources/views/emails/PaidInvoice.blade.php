@@ -12,7 +12,7 @@
         @if($transaction->payment_processor == \App\Constants\PaymentProcessor::STRIPE)
             Credit Card
         @else
-                {{ $transaction->payment_processor }} account.
+                {{ strtolower($transaction->payment_processor) }} account.
         @endif
     </p>
 

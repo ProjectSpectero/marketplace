@@ -15,9 +15,11 @@ use App\Libraries\PaginationManager;
 use App\Libraries\PermissionManager;
 use App\Libraries\SearchManager;
 use App\Libraries\Utility;
+use App\PasswordResetToken;
 use App\User;
 use App\UserMeta;
 use App\Constants\Messages;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -67,7 +69,7 @@ class UserController extends CRUDController
         $data['roles'] = $roles;
 
         foreach ($user->abilities as $ability)
-            $abilities[] = [ 'name' => $ability['name'], 'only_owned' => $ability['only_owned'] ];
+            $abilities[] = [ 'name' => $ability['name'], 'only_owned' => (bool) $ability['only_owned'] ];
 
         $data['abilities'] = $abilities;
 
@@ -85,6 +87,51 @@ class UserController extends CRUDController
         $queryBuilder = SearchManager::process($request, 'user');
 
         return PaginationManager::paginate($request, $queryBuilder);
+    }
+
+    public function easyStore (Request $request) : JsonResponse
+    {
+        $rules = [
+            'email' => 'required|email|unique:users'
+        ];
+
+        $this->validate($request, $rules);
+        $input = $this->cherryPick($request, $rules);
+
+        /** @var User $user */
+        $user = new User();
+
+        $temporaryPassword = Utility::getRandomString();
+
+        $user->status = UserStatus::EMAIL_VERIFICATION_NEEDED;
+        $user->email = $input['email'];
+        $user->password = Hash::make($temporaryPassword);
+        $user->node_key = Utility::getRandomString(2);
+
+        $user->saveOrFail();
+
+        $resetToken = PasswordResetToken::create([
+                                                     'token' => Utility::getRandomString(1),
+                                                     'user_id' => $user->id,
+                                                     'ip' => $request->ip(),
+                                                     'expires' => Carbon::now()->addDays(env('EASY_SIGNUP_TOKEN_EXPIRY_IN_DAYS', 10))
+                                                 ]);
+
+        $this->afterCreation($user, [ 'easy' => true, 'resetToken' => $resetToken->token ]);
+
+        UserMeta::addOrUpdateMeta($user, UserMetaKeys::SourcedFromEasySignup, true);
+
+        $issuedToken = $user->createToken("Direct issuance based on easy signup.");
+
+        $data = [
+            'user' => $user->toArray(),
+            'auth' => [
+                'accessToken' => $issuedToken->accessToken,
+                'expiry' => env('TOKEN_EXPIRY', 10) * 60
+            ]
+        ];
+
+        return $this->respond($data);
     }
 
     public function store(Request $request) : JsonResponse
@@ -130,14 +177,19 @@ class UserController extends CRUDController
                 UserMeta::addOrUpdateMeta($user, $key, $value);
         }
 
+        $this->afterCreation($user);
+
+        return $this->respond($user->toArray(), [], Messages::USER_CREATED, ResponseType::CREATED);
+    }
+
+    private function afterCreation (User $user, array $eventBag = [])
+    {
         UserMeta::addOrUpdateMeta($user, UserMetaKeys::ShowSplashScreen, true);
         UserMeta::addOrUpdateMeta($user, UserMetaKeys::LoginCount, 0);
 
         PermissionManager::assign($user, UserRoles::USER);
 
-        event(new UserEvent(Events::USER_CREATED, $user));
-
-        return $this->respond($user->toArray(), [], Messages::USER_CREATED, ResponseType::CREATED);
+        event(new UserEvent(Events::USER_CREATED, $user, $eventBag));
     }
 
     public function show (Request $request, int $id, String $action = null) : JsonResponse

@@ -20,6 +20,7 @@ use App\NodeIPAddress;
 use App\Service;
 use DB;
 use GuzzleHttp\Exception\RequestException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Validator;
@@ -58,6 +59,8 @@ class NodeEventListener extends BaseListener
         $node = $event->node;
         $oldState = Utility::getPreviousModel($event->dataBag);
         $error = Utility::getError($event->dataBag);
+
+        Log::debug('Handling node event of type ' . $event->type . ' for node ' . $node->id);
 
         switch ($event->type)
         {

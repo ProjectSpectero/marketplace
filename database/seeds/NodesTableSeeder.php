@@ -45,7 +45,7 @@ class NodesTableSeeder extends Seeder
         $proGroup->friendly_name = 'Spectero Pro';
         $proGroup->plan = \App\Constants\SubscriptionPlan::PRO;
         $proGroup->market_model = \App\Constants\NodeMarketModel::LISTED_SHARED;
-        $proGroup->price = 9.99;
+        $proGroup->price = 12.99;
         $proGroup->saveOrFail();
 
         foreach (\App\Node::all()->random(45) as $node)

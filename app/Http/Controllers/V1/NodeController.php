@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Lcobucci\JWT\Builder;
@@ -76,9 +77,17 @@ class NodeController extends CRUDController
                 break;
 
             case 'config-pull':
+                $selectTargets = [ 'order_line_items.id', 'orders.accessor', 'order_line_items.sync_timestamp' ];
                 $activeEngagements = $node->getEngagements(OrderStatus::ACTIVE)
-                    ->select([ 'order_line_items.id', 'orders.accessor', 'order_line_items.sync_timestamp' ])
+                    ->select($selectTargets)
                     ->get();
+
+                if ($node->group != null)
+                {
+                    $activeEngagements = $activeEngagements->merge($node->group->getEngagements(OrderStatus::ACTIVE)
+                                                                       ->select($selectTargets)
+                                                                       ->get());
+                }
 
                 $data = [];
                 foreach ($activeEngagements as $engagement)
@@ -100,11 +109,18 @@ class NodeController extends CRUDController
                             'cert_key' => "" //TODO: actually issue certs as soon as OpenVPN is operational.
                         ];
 
-                        $lineItem = OrderLineItem::findOrFail($engagement->id);
-                        $lineItem->sync_status = NodeSyncStatus::SYNCED;
-                        $lineItem->sync_timestamp = Carbon::now();
+                        $lineItem = OrderLineItem::find($engagement->id);
 
-                        $lineItem->saveOrFail();
+                        if ($lineItem != null)
+                        {
+                            $lineItem->sync_status = NodeSyncStatus::SYNCED;
+                            $lineItem->sync_timestamp = Carbon::now();
+
+                            $lineItem->saveOrFail();
+                        }
+                        else
+                            Log::warning("Could not locate lineItem -> $engagement->id despite expecting to find it. Sync status unupdated.");
+
                     }
                 }
                 break;
@@ -201,10 +217,10 @@ class NodeController extends CRUDController
             $node->saveOrFail();
         }
 
-        event(new NodeEvent(Events::NODE_CREATED, $node, []));
-
         // Why here instead of NodeEventListener? That's because there happens to be some collapsed handling there for REVERIFY + CREATED.
         Mail::to($node->user->email)->queue(new NodeAdded($node));
+
+        event(new NodeEvent(Events::NODE_CREATED, $node, []));
 
         if ($indirect)
         {
@@ -333,7 +349,10 @@ class NodeController extends CRUDController
             $tokenCollection = NodeManager::generateAuthTokens($node);
 
             $accessExpires = $tokenCollection['access']['expires'];
-            $minutesTillAccessExpires = Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($accessExpires));
+
+            // The cached token will expire 2 minutes before the real expiry, to the minute caused some sync issues.
+            /** @var Carbon $minutesTillAccessExpires */
+            $minutesTillAccessExpires = Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($accessExpires)) - 2;
 
             // $refreshExpires = $tokenCollection['refresh']['expires'];
 

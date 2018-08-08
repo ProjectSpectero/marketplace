@@ -318,6 +318,7 @@ class MarketplaceController extends V1Controller
 
                 break;
             case 'group':
+                /** @var NodeGroup $group */
                 $group = NodeGroup::noEagerLoads()->findOrFail($id);
                 $data = $this->prepareGroup($group);
                 break;
@@ -379,6 +380,9 @@ class MarketplaceController extends V1Controller
     //俺も同じだよ
     private function prepareGroup (NodeGroup $group)
     {
+        if (! $group->hasMarketEligibleNodes())
+            throw new UserFriendlyException(Errors::RESOURCE_EMPTY, ResponseType::FORBIDDEN);
+
         $nodes = [];
         foreach (Node::where('group_id', $group->id)->get() as $node)
         {

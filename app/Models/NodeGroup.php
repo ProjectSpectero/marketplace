@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Constants\NodeStatus;
 use App\Constants\OrderResourceType;
 use App\Models\Traits\HasOrders;
 
@@ -39,5 +40,11 @@ class NodeGroup extends BaseModel
         $query->select([ 'order_line_items.*' ]);
 
         return $query;
+    }
+
+    public function hasMarketEligibleNodes ()
+    {
+        return $this->nodes()->where('status', NodeStatus::CONFIRMED)
+                ->count() !== 0;
     }
 }

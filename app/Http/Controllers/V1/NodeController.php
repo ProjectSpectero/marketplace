@@ -81,6 +81,13 @@ class NodeController extends CRUDController
                     ->select([ 'order_line_items.id', 'orders.accessor', 'order_line_items.sync_timestamp' ])
                     ->get();
 
+                if ($node->group != null)
+                {
+                    $activeEngagements = $activeEngagements->merge($node->group->getEngagements(OrderStatus::ACTIVE)
+                                                                       ->select([ 'order_line_items.id', 'orders.accessor', 'order_line_items.sync_timestamp' ])
+                                                                       ->get());
+                }
+
                 $data = [];
                 foreach ($activeEngagements as $engagement)
                 {

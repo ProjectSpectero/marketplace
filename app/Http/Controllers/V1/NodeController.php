@@ -342,8 +342,9 @@ class NodeController extends CRUDController
 
             $accessExpires = $tokenCollection['access']['expires'];
 
+            // The cached token will expire 2 minutes before the real expiry, to the minute caused some sync issues.
             /** @var Carbon $minutesTillAccessExpires */
-            $minutesTillAccessExpires = Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($accessExpires));
+            $minutesTillAccessExpires = Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($accessExpires)) - 2;
 
             // $refreshExpires = $tokenCollection['refresh']['expires'];
 
@@ -396,9 +397,8 @@ class NodeController extends CRUDController
             throw new UserFriendlyException(Errors::NODE_UNREACHABLE, ResponseType::SERVICE_UNAVAILABLE);
         }
 
-        // The cached token will expire 2 minutes before the real expiry, to the minute caused some sync issues.
         if ($minutesTillAccessExpires > 0)
-            \Cache::put($key, $data, $minutesTillAccessExpires->subMinutes(2));
+            \Cache::put($key, $data, $minutesTillAccessExpires);
 
         return $data;
     }

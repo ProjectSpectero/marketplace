@@ -77,14 +77,15 @@ class NodeController extends CRUDController
                 break;
 
             case 'config-pull':
+                $selectTargets = [ 'order_line_items.id', 'orders.accessor', 'order_line_items.sync_timestamp' ];
                 $activeEngagements = $node->getEngagements(OrderStatus::ACTIVE)
-                    ->select([ 'order_line_items.id', 'orders.accessor', 'order_line_items.sync_timestamp' ])
+                    ->select($selectTargets)
                     ->get();
 
                 if ($node->group != null)
                 {
                     $activeEngagements = $activeEngagements->merge($node->group->getEngagements(OrderStatus::ACTIVE)
-                                                                       ->select([ 'order_line_items.id', 'orders.accessor', 'order_line_items.sync_timestamp' ])
+                                                                       ->select($selectTargets)
                                                                        ->get());
                 }
 

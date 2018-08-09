@@ -57,7 +57,7 @@ class PromoCodeController extends CRUDController
         $promoCode->code = $input['code'];
         $promoCode->group_id = $input['group_id'];
         $promoCode->usage_limit = $input['usage_limit'];
-        $promoCode->amount = $input['amount'];
+        $promoCode->amount = $input['amount']; // TODO: Add support for currency tracking here.
 
         // If expiry is not given, the promo code is valid for a week only.
         if ($request->has('expires'))

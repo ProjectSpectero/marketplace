@@ -59,7 +59,7 @@ class OpenVPNConfigResolver
             'cipherType' => 'AES-256-CBC' // TODO: Allow this to be dynamically configurable someday.
         ])->render();
 
-        //\Cache::put($hash, $data, env('OVPN_GENERATED_CONF_CACHE_MINUTES', 1440));
+        \Cache::put($hash, $data, env('OVPN_GENERATED_CONF_CACHE_MINUTES', 1440));
 
         return $data;
     }

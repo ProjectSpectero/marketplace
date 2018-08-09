@@ -32,8 +32,21 @@ class OpenVPNConfigResolver
             else
                 $protocol = 'udp';
 
+            // This translates IPAddress.Any (0.0.0.0) to an actually routable IP
+            // TODO: Consider impacts of IPv6 here.
+            if($listener['IPAddress'] == '0.0.0.0')
+                $listener['IPAddress'] = $node->ip;
+
             $parsedListeners[] = [ 'ip' => $listener['IPAddress'], 'port' => $listener['Port'], 'protocol' => $protocol ];
         }
+
+        usort($parsedListeners, function($itemOne, $itemTwo)
+        {
+            if ($itemOne['protocol'] == 'udp')
+                return -1;
+
+            return 1;
+        });
 
         // TODO: Cache this in the DB on a per lineItem, node basis. There is no reason to generate it multiple times. The CA cert is not expected to change
         $certificate = \App\Libraries\PKIManager::issueUserChain($caData, $userIdentifier);
@@ -42,11 +55,11 @@ class OpenVPNConfigResolver
             'username' => $userIdentifier,
             'systemId' => $systemId,
             'listeners' => $parsedListeners,
-            'chunkedCert' => chunk_split($certificate, 64, PHP_EOL),
+            'chunkedCert' => rtrim(chunk_split($certificate, 64, PHP_EOL)),
             'cipherType' => 'AES-256-CBC' // TODO: Allow this to be dynamically configurable someday.
         ])->render();
 
-        \Cache::put($hash, $data, env('OVPN_GENERATED_CONF_CACHE_MINUTES', 1440));
+        //\Cache::put($hash, $data, env('OVPN_GENERATED_CONF_CACHE_MINUTES', 1440));
 
         return $data;
     }

@@ -102,6 +102,8 @@ class BillingEventListener extends BaseListener
                                                 Log::warning("Order #" . $order->id . ' failed the stage two fraud check!');
 
                                                 Mail::to($user->email)->queue(new OrderTrippedFraudAlertMail($order));
+
+                                                // TODO: Raise a ticket with the customer internally in FreshDesk to track the fraud-check failure.
                                             }
                                             else
                                             {

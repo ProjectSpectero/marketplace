@@ -9,12 +9,15 @@ use App\Events\UserEvent;
 use App\Libraries\Utility;
 use App\Mail\EmailChangeNew;
 use App\Mail\EmailChangeOld;
+use App\Mail\PasswordChanged;
 use App\Mail\WelcomeWithEmailValidation;
 use App\Mail\Welcome;
 use App\User;
 use App\UserMeta;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use phpDocumentor\Reflection\Types\Self_;
 
 class UserEventListener extends BaseListener
 {
@@ -109,6 +112,9 @@ class UserEventListener extends BaseListener
 
                     // Do this regardless, have them verify the new email
                     Mail::to($user->email)->queue(new EmailChangeNew($user, $verifyToken));
+
+                    // Now, we need to remove all oAuth tokens they might have issued. This will log them out from every device.
+                    self::cleanUpUserAuthTokens($user->id);
                 }
 
                 break;
@@ -116,8 +122,22 @@ class UserEventListener extends BaseListener
                 break;
 
             case Events::USER_PASSWORD_UPDATED:
-                // TODO: Notify the user that their password has been changed, and that they should immediately contact support if it was not them.
+                // Let's notify the user that their password has been changed.
+                Mail::to($user->email)->queue(new PasswordChanged('undisclosed', $event->dataBag['ip']));
+
+                // Now, we need to remove all oAuth tokens they might have issued. This will log them out from every device.
+                self::cleanUpUserAuthTokens($user->id);
+
+                \Log::info(sprintf("User id: %d had their password updated.", $user->id));
+
                 break;
         }
+    }
+
+    private static function cleanUpUserAuthTokens (int $id)
+    {
+        DB::table('oauth_access_tokens')
+            ->where('user_id', '=', $id)
+            ->delete();
     }
 }

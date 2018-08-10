@@ -221,19 +221,19 @@ class UserController extends CRUDController
             $this->authorizeResource();
 
         $rules = [
-            'name' => 'required|min:1|max:255',
-            'email' => 'required|email|unique:users,email,' . $id,
+            'name' => 'sometimes|min:1|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $id,
             'password' => 'sometimes|min:5|max:72',
             'current_password' => 'required_with:password|min:5|max:72',
-            UserMetaKeys::AddressLineOne => 'required|min:1|max:255',
-            UserMetaKeys::AddressLineTwo => 'sometimes|max:255',
-            UserMetaKeys::City => 'required|min:1|max:64',
-            UserMetaKeys::State => 'required|min:1|max:64',
-            UserMetaKeys::PostCode => 'required|min:1|max:64',
-            UserMetaKeys::Country => 'required|country',
-            UserMetaKeys::PhoneNumber => 'sometimes|max:64',
-            UserMetaKeys::Organization => 'sometimes|max:64',
-            UserMetaKeys::TaxIdentification => 'sometimes|max:96',
+            UserMetaKeys::AddressLineOne => 'sometimes|min:1|max:255',
+            UserMetaKeys::AddressLineTwo => 'sometimes|min:1|max:255',
+            UserMetaKeys::City => 'sometimes|min:1|max:64',
+            UserMetaKeys::State => 'sometimes|min:1|max:64',
+            UserMetaKeys::PostCode => 'sometimes|min:1|max:64',
+            UserMetaKeys::Country => 'sometimes|country|max:64',
+            UserMetaKeys::PhoneNumber => 'sometimes|min:1|max:64',
+            UserMetaKeys::Organization => 'sometimes|min:1|max:64',
+            UserMetaKeys::TaxIdentification => 'sometimes|min:1|max:96',
             UserMetaKeys::ShowSplashScreen => 'sometimes|boolean'
         ];
 
@@ -243,21 +243,23 @@ class UserController extends CRUDController
         if (isset($input['name']))
             $user->name = $input['name'];
 
-        if ($user->email != $input['email'])
+        if (isset($input['email']) && $user->email != $input['email'])
         {
             // User is attempting to change his email address
             UserMeta::addOrUpdateMeta($user, UserMetaKeys::OldEmailAddress, $user->email);
             $user->email = $input['email'];
         }
 
-        if ($request->has('password'))
+        if (isset($input['password']))
         {
             if (! Hash::check($input['current_password'], $user->password))
                 throw new UserFriendlyException(Errors::CURRENT_PASSWORD_MISMATCH, ResponseType::FORBIDDEN);
 
             $user->password = Hash::make($input['password']);
 
-            event(new UserEvent(Events::USER_PASSWORD_UPDATED, $user));
+            event(new UserEvent(Events::USER_PASSWORD_UPDATED, $user, [
+                'ip' => $request->ip()
+            ]));
         }
 
         // Remove the ones that go into the original model
@@ -269,9 +271,7 @@ class UserController extends CRUDController
                 UserMeta::deleteMeta($user, $key);
             else
                 UserMeta::addOrUpdateMeta($user, $key, $value);
-
         }
-
 
         $user->saveOrFail();
 

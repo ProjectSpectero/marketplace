@@ -20,6 +20,7 @@ use App\Errors\UserFriendlyException;
 use App\Events\BillingEvent;
 use App\Invoice;
 use App\Libraries\BillingUtils;
+use App\Libraries\FraudCheckManager;
 use App\Libraries\PaginationManager;
 use App\Libraries\ProvisionedResourceResolver;
 use App\Libraries\SearchManager;
@@ -235,12 +236,14 @@ class OrderController extends CRUDController
         return $this->respond(null, [], Messages::ORDER_DELETED, ResponseType::NO_CONTENT);
     }
 
-    public function createOrder (User $user, int $term, Carbon $dueNext, Array $items)
+    public function createOrder (User $user, int $term, Carbon $dueNext, Array $items, bool $createdOnBehalf = false)
     {
+        if (! $createdOnBehalf && ! FraudCheckManager::stageOne($user))
+            throw new UserFriendlyException(Errors::ORDER_DENIED, ResponseType::FORBIDDEN);
 
         $order = new Order();
         $order->user_id = $user->id;
-        $order->status = OrderStatus::AUTOMATED_FRAUD_CHECK;
+        $order->status = OrderStatus::PENDING;
         $order->term = $term;
         $order->due_next = $dueNext;
         $order->accessor = Utility::getRandomString() . ':' . Utility::getRandomString();

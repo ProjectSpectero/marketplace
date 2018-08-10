@@ -4,6 +4,10 @@
 namespace App\Http\Controllers\V1;
 
 
+use App\Constants\Errors;
+use App\Constants\ResponseType;
+use App\Constants\UserStatus;
+use App\Errors\UserFriendlyException;
 use Illuminate\Http\Request;
 
 class IntegrationsController extends V1Controller
@@ -14,6 +18,9 @@ class IntegrationsController extends V1Controller
         $baseUri = env('SUPPORT_BASE_URI', 'https://spectero.freshdesk.com/');
 
         $user = $request->user();
+
+        if ($user->status == UserStatus::EMAIL_VERIFICATION_NEEDED)
+            throw new UserFriendlyException(Errors::EMAIL_VERIFICATION_NEEDED, ResponseType::FORBIDDEN);
 
         $name = $user->name != null ? "Spectero User" : $user->name;
         $email = $user->email;

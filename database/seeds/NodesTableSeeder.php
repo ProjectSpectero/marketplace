@@ -246,7 +246,7 @@ class NodesTableSeeder extends Seeder
                                                     $ref
                                                 ],
                                                 'accessConfig' => $randStr,
-                                                'accessCredentials' => array_random(['SPECTERO_USERNAME_PASSWORD', $node->access_token])
+                                                'accessCredentials' => array_random(['SPECTERO_USERNAME_PASSWORD', 'ServiceSpecificPassword'])
                                             ];
 
             $service->saveOrFail();

@@ -97,6 +97,8 @@ class Errors extends Holder
 
     // Validation
     const FIELD_REQUIRED = 'FIELD_REQUIRED';
+    const FIELD_REQUIRED_WITH = 'FIELD_REQUIRED_WITH';
+
     const FIELD_UNIQUE = 'FIELD_UNIQUE';
     const FIELD_MAXLENGTH = 'FIELD_MAXLENGTH';
     const FIELD_MINLENGTH = 'FIELD_MINLENGTH';

@@ -236,11 +236,8 @@ class OrderController extends CRUDController
         return $this->respond(null, [], Messages::ORDER_DELETED, ResponseType::NO_CONTENT);
     }
 
-    public function createOrder (User $user, int $term, Carbon $dueNext, Array $items, bool $createdOnBehalf = false)
+    public function createOrder (User $user, int $term, Carbon $dueNext, array $items)
     {
-        if (! $createdOnBehalf && ! FraudCheckManager::stageOne($user))
-            throw new UserFriendlyException(Errors::ORDER_DENIED, ResponseType::FORBIDDEN);
-
         $order = new Order();
         $order->user_id = $user->id;
         $order->status = OrderStatus::PENDING;
@@ -252,6 +249,39 @@ class OrderController extends CRUDController
         $this->populateLineItems($items, $order, $term, true, $dueNext);
 
         return $order;
+    }
+
+    private function validateItemsAgainstCurrentUser (User $user, array $items)
+    {
+        // MAR-229: don't try to meddle in non-singular orders, this was more or less devised just to prevent duplicate single resource (i.e: pro / vast majority of normal) orders.
+        if (count($items) > 1)
+            return null;
+
+        $item = $items[0];
+
+        /** @var OrderLineItem $existing */
+        $existing = OrderLineItem::join('orders', 'order_line_items.order_id', '=', 'orders.id')
+            ->where('order_line_items.resource', $item['id'])
+            ->where('order_line_items.type', $item['type'])
+            ->where('order_line_items.status', OrderStatus::PENDING)
+            ->where('orders.status', OrderStatus::PENDING)
+            ->where('orders.user_id', $user->id)
+            ->select([ 'order_line_items.*' ])
+            ->get();
+
+        $count = $existing->count();
+
+        if ($count > 0)
+        {
+            $first = $existing->first();
+
+            if ($existing->count() > 1)
+                \Log::warning("User #$user->id has $count PENDING order(s) against an item. We're going with the first one (OLI #$first->id).", [ 'item' => $item ] );
+
+            return $first->order;
+        }
+
+        return null;
     }
 
     private function populateLineItems (array $items, Order $order,
@@ -401,11 +431,35 @@ class OrderController extends CRUDController
        $input = $this->cherryPick($request, $rules);
        unset($input['items']['*']);
 
-       $order = $this->createOrder($request->user(), $input['meta']['term'], Carbon::now(), $input['items']);
+       $user = $request->user();
 
-       event(new BillingEvent(Events::ORDER_CREATED, $order));
+        if (! FraudCheckManager::stageOne($user))
+            throw new UserFriendlyException(Errors::ORDER_DENIED, ResponseType::FORBIDDEN);
 
-       return $this->respond($order->toArray());
+        $term = $input['meta']['term'];
+        $items = $input['items'];
+
+        $returnedMessage = null;
+
+        $existingOrder = $this->validateItemsAgainstCurrentUser($user, $items);
+
+
+        if ($existingOrder != null)
+        {
+            $order = $existingOrder;
+            $returnedMessage = Errors::ORDER_REUSED;
+        }
+        else
+        {
+            $order = $this->createOrder($request->user(), $term, Carbon::now(), $items);
+
+            // This forces a reload of all relations on an as-needed basis.
+            $order->load('lastInvoice');
+
+            event(new BillingEvent(Events::ORDER_CREATED, $order));
+        }
+
+        return $this->respond($order->toArray(), [], $returnedMessage);
     }
 
     public function regenerateAccessor (Request $request, int $id)

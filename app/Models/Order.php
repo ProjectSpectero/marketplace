@@ -8,7 +8,7 @@ use App\Constants\OrderStatus;
 class Order extends BaseModel
 {
     protected $with = [ 'lineItems', 'lastInvoice' ];
-    protected $hidden = [ 'notes', 'user_id', 'subscription_reference', 'subscription_provider', 'accessor' ];
+    protected $hidden = [ 'notes', 'user_id', 'subscription_reference', 'subscription_provider', 'accessor', 'updated_at' ];
     protected $dates = [
         'created_at',
         'updated_at',

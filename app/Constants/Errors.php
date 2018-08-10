@@ -86,6 +86,7 @@ class Errors extends Holder
     const DISCREET_ORDER_REQUIRED = 'DISCREET_ORDER_REQUIRED';
     const ORDER_ALREADY_VERIFIED = 'ORDER_ALREADY_VERIFIED';
     const ORDER_STATUS_MISMATCH = 'ORDER_STATUS_MISMATCH';
+    const ORDER_REUSED = 'ORDER_REUSED';
 
     // Billing and payment processing
     const PAYMENT_FAILED = 'PAYMENT_FAILED';

@@ -19,8 +19,10 @@ use App\Libraries\Utility;
 use App\Mail\InvoicePaid;
 use App\Mail\OrderCreated;
 use App\Mail\OrderProvisionedMail;
+use App\Mail\OrderTrippedFraudAlertMail;
 use App\Order;
 use App\User;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class BillingEventListener extends BaseListener
@@ -81,21 +83,38 @@ class BillingEventListener extends BaseListener
                                 $order = $invoice->order;
                                 if ($order->status != OrderStatus::CANCELLED)
                                 {
-                                    $oldOrderStatus = $order->status;
-
-                                    $order->status = OrderStatus::ACTIVE;
-                                    foreach ($order->lineItems as $item)
+                                    if (FraudCheckManager::stageTwo($order))
                                     {
-                                        $item->status = OrderStatus::ACTIVE;
-                                        $item->saveOrFail();
-                                    }
-                                    // TODO: figure out the actual impact of this call, particularly whether it functions properly for both renewal and first-time orders.
-                                    $order->due_next = $order->due_next->addDays($order->term);
-                                    $order->saveOrFail();
+                                        // Hurray, order passed the fraud checks. Whatever those might be.
+                                        $oldOrderStatus = $order->status;
 
-                                    // Only send this if the order is actually being activated (and not on standard renewals).
-                                    if ($oldOrderStatus != OrderStatus::ACTIVE)
-                                        Mail::to($user->email)->queue(new OrderProvisionedMail($order));
+                                        $order->status = OrderStatus::ACTIVE;
+                                        foreach ($order->lineItems as $item)
+                                        {
+                                            $item->status = OrderStatus::ACTIVE;
+                                            $item->saveOrFail();
+                                        }
+                                        // TODO: figure out the actual impact of this call, particularly whether it functions properly for both renewal and first-time orders.
+                                        $order->due_next = $order->due_next->addDays($order->term);
+
+                                        // Only send this if the order is actually being activated (and not on standard renewals).
+                                        if ($oldOrderStatus != OrderStatus::ACTIVE)
+                                            Mail::to($user->email)->queue(new OrderProvisionedMail($order));
+                                    }
+                                    else
+                                    {
+                                        // Boo, order failed the fraud check.
+                                        $order->status = OrderStatus::MANUAL_FRAUD_CHECK;
+                                        Log::warning("Order #" . $order->id . ' failed the stage two fraud check!');
+
+                                        Mail::to($user->email)->queue(new OrderTrippedFraudAlertMail($order));
+
+                                        // TODO: Integrate with freshdesk to auto open a ticket with the user for this here!
+
+                                    }
+
+                                    // Update the order's record on the DB all the same since both branches modify it.
+                                    $order->saveOrFail();
                                 }
                             }
 
@@ -133,20 +152,6 @@ class BillingEventListener extends BaseListener
                 $order = $event->data;
 
                 $user = $order->user;
-
-                // Now, let's verify that the order passes standard fraud checks (assuming the relevant status exists)
-                if ($order->status == OrderStatus::AUTOMATED_FRAUD_CHECK)
-                {
-                    if (FraudCheckManager::verify($order))
-                        $order->status = OrderStatus::PENDING;
-                    else
-                    {
-                        // TODO: Raise the appropriate ticket to track this event.
-                        $order->status = OrderStatus::MANUAL_FRAUD_CHECK;
-                    }
-
-                    $order->saveOrFail();
-                }
 
                 // Let's notify our user and confirm that their order has been placed.
                 // This email also notifies them if they failed the fraud check

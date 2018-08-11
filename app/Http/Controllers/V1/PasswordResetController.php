@@ -109,8 +109,9 @@ class PasswordResetController extends V1Controller
             }
         }
 
-        Mail::to($user->email)->queue(new PasswordChanged($newPassword, $resetToken->ip));
-        event(new UserEvent(Events::USER_PASSWORD_UPDATED, $user));
+        event(new UserEvent(Events::USER_PASSWORD_UPDATED, $user, [
+            'ip' => $resetToken->ip
+        ]));
 
         $resetToken->delete();
 

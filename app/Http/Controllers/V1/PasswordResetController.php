@@ -52,7 +52,7 @@ class PasswordResetController extends V1Controller
                 'token' => Utility::getRandomString(2),
                 'user_id' => $user->id,
                 'ip' => $ip,
-                'expires' => Carbon::now()->addMinutes(env('PASSWORD_RESET_TOKEN_EXPIRY', 60))
+                'expires' => Carbon::now()->addMinutes(env('PASSWORD_RESET_TOKEN_EXPIRY', 60))->diffInM
             ]);
 
             Mail::to($email)->queue(new PasswordReset($resetToken, $ip));
@@ -60,6 +60,7 @@ class PasswordResetController extends V1Controller
         catch (ModelNotFoundException $silenced)
         {
             // Intentionally silenced to prevent email enumeration
+            \Log::warning("A password reset was attempted for $email from $ip, but no users could be found! User enumeration is being attempted if this message repeats too many times.");
         }
 
         // This is NOT a success message, but a generic acknowledgement instead. It should be made clear to the user

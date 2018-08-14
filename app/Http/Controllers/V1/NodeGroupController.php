@@ -81,7 +81,7 @@ class NodeGroupController extends CRUDController
 
         $rules = [
             'friendly_name' => 'sometimes|alpha_dash_spaces|max:64',
-            'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstants()) ],
+            'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstraints()) ],
         ];
 
         if ($request->has('price'))
@@ -103,6 +103,14 @@ class NodeGroupController extends CRUDController
             // Indicating that this is an update
             if ($nodeGroup->getOrders(OrderStatus::ACTIVE)->count() > 0)
                 throw new UserFriendlyException(Errors::HAS_ACTIVE_ORDERS);
+
+            // MAR-241: sync market models for underlying nodes when the group's market model is due for change.
+            /** @var Node $node */
+            foreach ($nodeGroup->nodes as $node)
+            {
+                $node->market_model = $input['market_model'];
+                $node->saveOrFail();
+            }
         }
 
         foreach ($input as $key => $value)
@@ -218,9 +226,16 @@ class NodeGroupController extends CRUDController
             $this->authorizeResource($nodeGroup, 'node_group.assign');
 
             $node->group_id = $groupId;
+
+            // On a node being assigned to a group, its market model should be synced to that of the group.
+            if ($node->market_model != $nodeGroup->market_model)
+                $node->market_model = $nodeGroup->market_model;
         }
         else
+        {
             $node->group_id = null;
+            $node->market_model = NodeMarketModel::UNLISTED;
+        }
 
         $node->saveOrFail();
 

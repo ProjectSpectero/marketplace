@@ -79,9 +79,13 @@ class NodesTableSeeder extends Seeder
             INSERT INTO `Configuration`(`Key`,`Value`,`CreatedDate`,`UpdatedDate`) VALUES ('cloud.connect.node-key','25e7e751047aad89f9fd7fa19fe806618ee9e944cbeb861398f8e4534498659a','2018-07-19 23:33:01.4711129','2018-07-19 23:33:01.4711129');
         */
 
+        $ips = [
+            '144.202.64.60', '104.238.147.40', '2001:19f0:6401:78d:5400:1ff:fea1:df87'
+        ];
+
         $realNode = new \App\Node();
         $realNode->id = 101;
-        $realNode->ip = '23.158.64.30';
+        $realNode->ip = $ips[0];
         $realNode->port = 6024;
         $realNode->friendly_name = 'Real Test Node 1';
         $realNode->protocol = 'http';
@@ -207,7 +211,19 @@ class NodesTableSeeder extends Seeder
 			}
 		]', true);
 
-        $realNode->save();
+        $realNode->saveOrFail();
+
+        foreach ($ips as $ip)
+        {
+            $stub = new \App\NodeIPAddress();
+            $stub->ip = $ip;
+            $stub->node_id = $realNode->id;
+            $stub->asn = 20336;
+            $stub->city = 'Dallas';
+            $stub->cc = 'US';
+
+            $stub->saveOrFail();
+        }
 
         $this->createServices($realNode);
     }

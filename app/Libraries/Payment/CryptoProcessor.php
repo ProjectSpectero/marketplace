@@ -222,7 +222,7 @@ class CryptoProcessor extends BasePaymentProcessor
 
             case self::METHOD_CALLBACK:
                 $data = [
-                    'id' => 'required|integer',
+                    'id' => 'required',
                     'event' => 'required|array',
                     'event.id' => 'required|alpha_dash',
                     'event.type' => [ 'required', Rule::in(['charge:confirmed', 'charge:failed'])],

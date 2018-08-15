@@ -327,10 +327,8 @@ class NodeController extends CRUDController
 
         HistoricResource::createCopy($node, ['services', 'ipAddresses'], $node->user);
 
-        $node->services()->delete();
-        $node->ipAddresses()->delete();
-
-        $node->delete();
+        $node->status = NodeStatus::PENDING_DELETION;
+        $node->saveOrFail();
 
         event(new NodeEvent(Events::NODE_DELETED, $node));
         return $this->respond(null, [], Messages::NODE_DELETED, ResponseType::NO_CONTENT);

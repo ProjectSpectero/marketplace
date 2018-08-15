@@ -285,6 +285,9 @@ class NodeEventListener extends BaseListener
             case Events::NODE_UPDATED:
                 break;
             case Events::NODE_DELETED:
+                $node->services()->delete();
+                $node->ipAddresses()->delete();
+                $node->delete();
                 break;
             case Events::NODE_CONFIG_INVALID:
                 break;

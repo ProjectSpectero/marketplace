@@ -299,5 +299,7 @@ class NodeEventListener extends BaseListener
                 Mail::to($node->user->email)->queue(new NodeVerificationFailed($node, $error));
                 break;
         }
+
+        return;
     }
 }

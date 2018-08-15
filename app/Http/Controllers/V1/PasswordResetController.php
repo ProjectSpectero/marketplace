@@ -38,11 +38,11 @@ class PasswordResetController extends V1Controller
 
         $this->validate($request, $rules);
         $email = $request->get('email');
+        $ip = $request->ip();
 
         try
         {
             $user = User::where('email', '=', $email)->firstOrFail();
-            $ip = $request->ip();
 
             // Cleanup old tokens (if any exist)
             PasswordResetToken::where('user_id', $user->id)

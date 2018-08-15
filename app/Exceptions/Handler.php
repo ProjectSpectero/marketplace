@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\Validator;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
 use League\OAuth2\Server\Exception\OAuthServerException;
+use Symfony\Component\Debug\Exception\FatalThrowableError;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -96,10 +97,21 @@ class Handler extends ExceptionHandler
             case $e instanceof AuthorizationException:
                 return Utility::generateResponse(null, [ Errors::UNAUTHORIZED ], Errors::REQUEST_FAILED, $version, ResponseType::FORBIDDEN);
                 break;
+
+            // Stops the super silly errors on string IDs being given.
+            case $e instanceof FatalThrowableError:
+                if (! strpos($message, 'must be of type integer, string given') &&
+                    ! strpos($message, 'Controller'))
+                {
+                    break;
+                }
+                $message = Errors::OBJECT_TYPE_MISMATCH;
+
             case $e instanceof UserFriendlyException:
                 //This is an error we can actually disclose to the user
                 return Utility::generateResponse(null, [ $message ], Errors::REQUEST_FAILED, $version, $returnCode);
                 break;
+
             case $e instanceof ValidationException:
                 $parsedErrors = [];
                 foreach ($e->errors() as $field => $messages)

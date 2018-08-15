@@ -146,5 +146,6 @@ class Errors extends Holder
     // Password reset
     const IP_ADDRESS_MISMATCH = 'IP_ADDRESS_MISMATCH';
 
-
+    // Core
+    const OBJECT_TYPE_MISMATCH = 'OBJECT_TYPE_MISMATCH';
 }

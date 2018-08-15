@@ -8,7 +8,7 @@ $factory->define(App\Node::class, function (Faker\Generator $faker) {
         'protocol' => 'http',
         'access_token' => 'cloud:thisIsAPasswordButYouDontSeeIt',
         'install_id' => $faker->sha256,
-        'status' => array_random(\App\Constants\NodeStatus::getConstants()),
+        'status' => array_random(\App\Constants\NodeStatus::getConstraints()),
         'user_id' => $faker->numberBetween(6, 10),
         'price' => $faker->numberBetween(5, 100),
         'market_model' => array_random(\App\Constants\NodeMarketModel::getConstants()),

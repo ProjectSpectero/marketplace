@@ -42,17 +42,16 @@ class PasswordResetController extends V1Controller
 
         try
         {
-            $user = User::where('email', '=', $email)->firstOrFail();
+            $user = User::findByEmail($email)->firstOrFail();
 
             // Cleanup old tokens (if any exist)
-            PasswordResetToken::where('user_id', $user->id)
-                ->delete();
+            PasswordResetToken::deleteForUser($user);
 
             $resetToken = PasswordResetToken::create([
                 'token' => Utility::getRandomString(2),
                 'user_id' => $user->id,
                 'ip' => $ip,
-                'expires' => Carbon::now()->addMinutes(env('PASSWORD_RESET_TOKEN_EXPIRY', 60))->diffInM
+                'expires' => Carbon::now()->addMinutes(env('PASSWORD_RESET_TOKEN_EXPIRY', 60))
             ]);
 
             Mail::to($email)->queue(new PasswordReset($resetToken, $ip));
@@ -71,7 +70,7 @@ class PasswordResetController extends V1Controller
 
     public function show (Request $request, string $token) : JsonResponse
     {
-        $resetToken = PasswordResetToken::where('token', '=', $token)->firstOrFail();
+        $resetToken = PasswordResetToken::findByToken($token)->firstOrFail();
 
         if ($request->ip() !== $resetToken->ip)
             throw new UserFriendlyException(Errors::IP_ADDRESS_MISMATCH, ResponseType::FORBIDDEN);
@@ -88,7 +87,7 @@ class PasswordResetController extends V1Controller
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
-        $resetToken = PasswordResetToken::where('token', '=', $token)->firstOrFail();
+        $resetToken = PasswordResetToken::findByToken($token)->firstOrFail();
 
         if ($request->ip() !== $resetToken->ip)
             throw new UserFriendlyException(Errors::IP_ADDRESS_MISMATCH, ResponseType::FORBIDDEN);

@@ -102,7 +102,7 @@ class NodeGroupController extends CRUDController
         {
             // Indicating that this is an update
             if ($nodeGroup->getOrders(OrderStatus::ACTIVE)->count() > 0)
-                throw new UserFriendlyException(Errors::HAS_ACTIVE_ORDERS);
+                throw new UserFriendlyException(Errors::HAS_ACTIVE_ORDERS, ResponseType::FORBIDDEN);
 
             // MAR-241: sync market models for underlying nodes when the group's market model is due for change.
             /** @var Node $node */
@@ -166,6 +166,7 @@ class NodeGroupController extends CRUDController
         {
             case 'engagements':
                 return PaginationManager::paginate($request, $nodeGroup->getEngagements()->noEagerLoads());
+
             case 'resources':
                 $nodeResources = [
                     'id' => $nodeGroup->id,

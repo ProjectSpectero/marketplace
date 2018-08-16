@@ -69,12 +69,7 @@ class InvoiceController extends CRUDController
         $invoice->tax = $input['tax'];
         $invoice->status = $input['status'];
         $invoice->due_date = $input['due_date'];
-
-        if (isset($input['currency']))
-        {
-            $currency = $input['currency'];
-            $invoice->currency = isset($currency) ? $currency : $invoice->currency;
-        }
+        $invoice->currency = $input['currency'] ?? Currency::USD;
 
         $invoice->saveOrFail();
 
@@ -83,22 +78,22 @@ class InvoiceController extends CRUDController
 
     public function update(Request $request, int $id): JsonResponse
     {
+        $invoice = Invoice::findOrFail($id);
+
+        $this->authorizeResource($invoice);
+
         $rules = [
-            'order_id' => 'required',
-            'user_id' => 'required',
-            'amount' => 'required',
-            'tax' => 'required',
-            'currency' => 'sometimes',
-            'status' => 'required',
-            'due_date' => 'required'
+            'order_id' => 'required|integer|exists:orders,id',
+            'user_id' => 'required|integer|exists:users,id',
+            'amount' => 'required|numeric',
+            'tax' => 'required|numeric',
+            'currency' => [ 'sometimes', Rule::in(Currency::getConstants()) ],
+            'status' => [ 'required'. Rule::in(InvoiceStatus::getConstants()) ],
+            'due_date' => 'required|date'
         ];
 
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
-
-        $invoice = Invoice::findOrFail($id);
-
-        $this->authorizeResource($invoice);
 
         foreach ($input as $key => $value)
             $invoice->$key = $value;
@@ -162,15 +157,6 @@ class InvoiceController extends CRUDController
         return $this->respond($dataHolder);
     }
 
-    public function render (Request $request, int $id)
-    {
-        $invoice = Invoice::findOrFail($id);
-
-        $this->authorizeResource($invoice, 'invoice.render');
-
-        return $this->renderInvoice($invoice);
-    }
-
     public function generateCreditInvoice (Request $request) : JsonResponse
     {
         $rules = [
@@ -188,7 +174,7 @@ class InvoiceController extends CRUDController
             ->where('status', InvoiceStatus::UNPAID)
             ->get();
 
-        if (!$creditInvoices->isEmpty())
+        if (! $creditInvoices->isEmpty())
             throw new UserFriendlyException(Errors::UNPAID_CREDIT_INVOICES_ARE_PRESENT, ResponseType::FORBIDDEN);
 
         $invoice = new Invoice();

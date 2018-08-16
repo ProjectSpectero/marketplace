@@ -33,8 +33,9 @@ class TransactionController extends CRUDController
     public function store(Request $request): JsonResponse
     {
         $this->authorizeResource();
+
         $rules = [
-            'invoice_id' => 'required|numeric',
+            'invoice_id' => 'required|numeric|exists:invoices,id',
             'payment_processor' => Rule::in(PaymentProcessor::getConstants()),
             'reference' => 'required|alpha_dash',
             'type' => Rule::in(PaymentType::getConstants()),
@@ -42,6 +43,7 @@ class TransactionController extends CRUDController
             'amount' => 'required|numeric',
             'fee' => 'sometimes|numeric',
         ];
+
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 

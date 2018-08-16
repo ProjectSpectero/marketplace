@@ -124,23 +124,29 @@ class OrderController extends CRUDController
         $this->authorizeResource();
 
         $rules = [
-            'status' => 'required',
-            'subscription_reference' => 'sometimes|alpha_dash',
-            'subscription_provider' => [ 'required_with:subscription_reference', Rule::in(PaymentProcessor::getConstants()) ],
-            'term' => 'required',
-            'due_next' => 'required'
+            'user_id' => 'required|integer|exists:users,id',
+            'status' => [ 'required', Rule::in(OrderStatus::getConstants()) ],
+            'term' => 'required|integer',
+            'due_next' => 'required|date',
+            'items' => 'array|min:1',
+            'items.*.type' =>  Rule::in(OrderResourceType::getOrderable()),
+            'items.*.id' => 'required|numeric',
+            'meta.term' => 'required|in:30,365'
         ];
 
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
-        $order = new Order();
-        $order->user_id = $request->user()->id;
-        $order->status = $input['status'];
-        $order->term = $input['term'];
-        $order->due_next = $input['due_next'];
+        /** @var User $user */
+        $user = User::findOrLogAndFail($input['user_id']);
 
+        $order = $this->createOrder($user, $input['term'], Carbon::now(), $input['items']);
+
+        $order->status = $input['status'];
+        $order->due_next = $input['due_next'];
         $order->saveOrFail();
+
+        event(new BillingEvent(Events::ORDER_CREATED, $order));
 
         return $this->respond($order->toArray(), [], Messages::ORDER_CREATED);
     }
@@ -148,11 +154,11 @@ class OrderController extends CRUDController
     public function update(Request $request, int $id): JsonResponse
     {
         $rules = [
-            'status' => 'required',
-            'subscription_reference' => 'required_with:subscription_provider',
-            'subscription_provider' => 'sometimes',
-            'term' => 'required',
-            'due_next' => 'required'
+            'status' => [ 'sometimes', Rule::in(OrderStatus::getConstants()) ],
+            'subscription_reference' => 'sometimes|alpha_dash',
+            'subscription_provider' => [ 'required_with:subscription_reference', Rule::in(PaymentProcessor::getConstants()) ],
+            'term' => 'sometimes|integer',
+            'due_next' => 'sometimes|date'
         ];
 
         $this->validate($request, $rules);
@@ -166,6 +172,8 @@ class OrderController extends CRUDController
             $order->$key = $value;
 
         $order->saveOrFail();
+
+        event(new BillingEvent(Events::ORDER_REVERIFY, $order));
 
         return $this->respond($order->toArray(), [], Messages::ORDER_UPDATED);
     }
@@ -189,7 +197,6 @@ class OrderController extends CRUDController
 
         if (count($errors) == 0)
             throw new UserFriendlyException(Errors::ORDER_ALREADY_VERIFIED);
-
 
         if (count($errors) == $order->lineItems->count())
         {

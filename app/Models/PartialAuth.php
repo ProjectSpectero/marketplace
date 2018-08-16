@@ -2,8 +2,6 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
-
 class PartialAuth extends BaseModel
 {
     protected $table = 'partial_auth';
@@ -11,5 +9,12 @@ class PartialAuth extends BaseModel
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public static function findByUserIdAndToken (int $userId, string $token)
+    {
+        return static::where('user_id', $userId)
+            ->where('two_factor_token', $token)
+            ->whereRaw('expires > NOW()');
     }
 }

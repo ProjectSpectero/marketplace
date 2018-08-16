@@ -41,7 +41,7 @@ class PromoCodeController extends CRUDController
 
         $rules = [
             'code' => 'required|alpha_dash|unique:promo_codes',
-            'group_id' => 'required|integer',
+            'group_id' => 'required|integer|exists:promo_groups,id',
             'usage_limit' => 'required|integer',
             'amount' => 'required|numeric',
             'expires' => 'sometimes|date_format:Y-m-d'
@@ -50,8 +50,11 @@ class PromoCodeController extends CRUDController
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
-        // Let's make sure this group actually exists.
-        PromoGroup::findOrFail($input['group_id']);
+        if ($request->has('expires'))
+        {
+            if (Carbon::now() > $input['expires'])
+                throw new UserFriendlyException(Errors::TIMESTAMP_PASSED);
+        }
 
         $promoCode = new PromoCode();
         $promoCode->code = $input['code'];
@@ -72,9 +75,13 @@ class PromoCodeController extends CRUDController
 
     public function update(Request $request, int $id): JsonResponse
     {
+        $promoCode = PromoCode::findOrFail($id);
+
+        $this->authorizeResource($promoCode);
+
         $rules = [
             'code' => 'required|alpha_dash|unique:promo_codes,code,' . $id,
-            'group_id' => 'required|integer',
+            'group_id' => 'required|integer|exists:promo_groups,id',
             'usage_limit' => 'required|integer',
             'amount' => 'required|numeric',
             'expires' => 'sometimes|date_format:Y-m-d'
@@ -83,19 +90,12 @@ class PromoCodeController extends CRUDController
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
-        $promoCode = PromoCode::findOrFail($id);
-
-        $this->authorizeResource($promoCode);
-
         foreach ($input as $key => $value)
         {
             // If sometimes rules are involved, you're expected to do this to not insert junk.
             if ($request->has($key))
                 $promoCode->$key = $value;
         }
-
-        // Let's make sure this group actually exists.
-        PromoGroup::findOrFail($input['group_id']);
 
         $promoCode->saveOrFail();
 

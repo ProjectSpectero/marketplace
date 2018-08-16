@@ -66,6 +66,11 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
         return $this->hasMany(PasswordResetToken::class);
     }
 
+    public static function findByEmail (string $email)
+    {
+        return static::where('email', $email);
+    }
+
     public function findForPassport (String $identifier)
     {
         /** @var Builder $this */

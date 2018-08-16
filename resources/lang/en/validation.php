@@ -5,6 +5,7 @@ return [
     'required_with' => \App\Constants\Errors::FIELD_REQUIRED_WITH . '::attribute:',
     'integer' => \App\Constants\Errors::FIELD_INTEGER . '::attribute:',
     'email' => \App\Constants\Errors::FIELD_EMAIL . '::attribute:',
+    'exists' => \App\Constants\Errors::FIELD_EXPECTED_EXISTING . '::attribute:',
     'unique' => \App\Constants\Errors::FIELD_UNIQUE . '::attribute:',
     'alpha_num' => \App\Constants\Errors::FIELD_ALPHANUM . '::attribute:',
     'alpha_dash' => \App\Constants\Errors::FIELD_ALPHADASH . '::attribute:',

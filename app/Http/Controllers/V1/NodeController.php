@@ -209,7 +209,9 @@ class NodeController extends CRUDController
 
             $input['ip'] = $ipAddress;
             $input['status'] = NodeStatus::UNCONFIRMED;
+
             $node = Node::create($input);
+
             $node->user_id = $request->user()->id;
             $node->market_model = NodeMarketModel::UNLISTED;
             $node->version = $input['version'];
@@ -321,9 +323,12 @@ class NodeController extends CRUDController
         $node = Node::findOrFail($id);
         $this->authorizeResource($node);
 
-        // A node group for which at least one active order exists cannot be destroyed. Cancel the order first.
+        // A resource for which at least one active order exists cannot be destroyed. Cancel the order first.
         if ($node->getOrders(OrderStatus::ACTIVE)->count() > 0)
             throw new UserFriendlyException(Errors::ORDERS_EXIST, ResponseType::FORBIDDEN);
+
+        if($node->group != null)
+            throw new UserFriendlyException(Errors::NODE_BELONGS_TO_GROUP, ResponseType::FORBIDDEN);
 
         HistoricResource::createCopy($node, ['services', 'ipAddresses'], $node->user);
 
@@ -372,7 +377,7 @@ class NodeController extends CRUDController
                 // Need to build the right JWT payload to interact with the daemon-proxy now.
                 $signer = new Sha512();
                 $token = (new Builder())
-                    ->setIssuer(env('APP_URL', "https://cloud.spectero.com"))
+                    ->setIssuer(env('APP_URL', "https://app.spectero.com"))
                     ->setId(uniqid("", true))
                     ->setIssuedAt(time())
                     ->setNotBefore(time())

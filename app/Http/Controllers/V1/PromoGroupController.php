@@ -33,7 +33,7 @@ class PromoGroupController extends CRUDController
         $this->authorizeResource();
 
         $rules = [
-            'name' => 'required|alpha_dash',
+            'name' => 'required|alpha_dash_spaces',
             'usage_limit' => 'required|integer'
         ];
 
@@ -51,6 +51,9 @@ class PromoGroupController extends CRUDController
 
     public function update(Request $request, int $id): JsonResponse
     {
+        $promoGroup = PromoGroup::findOrFail($id);
+        $this->authorizeResource($promoGroup);
+
         $rules = [
             'name' => 'required|alpha_dash',
             'usage_limit' => 'required|integer'
@@ -58,9 +61,6 @@ class PromoGroupController extends CRUDController
 
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
-
-        $promoGroup = PromoGroup::findOrFail($id);
-        $this->authorizeResource($promoGroup);
 
         foreach ($input as $key => $value)
             $promoGroup->$key = $value;

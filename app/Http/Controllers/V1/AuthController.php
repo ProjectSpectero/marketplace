@@ -28,7 +28,7 @@ class AuthController extends V1Controller
     {
         $this->validate($request, [
             'username' => 'required|email',
-            'password' => 'required|min:2'
+            'password' => 'required|min:5|max:72'
         ]);
 
         $email = $request->get('username');
@@ -46,13 +46,13 @@ class AuthController extends V1Controller
 
             $error = Utility::resolveStatusError($user);
             if (! empty($error))
-                return $this->respond(null, [ $error ], Errors::REQUEST_FAILED, ResponseType::FORBIDDEN);
+                throw new UserFriendlyException($error, ResponseType::FORBIDDEN);
 
             try
             {
                 // Simple existence check, we do not care about the values. That is not our responsibility.
-                UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorEnabled])->firstOrFail();
-                UserMeta::where(['user_id' => $user->id, 'meta_key' => UserMetaKeys::TwoFactorSecretKey])->firstOrFail();
+                UserMeta::loadMeta($user, UserMetaKeys::TwoFactorEnabled, true);
+                UserMeta::loadMeta($user, UserMetaKeys::TwoFactorSecretKey, true);
             }
             catch (ModelNotFoundException $silenced)
             {
@@ -83,7 +83,7 @@ class AuthController extends V1Controller
             return $this->respond($twoFactorResponse->toArray(), [], Messages::MULTI_FACTOR_VERIFICATION_NEEDED);
         }
         else
-            return $this->respond(null, [ Errors::AUTHENTICATION_FAILED ], Errors::REQUEST_FAILED, ResponseType::FORBIDDEN);
+            throw new UserFriendlyException(Errors::AUTHENTICATION_FAILED, ResponseType::FORBIDDEN);
     }
 
     public function impersonate(Request $request, int $id)
@@ -93,6 +93,7 @@ class AuthController extends V1Controller
 
         /** @var User $requestingUser */
         $requestingUser = $request->user();
+        $ip = $request->ip();
 
         if ($user->id == $requestingUser->id)
             throw new UserFriendlyException(Messages::CANNOT_IMPERSONATE_YOURSELF);
@@ -108,7 +109,7 @@ class AuthController extends V1Controller
             $ret = \Cache::get($key);
         else
         {
-            $issuedToken = $user->createToken("Impersonated by $requestingUser->email #($requestingUser->id)");
+            $issuedToken = $user->createToken("Impersonated by $requestingUser->email #($requestingUser->id) from $ip");
             $ret = new OAuthResponse();
 
             $ret->accessToken = $issuedToken->accessToken;

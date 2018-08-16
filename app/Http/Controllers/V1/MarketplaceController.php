@@ -110,7 +110,6 @@ class MarketplaceController extends V1Controller
             if ($operator == 'SORT')
                 $this->verifySort($sortParams, $value, $field);
 
-
             switch ($field)
             {
                 case 'nodes.price':
@@ -258,8 +257,6 @@ class MarketplaceController extends V1Controller
         $query->select(Node::$publicFields)
             ->noEagerLoads();
 
-        //dd($query->toSql());
-
         $results = PaginationManager::internalPaginate($request, $query);
 
         $data = [];
@@ -267,7 +264,7 @@ class MarketplaceController extends V1Controller
         if ($results->total() != 0)
         {
             // Means we actually found something, let's go validate them.
-
+            /** @var Node $node */
             foreach ($results->items() as $node)
             {
                 $groupId = $node->group_id;
@@ -313,6 +310,7 @@ class MarketplaceController extends V1Controller
         switch ($type)
         {
             case 'node':
+                /** @var Node $node */
                 $node = Node::noEagerLoads()->findOrFail($id);
                 $data = $this->prepareNode($node);
 
@@ -321,12 +319,13 @@ class MarketplaceController extends V1Controller
                 /** @var NodeGroup $group */
                 $group = NodeGroup::noEagerLoads()->findOrFail($id);
                 $data = $this->prepareGroup($group);
+
                 break;
             default:
                 throw new UserFriendlyException(Errors::RESOURCE_NOT_FOUND);
         }
 
-        if ($data->market_model == NodeMarketModel::UNLISTED)
+        if (! in_array($data->market_model, NodeMarketModel::getMarketable()))
             throw new UserFriendlyException(Errors::UNAUTHORIZED, ResponseType::FORBIDDEN);
 
         return $this->respond($data->toArray());

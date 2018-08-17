@@ -21,6 +21,7 @@ return [
     ],
     'country' => \App\Constants\Errors::FIELD_COUNTRY . '::attribute',
     'boolean' => \App\Constants\Errors::FIELD_BOOLEAN . '::attribute',
+    'trueboolean' => \App\Constants\Errors::FIELD_BOOLEAN . '::attribute',
     'in' => \App\Constants\Errors::FIELD_IN . '::attribute',
     'between' => [
         'string' => \App\Constants\Errors::FIELD_BETWEEN . '::attribute::min::max',

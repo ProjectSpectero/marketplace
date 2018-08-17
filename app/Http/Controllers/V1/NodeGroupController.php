@@ -128,12 +128,19 @@ class NodeGroupController extends CRUDController
     public function self(Request $request)
     {
         $rules = [
-            'searchId' => 'sometimes|alphanum'
+            'searchId' => 'sometimes|alphanum',
+            'paginate' => 'sometimes|trueboolean'
         ];
         $this->validate($request, $rules);
 
+        $input = $this->cherryPick($request, $rules);
+
         $user = $request->user();
         $query = SearchManager::process($request, 'node_group', NodeGroup::findForUser($user->id));
+
+        // Oh yes, it's a string. Gotta love Laravel!
+        if (isset($input['paginate']) && $input['paginate'] == "false")
+            return $this->respond($query->get()->toArray());
 
         return PaginationManager::paginate($request, $query);
     }

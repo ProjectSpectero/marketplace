@@ -136,7 +136,7 @@ class NodeGroupController extends CRUDController
         $input = $this->cherryPick($request, $rules);
 
         $user = $request->user();
-        $query = SearchManager::process($request, 'node_group', NodeGroup::findForUser($user->id));
+        $query = SearchManager::process($request, 'node_group', NodeGroup::findForUser($user->id)->noEagerLoads());
 
         // Oh yes, it's a string. Gotta love Laravel!
         if (isset($input['paginate']) && $input['paginate'] == "false")

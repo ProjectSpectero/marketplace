@@ -337,8 +337,6 @@ class StripeProcessor extends BasePaymentProcessor
 
         if (strpos($message, 'No such token') !== false)
             $invalid = true;
-        elseif (strpos($message, 'The zip code you supplied failed validation') !== false)
-            $invalid = true;
 
         return $invalid;
     }

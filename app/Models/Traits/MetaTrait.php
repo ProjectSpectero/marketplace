@@ -6,6 +6,7 @@ use App\Errors\FatalException;
 use App\Libraries\Utility;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -37,6 +38,7 @@ trait MetaTrait
     {
         $modelName = self::getModelName($model);
         $modelMeta = null;
+
         $resolvedType = gettype($value);
         $type = in_array($resolvedType, Utility::$metaDataTypes) ? $resolvedType : 'string';
 
@@ -93,7 +95,12 @@ trait MetaTrait
 
     private static function getMetaCacheKey (Model $model, string $key)
     {
-        return sprintf('%s.%d.meta.%s', $model->getTable(), $model->id, $key);
+        $tableName = $model->getTable();
+
+        if (empty($tableName))
+            throw new FatalException("Model returned an empty table name, safe generation of meta cache key is NOT possible!");
+
+        return sprintf('%s.%d.meta.%s', $tableName, $model->id, $key);
     }
 
     public static function cacheLoad (Model $model, string $key, bool $throwsException = false)

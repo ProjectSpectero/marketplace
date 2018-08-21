@@ -32,7 +32,7 @@ class PaymentReminder extends BaseMail
     public function build()
     {
         $manualUrl = Utility::generateUrl('invoice/' . $this->invoice->id, 'frontend');
-        return $this->subject($this->formatTitle('Payment Request for Invoice #' . $this->invoice->id))
+        return $this->subject($this->formatTitle('Payment request for invoice #' . $this->invoice->id))
             ->view('emails.PaymentReminder', [
                 'invoice' => $this->invoice,
                 'manualUrl' => $manualUrl

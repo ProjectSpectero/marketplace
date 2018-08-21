@@ -101,7 +101,7 @@ class NodeEventListener extends BaseListener
 
                 if (empty($data['services']))
                 {
-                    Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, 'Service discovery: no services could be found'));
+                    Mail::to($userEmail)->queue(new NodeVerificationFailed($node, 'Service discovery: no services could be found'));
                     $this->updateNodeStatus($node, NodeStatus::UNCONFIRMED);
 
                     return;
@@ -220,7 +220,7 @@ class NodeEventListener extends BaseListener
                 {
                     if (NodeIPAddress::where('ip', $ipAddress)->count())
                     {
-                        Mail::to($userEmail)->queue(new ProxyVerificationFailed($node, $node->ip, "Duplicate IP of $ipAddress found elsewhere, please open a support ticket. Automatic verification not possible."));
+                        Mail::to($userEmail)->queue(new NodeVerificationFailed($node, "Duplicate IP of $ipAddress found in another account, please open a support ticket. Automatic verification not possible."));
                         $this->updateNodeStatus($node, NodeStatus::UNCONFIRMED);
                         return;
                     }

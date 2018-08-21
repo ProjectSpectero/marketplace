@@ -94,6 +94,7 @@ class SearchManager
         $modelFieldCacheMinutes = config('search.modelFieldCacheMinutes', 30);
         $underlyingModel = Utility::getModelFromResourceSlug($resource);
         $value = property_exists($underlyingModel, 'searchAble') ? $underlyingModel->searchAble : [];
+
         \Cache::put($key, $value, $modelFieldCacheMinutes);
 
         return $value;

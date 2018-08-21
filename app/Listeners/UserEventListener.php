@@ -51,6 +51,7 @@ class UserEventListener extends BaseListener
      *
      * @param  "UserEvent"  $event
      * @return void
+     * @throws \Throwable
      */
     public function handle(UserEvent $event)
     {

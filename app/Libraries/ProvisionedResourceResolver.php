@@ -70,6 +70,7 @@ class ProvisionedResourceResolver
 
                 if ($nodeGroup->isMarketable())
                 {
+                    // Indeed, the group's "market-ability" supersedes that of the node(s) themselves. Notice the missing check.
                     foreach ($nodeGroup->nodes as $node)
                     {
                         $data = [

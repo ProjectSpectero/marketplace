@@ -33,7 +33,7 @@ class PlanManager
 
         return $ret;
     }
-    public static function isMember (User $user, String $plan, bool $throwsExceptions = false) : array
+    public static function isMember (User $user, String $plan, bool $throwsExceptions = false) : bool
     {
         $plans = config('plans', []);
 
@@ -43,7 +43,7 @@ class PlanManager
         $membership = static::resolveMemberships($user, $throwsExceptions);
 
         if (isset($membership[$plan]))
-            return $membership[$plan];
+            return true;
 
         if ($throwsExceptions)
             throw new UserFriendlyException(Errors::USER_NOT_SUBSCRIBED . ':' . $plan, ResponseType::NOT_AUTHORIZED);

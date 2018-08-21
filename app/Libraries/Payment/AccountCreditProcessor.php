@@ -80,7 +80,6 @@ class AccountCreditProcessor extends BasePaymentProcessor
                 'now' => $now
             ]);
 
-
             \DB::transaction(function () use ($user, $credit)
             {
                 $user->credit = $credit;
@@ -96,6 +95,7 @@ class AccountCreditProcessor extends BasePaymentProcessor
 
             return $wrappedResponse;
         }
+
         throw new UserFriendlyException(Errors::ZERO_CREDIT_BALANCE, ResponseType::FORBIDDEN);
     }
 
@@ -106,8 +106,12 @@ class AccountCreditProcessor extends BasePaymentProcessor
         else
             $reason = TransactionReasons::REFUND;
 
+        $invoice = $transaction->invoice;
+        $user = $invoice->user;
 
-        $user = $transaction->invoice->user;
+        if ($invoice->currency !== $user->credit_currency)
+            throw new UserFriendlyException(Errors::INVOICE_CURRENCY_MISMATCH);
+
         $newCredit = $user->credit + $amount;
         $raw = json_encode([
             'was' => $user->credit,
@@ -116,6 +120,7 @@ class AccountCreditProcessor extends BasePaymentProcessor
 
         // First add entry, then refund back ;V
         $ret = $this->addTransaction($this, $transaction->invoice, $amount, 0.00, Utility::getRandomString(2), PaymentType::DEBIT, $reason, $raw);
+
         $user->credit = $newCredit;
         $user->saveOrFail();
 

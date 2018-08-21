@@ -8,7 +8,7 @@ class OpenVPNConfigResolver
 {
     public static function resolveOrderConfig (Node $node, Order $order)
     {
-        $hash = "openvpn.config" . sha1($node->id . $order->id . $node->updated_at . $order->updated_at);
+        $hash = "openvpn.config." . sha1($node->id . $order->id . $node->updated_at . $order->updated_at);
 
         if (\Cache::has($hash))
             return \Cache::get($hash);

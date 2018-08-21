@@ -37,6 +37,7 @@ class StripeProcessor extends BasePaymentProcessor
     /**
      * StripeProcessor constructor.
      * @param Request $request
+     * @throws UserFriendlyException
      */
     public function __construct(Request $request)
     {

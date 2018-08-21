@@ -42,7 +42,7 @@ class ManualPaymentProcessor extends BasePaymentProcessor
                 return
                 [
                     'amount' => 'required|numeric|min:0.1',
-                    'fee' => 'sometimes|numeric|min:0.1',
+                    'fee' => 'sometimes|numeric',
                     'currency' => [ 'required', Rule::in(Currency::getConstants()) ],
                     'note' => 'sometimes|string|min:5|max:2048',
                 ];
@@ -60,7 +60,7 @@ class ManualPaymentProcessor extends BasePaymentProcessor
 
         $candidateAmount = $input['amount'];
         $candidateCurrency = $input['currency'];
-        $candidateFee = isset($input['fee']) ? $input['fee'] : 0;
+        $candidateFee = $input['fee'] ?? 0;
 
         if ($invoice->currency !== $candidateCurrency)
             throw new UserFriendlyException(Errors::INVOICE_CURRENCY_MISMATCH);

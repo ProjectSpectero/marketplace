@@ -36,6 +36,7 @@ class UnauthenticatedNodeController extends V1Controller
     public function handleConfigPush (Request $request, int $id, String $action)
     {
         $req = $this->prepareRequest($request);
+
         $rules = [
             'install_id' => 'required|alpha_dash',
         ];
@@ -71,7 +72,7 @@ class UnauthenticatedNodeController extends V1Controller
         }
 
         if ($user->status != UserStatus::ACTIVE)
-            throw new UserFriendlyException(Errors::UNAUTHORIZED);
+            throw new UserFriendlyException(Errors::UNAUTHORIZED, ResponseType::NOT_AUTHORIZED);
 
         $request->setUserResolver(function () use ($user)
         {

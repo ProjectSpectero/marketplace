@@ -29,12 +29,7 @@ class EnforceTwoFactorVerification
         // Get the context values required
         $user = $request->user();
 
-        if ($request->has('generatedToken'))
-            $token = $request->get('generatedToken');
-        elseif ($request->hasHeader('X-MULTIFACTOR-TOKEN'))
-            $token = $request->header('X-MULTIFACTOR-TOKEN');
-        else
-            $token = null;
+        $token = $request->header('X-MULTIFACTOR-TOKEN', null);
 
         // Endpoint protected by TFA, but we cannot proceed.
         if ($user == null || $token == null)

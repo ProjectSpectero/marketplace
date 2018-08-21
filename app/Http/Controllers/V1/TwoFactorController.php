@@ -96,8 +96,10 @@ class TwoFactorController extends V1Controller
         {
             // If this is thrown, we can proceed. It means that the user does NOT have TFA turned on.
             $twoFactorService = $this->initializeTwoFactor();
+
             // Let's get rid of all old backup codes just in case.
             $this->clearBackupCodes($user);
+
             // Let us generate the default amount of backup codes for the user
             $generatedBackupCodes = $this->generateBackupCodes($user, env('DEFAULT_BACKUP_CODES_COUNT', 5));
 
@@ -108,7 +110,6 @@ class TwoFactorController extends V1Controller
             // Let us generate an URL to the QR code
             // This makes the secret key visible in the URI, however it's fine for now (still HTTPS)
             // TODO: Look into local (secure) QR code generation.
-
             $twoFactorService->setAllowInsecureCallToGoogleApis(true);
             $qrCodeUrl = $twoFactorService->getQRCodeGoogleUrl(env('COMPANY_NAME', 'smartplace'),
                 $user->email,
@@ -208,14 +209,8 @@ class TwoFactorController extends V1Controller
         return $codes;
     }
 
-    private function clearBackupCodes (User $user) : void
+    private function clearBackupCodes (User $user) : int
     {
-        $existingBackupCodes = $user->backupCodes->all();
-        if (! empty($existingBackupCodes))
-        {
-            // Get rid of all backup codes too.
-            foreach ($existingBackupCodes as $backupCode)
-                $backupCode->delete();
-        }
+        return $user->backupCodes()->delete();
     }
 }

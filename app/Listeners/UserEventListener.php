@@ -119,6 +119,7 @@ class UserEventListener extends BaseListener
 
                 break;
             case Events::USER_DELETED:
+                self::cleanUpUserAuthTokens($user->id);
                 break;
 
             case Events::USER_PASSWORD_UPDATED:

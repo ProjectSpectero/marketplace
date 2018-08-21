@@ -24,28 +24,6 @@ class V1Controller extends Controller
      * @param array $errors
      * @param array $data
      * @param string $message
-     *
-     * @return JsonResponse
-     */
-
-
-    public function unifiedResponse($errors, $data, $message)
-    {
-        return response()->json([
-            'errors' => $errors,
-            'result' => $data,
-            'message' => $message,
-            'version' => env('API_VERSION')
-        ]);
-    }
-
-    /**
-     * Method to use the spectero standard unified response style when returning
-     * a response
-     *
-     * @param array $errors
-     * @param array $data
-     * @param string $message
      * @param int $statusCode
      * @param array $headers
      *
@@ -75,7 +53,9 @@ class V1Controller extends Controller
     private function getCallingMethodName (int $depth = 3) : String
     {
         $value = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $depth);
+
         $name = isset($value[2]['function']) ? $value[2]['function'] : null;
+
         if ($name == null || ! in_array($name, CRUDActions::getConstants()))
             throw new FatalException("Could not autodetermine the calling function/method name, authorization is not possible.");
 

@@ -61,6 +61,11 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
         return $this->hasMany(Order::class);
     }
 
+    public function invoices ()
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     public function passwordResetToken ()
     {
         return $this->hasMany(PasswordResetToken::class);

@@ -10,6 +10,7 @@ use App\Constants\UserRoles;
 use App\Constants\UserStatus;
 use App\Errors\UserFriendlyException;
 use App\Events\UserEvent;
+use App\HistoricResource;
 use App\Libraries\BillingUtils;
 use App\Libraries\PaginationManager;
 use App\Libraries\PermissionManager;
@@ -50,6 +51,7 @@ class UserController extends CRUDController
             list($cardInfo['brand'], $cardInfo['last4'], $cardInfo['expires']) = explode(' ', $card->meta_value, 3);
 
         $data = array_merge($user->toArray(), UserMeta::getUserPublicMeta($user));
+
         $data['card'] = $cardInfo;
         $data['plans'] = BillingUtils::getUserPlans($user);
 
@@ -151,7 +153,7 @@ class UserController extends CRUDController
             UserMetaKeys::PhoneNumber => 'sometimes|min:1|max:64',
             UserMetaKeys::Organization => 'sometimes|min:1|max:64',
             UserMetaKeys::TaxIdentification => 'sometimes|min:1|max:96',
-            UserMetaKeys::ShowSplashScreen => 'sometimes|boolean'
+            UserMetaKeys::ShowSplashScreen => 'sometimes|trueboolean'
         ];
 
         $this->validate($request, $rules);
@@ -285,8 +287,11 @@ class UserController extends CRUDController
 
         /** @var User $user */
         $user = User::findOrFail($id);
+        $user->status = UserStatus::DISABLED;
 
-        $user->delete();
+        // User cannot actually be removed without major consequences elsewhere.
+        // Thus, we simply disable it.
+        $user->saveOrFail();
 
         event(new UserEvent(Events::USER_DELETED, $user));
         return $this->respond(null, [], Messages::USER_DESTROYED, ResponseType::NO_CONTENT);
@@ -299,8 +304,7 @@ class UserController extends CRUDController
         try
         {
             /** @var User $user */
-            $user = User::where('email', $email)
-                ->firstOrFail();
+            $user = User::findByEmail($email)->firstOrFail();
 
             $storedToken = UserMeta::loadMeta($user, UserMetaKeys::VerifyToken, true)->meta_value;
             $parsedData = json_decode($storedToken, true);
@@ -316,9 +320,9 @@ class UserController extends CRUDController
         {
             if ($user->status == UserStatus::EMAIL_VERIFICATION_NEEDED)
             {
+                // This check prevents against you verifying an email you actually do not own.
                 if ($verifyToken !== $token || $parsedData['email'] !== $user->email)
-                    return $this->respond(
-                        null, [ Errors::USER_VERIFICATION_FAILED ], null, ResponseType::NOT_AUTHORIZED);
+                    throw new UserFriendlyException(Errors::USER_VERIFICATION_FAILED, ResponseType::NOT_AUTHORIZED);
 
                 $user->status = UserStatus::ACTIVE;
                 $user->saveOrFail();
@@ -328,13 +332,10 @@ class UserController extends CRUDController
                 return $this->respond(null, [], Messages::USER_VERIFIED, ResponseType::OK);
             }
             else
-                return $this->respond(
-                    null, [ Errors::USER_ALREADY_VERIFIED ], Messages::USER_VERIFIED, ResponseType::BAD_REQUEST
-                );
+                throw new UserFriendlyException(Errors::USER_ALREADY_VERIFIED);
         }
 
-        return $this->respond(
-            null, [ Errors::USER_VERIFICATION_FAILED ], null, ResponseType::NOT_AUTHORIZED);
+        throw new UserFriendlyException(Errors::USER_VERIFICATION_FAILED, ResponseType::NOT_AUTHORIZED);
     }
 
     public function regenNodeKey(Request $request)

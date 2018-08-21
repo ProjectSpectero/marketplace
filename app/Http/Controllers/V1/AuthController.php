@@ -117,6 +117,8 @@ class AuthController extends V1Controller
             $ret->success = true;
 
             \Cache::put($key, $ret, env('TOKEN_EXPIRY', 10));
+
+            \Log::warning("Impersonation token issued on behalf of $requestingUser->email (ip: $ip) for $user->email (#$user->id)");
         }
 
         return $this->respond($ret->toArray());

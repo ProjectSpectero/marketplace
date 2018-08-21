@@ -13,7 +13,6 @@ use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
 use App\Node;
 use App\NodeGroup;
-use App\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -139,6 +138,7 @@ class NodeGroupController extends CRUDController
         $query = SearchManager::process($request, 'node_group', NodeGroup::findForUser($user->id)->noEagerLoads());
 
         // Oh yes, it's a string. Gotta love Laravel!
+        // TODO: Move this into the pagination manager if reuse is expected with a settings key that allows controlling it on a per endpoint/model basis. It should also turn off all auto-expansion of relations.
         if (isset($input['paginate']) && $input['paginate'] == "false")
             return $this->respond($query->get()->toArray());
 

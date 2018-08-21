@@ -12,4 +12,15 @@ class PasswordResetToken extends BaseModel
     {
         return $this->belongsTo(User::class);
     }
+
+    public static function findByToken (string $token)
+    {
+        return static::where('token', $token)
+            ->whereRaw('expires > NOW()');
+    }
+
+    public static function deleteForUser (User $user)
+    {
+        return static::where('user_id', $user->id)->delete();
+    }
 }

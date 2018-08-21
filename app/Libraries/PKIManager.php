@@ -32,6 +32,8 @@ class PKIManager
 
     public static function issueUserChain (CAInfo $caInfo, string $userIdentifier, string $exportPassword = '') : string
     {
+        self::ensureOpenSSL();
+
         $seed = Utility::getRandomString();
         $confirmedWorkingDir = self::createTemporaryDirectory($seed);
 
@@ -106,10 +108,10 @@ class PKIManager
 
     private static function ensureOpenSSL ()
     {
-        $binary = strpos(strtolower(PHP_OS), 'win') > -1 ? "where" : 'which';
+        $binary = strpos(strtolower(PHP_OS), 'win') > -1 ? 'where' : 'which';
         $commandToRun = "$binary openssl";
 
-        self::runAndEnsureSuccess(new Process($commandToRun));
+        self::runAndEnsureSuccess($commandToRun);
     }
 
     private static function runAndEnsureSuccess(string $command, string $workingDir = null)

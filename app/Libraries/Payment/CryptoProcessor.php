@@ -90,15 +90,9 @@ class CryptoProcessor extends BasePaymentProcessor
             ],
             'pricing_type' => 'fixed_price',
             'metadata' => [
-                'user' => [
-                    'id' => $user->id,
-                    'email' => $user->email
-                ],
-                'invoice' => [
-                    'id' => $invoice->id,
-                    'dueAmount' => $dueAmount,
-                    'currency' => $invoice->currency
-                ],
+                'userId' => $user->id,
+                'userEmail' => $user->email,
+                'invoiceId' => $invoice->id
             ]
         ];
 
@@ -134,10 +128,10 @@ class CryptoProcessor extends BasePaymentProcessor
         $event = $data['event'];
 
         /** @var Invoice $invoice */
-        $invoice = Invoice::findOrLogAndFail($event['data']['metadata']['invoice']['id'], $data);
+        $invoice = Invoice::findOrLogAndFail($event['data']['metadata']['invoiceId'], $data);
 
         /** @var User $user */
-        $user = User::findOrLogAndFail($event['data']['metadata']['user']['id'], $data);
+        $user = User::findOrLogAndFail($event['data']['metadata']['userId'], $data);
 
         $ret = null;
 
@@ -152,10 +146,11 @@ class CryptoProcessor extends BasePaymentProcessor
             case "charge:confirmed":
                 // OK bob, we got paid. Let's validate that everything is as it seems
                 $this->ensureSuccess(self::METHOD_CALLBACK, $data);
-                $paidReference = $event['data']['metadata']['invoice'];
 
-                $paidAmount = $paidReference['dueAmount'];
-                $paidCurrency = $paidReference['currency'];
+                $pricingData = $event['data']['pricing']['local'];
+
+                $paidAmount = (float) $pricingData['amount'];
+                $paidCurrency = $pricingData['currency'];
 
                 if (strcasecmp($paidCurrency, $invoice->currency) !== 0)
                     throw new UserFriendlyException(Errors::INVOICE_CURRENCY_MISMATCH);
@@ -222,20 +217,21 @@ class CryptoProcessor extends BasePaymentProcessor
 
             case self::METHOD_CALLBACK:
                 $data = [
-                    'id' => 'required|integer',
+                    'id' => 'required',
                     'event' => 'required|array',
                     'event.id' => 'required|alpha_dash',
                     'event.type' => [ 'required', Rule::in(['charge:confirmed', 'charge:failed'])],
                     'event.api_version' => 'required|equals:' . self::targetVersion,
                     'event.data' => 'required|array',
                     'event.data.code' => 'required',
+                    'event.data.pricing_type' => 'required|equals:fixed_price',
+                    'event.data.pricing.local' => 'required|array',
+                    'event.data.pricing.local.amount' => 'required|numeric',
+                    'event.data.pricing.local.currency' => [ 'required', Rule::in(Currency::getConstants()) ],
                     'event.data.metadata' => 'required|array',
-                    'event.data.metadata.user' => 'required|array',
-                    'event.data.metadata.user.id' => 'required|integer',
-                    'event.data.metadata.invoice' => 'required|array',
-                    'event.data.metadata.invoice.id' => 'required|integer',
-                    'event.data.metadata.invoice.dueAmount' => 'required|numeric',
-                    'event.data.metadata.invoice.currency' => [ 'required', Rule::in(Currency::getConstants()) ]
+                    'event.data.metadata.userId' => 'required|integer',
+                    'event.data.metadata.userEmail' => 'required|email',
+                    'event.data.metadata.invoiceId' => 'required|integer',
                 ];
 
                 break;

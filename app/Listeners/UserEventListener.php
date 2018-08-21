@@ -51,6 +51,7 @@ class UserEventListener extends BaseListener
      *
      * @param  "UserEvent"  $event
      * @return void
+     * @throws \Throwable
      */
     public function handle(UserEvent $event)
     {
@@ -119,11 +120,12 @@ class UserEventListener extends BaseListener
 
                 break;
             case Events::USER_DELETED:
+                self::cleanUpUserAuthTokens($user->id);
                 break;
 
             case Events::USER_PASSWORD_UPDATED:
                 // Let's notify the user that their password has been changed.
-                Mail::to($user->email)->queue(new PasswordChanged('undisclosed', $event->dataBag['ip']));
+                Mail::to($user->email)->queue(new PasswordChanged('undisclosed', $event->dataBag['ip'] ?? 'unknown'));
 
                 // Now, we need to remove all oAuth tokens they might have issued. This will log them out from every device.
                 self::cleanUpUserAuthTokens($user->id);

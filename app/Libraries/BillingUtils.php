@@ -219,6 +219,7 @@ class BillingUtils
                     break;
                 // TODO: Add proper handling for enterprise, and at that point get a proper verification routine going.
                 case OrderResourceType::ENTERPRISE:
+                    // Why 2? Because switch acts like a loop in PHP (yeah...)
                     continue 2;
                 default:
                     $resource = null;
@@ -252,7 +253,7 @@ class BillingUtils
             {
                 case NodeMarketModel::UNLISTED:
                     if ($throwsExceptions)
-                        throw new UserFriendlyException(Errors::RESOURCE_UNLISTED);
+                        throw new UserFriendlyException(Errors::RESOURCE_NOT_FOUND);
 
                     $errors[] = [
                         'id' => $item->id,

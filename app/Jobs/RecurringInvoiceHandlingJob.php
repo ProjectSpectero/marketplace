@@ -67,7 +67,6 @@ class RecurringInvoiceHandlingJob extends BaseJob
                 \Log::info("Order #$order->id: generated invoice #$newInvoice->id due on $newInvoice->due_date for renewal.");
 
                 // Now, let's notify the user that this invoice has been generated.
-                // TODO: actually brief them on the condition of their stored payment method, or account credit (i.e: will it be enough, or is further action required)?
                 Mail::to($lastInvoice->user->email)->queue(new NewInvoiceGeneratedMail($newInvoice));
             }
             else

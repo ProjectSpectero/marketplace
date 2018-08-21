@@ -13,7 +13,6 @@ use App\Libraries\PaginationManager;
 use App\Libraries\SearchManager;
 use App\Node;
 use App\NodeGroup;
-use App\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -81,7 +80,7 @@ class NodeGroupController extends CRUDController
 
         $rules = [
             'friendly_name' => 'sometimes|alpha_dash_spaces|max:64',
-            'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstants()) ],
+            'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstraints()) ],
         ];
 
         if ($request->has('price'))
@@ -102,7 +101,15 @@ class NodeGroupController extends CRUDController
         {
             // Indicating that this is an update
             if ($nodeGroup->getOrders(OrderStatus::ACTIVE)->count() > 0)
-                throw new UserFriendlyException(Errors::HAS_ACTIVE_ORDERS);
+                throw new UserFriendlyException(Errors::HAS_ACTIVE_ORDERS, ResponseType::FORBIDDEN);
+
+            // MAR-241: sync market models for underlying nodes when the group's market model is due for change.
+            /** @var Node $node */
+            foreach ($nodeGroup->nodes as $node)
+            {
+                $node->market_model = $input['market_model'];
+                $node->saveOrFail();
+            }
         }
 
         foreach ($input as $key => $value)
@@ -120,12 +127,20 @@ class NodeGroupController extends CRUDController
     public function self(Request $request)
     {
         $rules = [
-            'searchId' => 'sometimes|alphanum'
+            'searchId' => 'sometimes|alphanum',
+            'paginate' => 'sometimes|trueboolean'
         ];
         $this->validate($request, $rules);
 
+        $input = $this->cherryPick($request, $rules);
+
         $user = $request->user();
-        $query = SearchManager::process($request, 'node_group', NodeGroup::findForUser($user->id));
+        $query = SearchManager::process($request, 'node_group', NodeGroup::findForUser($user->id)->noEagerLoads());
+
+        // Oh yes, it's a string. Gotta love Laravel!
+        // TODO: Move this into the pagination manager if reuse is expected with a settings key that allows controlling it on a per endpoint/model basis. It should also turn off all auto-expansion of relations.
+        if (isset($input['paginate']) && $input['paginate'] == "false")
+            return $this->respond($query->get()->toArray());
 
         return PaginationManager::paginate($request, $query);
     }
@@ -158,6 +173,7 @@ class NodeGroupController extends CRUDController
         {
             case 'engagements':
                 return PaginationManager::paginate($request, $nodeGroup->getEngagements()->noEagerLoads());
+
             case 'resources':
                 $nodeResources = [
                     'id' => $nodeGroup->id,
@@ -218,9 +234,16 @@ class NodeGroupController extends CRUDController
             $this->authorizeResource($nodeGroup, 'node_group.assign');
 
             $node->group_id = $groupId;
+
+            // On a node being assigned to a group, its market model should be synced to that of the group.
+            if ($node->market_model != $nodeGroup->market_model)
+                $node->market_model = $nodeGroup->market_model;
         }
         else
+        {
             $node->group_id = null;
+            $node->market_model = NodeMarketModel::UNLISTED;
+        }
 
         $node->saveOrFail();
 

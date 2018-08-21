@@ -20,7 +20,7 @@ class NodesTableSeeder extends Seeder
 
         $systemTemplates = [
             '{"CPU":{"Model":"Intel(R) Core(TM) i7-3770K CPU @ 3.50GHz","Cores":4,"Threads":8,"Cache Size":1024},"Memory":{"Physical":{"Used":16171319296,"Free":9536708608,"Total":25708027904},"Virtual":{"Used":27597258752,"Free":6432268288,"Total":34029527040}},"Environment":{"Hostname":"BLEU","OS Version":{"platform":2,"servicePack":"","version":{"major":6,"minor":2,"build":9200,"revision":0,"majorRevision":0,"minorRevision":0},"versionString":"Microsoft Windows NT 6.2.9200.0"},"64-Bits":true}}',
-            '{"CPU":{"Model":" Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":8,"Cache Size":" 8192 KB"},"Memory":{"Physical":{"Used":771387392,"Free":1376096256,"Total":2147483648}},"Environment":{"Hostname":"dev","OS Version":{"platform":4,"servicePack":"","version":{"major":2,"minor":6,"build":32,"revision":42,"majorRevision":0,"minorRevision":42},"versionString":"Unix 2.6.32.42"},"64-Bits":true}}'
+            '{"CPU":{"Model":"Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz","Cores":4,"Threads":8,"Cache Size":" 8192 KB"},"Memory":{"Physical":{"Used":771387392,"Free":1376096256,"Total":2147483648}},"Environment":{"Hostname":"dev","OS Version":{"platform":4,"servicePack":"","version":{"major":2,"minor":6,"build":32,"revision":42,"majorRevision":0,"minorRevision":42},"versionString":"Unix 2.6.32.42"},"64-Bits":true}}'
         ];
 
         $system_data = array_map(function ($data) { return json_decode($data, true); }, $systemTemplates);
@@ -79,9 +79,13 @@ class NodesTableSeeder extends Seeder
             INSERT INTO `Configuration`(`Key`,`Value`,`CreatedDate`,`UpdatedDate`) VALUES ('cloud.connect.node-key','25e7e751047aad89f9fd7fa19fe806618ee9e944cbeb861398f8e4534498659a','2018-07-19 23:33:01.4711129','2018-07-19 23:33:01.4711129');
         */
 
+        $ips = [
+            '144.202.64.60', '104.238.147.40', '2001:19f0:6401:78d:5400:1ff:fea1:df87'
+        ];
+
         $realNode = new \App\Node();
         $realNode->id = 101;
-        $realNode->ip = '23.158.64.30';
+        $realNode->ip = $ips[0];
         $realNode->port = 6024;
         $realNode->friendly_name = 'Real Test Node 1';
         $realNode->protocol = 'http';
@@ -207,7 +211,19 @@ class NodesTableSeeder extends Seeder
 			}
 		]', true);
 
-        $realNode->save();
+        $realNode->saveOrFail();
+
+        foreach ($ips as $ip)
+        {
+            $stub = new \App\NodeIPAddress();
+            $stub->ip = $ip;
+            $stub->node_id = $realNode->id;
+            $stub->asn = 20336;
+            $stub->city = 'Dallas';
+            $stub->cc = 'US';
+
+            $stub->saveOrFail();
+        }
 
         $this->createServices($realNode);
     }

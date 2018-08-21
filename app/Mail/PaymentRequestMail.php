@@ -34,7 +34,7 @@ class PaymentRequestMail extends BaseMail
     public function build()
     {
         $manualUrl = Utility::generateUrl('invoice/' . $this->invoice->id, 'frontend');
-        return $this->subject($this->formatTitle('Automatic Payment Failed'))
+        return $this->subject($this->formatTitle('Automatic payment failed for invoice #' . $this->invoice->id))
             ->view('emails.PaymentRequest', [
                 'manualUrl' => $manualUrl,
                 'invoice' => $this->invoice,

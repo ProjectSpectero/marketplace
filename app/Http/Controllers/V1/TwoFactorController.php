@@ -7,6 +7,7 @@ use App\Constants\Errors;
 use App\Constants\Messages;
 use App\Constants\ResponseType;
 use App\Constants\UserMetaKeys;
+use App\Errors\UserFriendlyException;
 use App\Libraries\MultifactorVerifier;
 use App\Libraries\Utility;
 use App\Models\Opaque\TwoFactorManagementResponse;
@@ -56,16 +57,13 @@ class TwoFactorController extends V1Controller
         {
             /** @var User $user */
             $user = User::findOrFail($userId);
-            $partialAuth = PartialAuth::where('user_id', $userId)
-                ->where('two_factor_token', $twoFactorToken)
-                ->where('expires', '>', Carbon::now())
-                ->firstOrFail();
+            $partialAuth = PartialAuth::findByUserIdAndToken($userId, $twoFactorToken)->firstOrFail();
         }
         catch (ModelNotFoundException $silenced)
         {
             // Have to catch and manually bail, otherwise the 404 generated is a way to enumerate users into their internal IDs.
             // Any one of the 4 calls above failing is an indicator of TFA not being possible.
-            return $this->respond(null, [ Errors::AUTHENTICATION_FAILED => '' ], null, ResponseType::FORBIDDEN);
+            throw new UserFriendlyException(Errors::AUTHENTICATION_FAILED, ResponseType::FORBIDDEN);
         }
 
         // At this stage, we know that the user exists and actually has TFA turned on.
@@ -77,7 +75,7 @@ class TwoFactorController extends V1Controller
             Utility::incrementLoginCount($user);
 
             $partialAuth->delete();
-            return $this->respond(\json_decode($partialAuth->data, true), [], Messages::OAUTH_TOKEN_ISSUED);
+            return $this->respond(json_decode($partialAuth->data, true), [], Messages::OAUTH_TOKEN_ISSUED);
         }
 
 
@@ -98,8 +96,10 @@ class TwoFactorController extends V1Controller
         {
             // If this is thrown, we can proceed. It means that the user does NOT have TFA turned on.
             $twoFactorService = $this->initializeTwoFactor();
+
             // Let's get rid of all old backup codes just in case.
             $this->clearBackupCodes($user);
+
             // Let us generate the default amount of backup codes for the user
             $generatedBackupCodes = $this->generateBackupCodes($user, env('DEFAULT_BACKUP_CODES_COUNT', 5));
 
@@ -110,7 +110,6 @@ class TwoFactorController extends V1Controller
             // Let us generate an URL to the QR code
             // This makes the secret key visible in the URI, however it's fine for now (still HTTPS)
             // TODO: Look into local (secure) QR code generation.
-
             $twoFactorService->setAllowInsecureCallToGoogleApis(true);
             $qrCodeUrl = $twoFactorService->getQRCodeGoogleUrl(env('COMPANY_NAME', 'smartplace'),
                 $user->email,
@@ -125,8 +124,9 @@ class TwoFactorController extends V1Controller
 
             return $this->respond($response->toArray(), [], Messages::MULTI_FACTOR_FIRSTTIME_VERIFICATION_NEEDED);
         }
+
         // If not thrown, user has two factor turned on already. Trying to turn it on again does not make sense.
-        return $this->respond(null, [ Errors::MULTI_FACTOR_ALREADY_ENABLED => '' ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
+        throw new UserFriendlyException(Errors::MULTI_FACTOR_ALREADY_ENABLED);
     }
 
     public function disableTwoFactor (Request $request) : JsonResponse
@@ -136,8 +136,10 @@ class TwoFactorController extends V1Controller
         {
             $isTwoFactorEnabled = UserMeta::loadMeta($user, UserMetaKeys::TwoFactorEnabled, true);
             $userSecretKey = UserMeta::loadMeta($user, UserMetaKeys::TwoFactorSecretKey, true);
+
             $isTwoFactorEnabled->delete();
             $userSecretKey->delete();
+
             $this->clearBackupCodes($user);
 
             return $this->respond(null, [], Messages::MULTI_FACTOR_DISABLED);
@@ -145,15 +147,16 @@ class TwoFactorController extends V1Controller
         catch (ModelNotFoundException $silenced)
         {
             // If these two don't exist, that means TFA was NOT turned on.
-            return $this->respond(null, [ Errors::MULTI_FACTOR_NOT_ENABLED => '' ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
+            throw new UserFriendlyException(Errors::MULTI_FACTOR_NOT_ENABLED);
         }
     }
 
     public function showUserBackupCodes (Request $request) : JsonResponse
     {
         $user = $request->user();
+
         if (! $this->isMultifactorEnabled($user))
-            return $this->respond(null, [ Errors::MULTI_FACTOR_NOT_ENABLED => '' ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
+            throw new UserFriendlyException(Errors::MULTI_FACTOR_NOT_ENABLED);
 
         $codes = $user->backupCodes->pluck('code');
         return $this->respond($codes->toArray());
@@ -162,8 +165,9 @@ class TwoFactorController extends V1Controller
     public function regenerateUserBackupCodes (Request $request) : JsonResponse
     {
         $user = $request->user();
+
         if (! $this->isMultifactorEnabled($user))
-            return $this->respond(null, [ Errors::MULTI_FACTOR_NOT_ENABLED => '' ], Errors::REQUEST_FAILED, ResponseType::BAD_REQUEST);
+            throw new UserFriendlyException(Errors::MULTI_FACTOR_NOT_ENABLED);
 
         // MFA is turned on, let's clear all old codes and generate new ones
         $this->clearBackupCodes($user);
@@ -205,14 +209,8 @@ class TwoFactorController extends V1Controller
         return $codes;
     }
 
-    private function clearBackupCodes (User $user) : void
+    private function clearBackupCodes (User $user) : int
     {
-        $existingBackupCodes = $user->backupCodes->all();
-        if (! empty($existingBackupCodes))
-        {
-            // Get rid of all backup codes too.
-            foreach ($existingBackupCodes as $backupCode)
-                $backupCode->delete();
-        }
+        return $user->backupCodes()->delete();
     }
 }

@@ -109,6 +109,7 @@ class BillingEventListener extends BaseListener
                                             {
                                                 $order->due_next = Carbon::now()->addDays($order->term);
                                                 $order->status = OrderStatus::ACTIVE;
+
                                                 foreach ($order->lineItems as $item)
                                                 {
                                                     $item->status = OrderStatus::ACTIVE;
@@ -132,6 +133,7 @@ class BillingEventListener extends BaseListener
                             {
                                 // Well now, user paid a credit add invoice. Let's add him his credit, shall we?
                                 // TODO: make this multi-currency aware someday.
+
                                 $user->credit = $user->credit + $object->amount; // Currency is assumed to be USD
                                 $user->saveOrFail();
                             }
@@ -140,6 +142,7 @@ class BillingEventListener extends BaseListener
                         {
                             // TODO: Figure out the multi-currency impact here someday.
                             // This block is what transitions the invoice out of a 'processing' status even if it's not fully paid.
+
                             $invoice->status = InvoiceStatus::PARTIALLY_PAID;
                             $invoice->saveOrFail();
                         }
@@ -163,8 +166,6 @@ class BillingEventListener extends BaseListener
                 $user = $order->user;
 
                 // Let's notify our user and confirm that their order has been placed.
-                // This email also notifies them if they failed the fraud check
-                // If they passed, it asks them to make payment.
                 Mail::to($user->email)->queue(new OrderCreated($order));
 
             break;
@@ -216,8 +217,6 @@ class BillingEventListener extends BaseListener
                 }
 
                 break;
-
-
         }
     }
 }

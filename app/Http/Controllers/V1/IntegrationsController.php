@@ -22,7 +22,7 @@ class IntegrationsController extends V1Controller
         if ($user->status == UserStatus::EMAIL_VERIFICATION_NEEDED)
             throw new UserFriendlyException(Errors::EMAIL_VERIFICATION_NEEDED, ResponseType::FORBIDDEN);
 
-        $name = $user->name != null ? "Spectero User" : $user->name;
+        $name = $user->name ?? env('COMPANY_NAME', 'Spectero') . ' User';
         $email = $user->email;
         $timestamp = time();
 

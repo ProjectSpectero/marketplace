@@ -57,7 +57,7 @@ class EngagementController extends CRUDController
     {
         $user = \Auth::user();
         if ($user == null)
-            throw new FatalException("User was null, this is not supposed to happen.");
+            throw new FatalException("EngagementController#authorizeItem: User was null, this is not supposed to happen.");
 
         switch ($caller)
         {

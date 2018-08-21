@@ -38,15 +38,14 @@ class PasswordResetController extends V1Controller
 
         $this->validate($request, $rules);
         $email = $request->get('email');
+        $ip = $request->ip();
 
         try
         {
-            $user = User::where('email', '=', $email)->firstOrFail();
-            $ip = $request->ip();
+            $user = User::findByEmail($email)->firstOrFail();
 
             // Cleanup old tokens (if any exist)
-            PasswordResetToken::where('user_id', $user->id)
-                ->delete();
+            PasswordResetToken::deleteForUser($user);
 
             $resetToken = PasswordResetToken::create([
                 'token' => Utility::getRandomString(2),
@@ -60,6 +59,7 @@ class PasswordResetController extends V1Controller
         catch (ModelNotFoundException $silenced)
         {
             // Intentionally silenced to prevent email enumeration
+            \Log::warning("A password reset was attempted for $email from $ip, but no users could be found! User enumeration is being attempted if this message repeats too many times.");
         }
 
         // This is NOT a success message, but a generic acknowledgement instead. It should be made clear to the user
@@ -70,7 +70,7 @@ class PasswordResetController extends V1Controller
 
     public function show (Request $request, string $token) : JsonResponse
     {
-        $resetToken = PasswordResetToken::where('token', '=', $token)->firstOrFail();
+        $resetToken = PasswordResetToken::findByToken($token)->firstOrFail();
 
         if ($request->ip() !== $resetToken->ip)
             throw new UserFriendlyException(Errors::IP_ADDRESS_MISMATCH, ResponseType::FORBIDDEN);
@@ -87,7 +87,7 @@ class PasswordResetController extends V1Controller
         $this->validate($request, $rules);
         $input = $this->cherryPick($request, $rules);
 
-        $resetToken = PasswordResetToken::where('token', '=', $token)->firstOrFail();
+        $resetToken = PasswordResetToken::findByToken($token)->firstOrFail();
 
         if ($request->ip() !== $resetToken->ip)
             throw new UserFriendlyException(Errors::IP_ADDRESS_MISMATCH, ResponseType::FORBIDDEN);
@@ -109,8 +109,9 @@ class PasswordResetController extends V1Controller
             }
         }
 
-        Mail::to($user->email)->queue(new PasswordChanged($newPassword, $resetToken->ip));
-        event(new UserEvent(Events::USER_PASSWORD_UPDATED, $user));
+        event(new UserEvent(Events::USER_PASSWORD_UPDATED, $user, [
+            'ip' => $resetToken->ip
+        ]));
 
         $resetToken->delete();
 

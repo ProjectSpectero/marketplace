@@ -50,7 +50,7 @@ class PaymentController extends V1Controller
         if (! in_array($invoice->status, [ InvoiceStatus::UNPAID, InvoiceStatus::PARTIALLY_PAID ]))
             throw new UserFriendlyException(Errors::INVOICE_STATUS_MISMATCH);
 
-        // Credit-add invoices are ONLY payable with Paypal, we will NOT charge cards to add-credit (lowers liability).
+        // Credit-add invoices are ONLY payable with select gateways, we will NOT charge cards to add-credit (lowers liability).
         if (! in_array($processor, BillingUtils::resolveUsableGateways($invoice, $request->user())))
             throw new UserFriendlyException(Errors::GATEWAY_DISABLED_FOR_PURPOSE, ResponseType::FORBIDDEN);
 
@@ -218,7 +218,6 @@ class PaymentController extends V1Controller
         {
             $complete = false;
         }
-
 
         return $this->respond([
             'complete' => $complete,

@@ -27,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
         Validator::extend('country', 'App\Validators\CountryValidator@validate');
         Validator::extend('equals', 'App\Validators\EqualityValidator@validate');
         Validator::extend('alpha_dash_spaces', 'App\Validators\AlphaDashPlusSpacesValidator@validate');
+        Validator::extend('trueboolean', 'App\Validators\TrueBooleanValidator@validate');
 
         \Queue::failing(function (JobFailed $event)
         {

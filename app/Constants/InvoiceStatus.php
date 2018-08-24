@@ -13,4 +13,12 @@ class InvoiceStatus extends Holder
     const REFUNDED = 'REFUNDED';
     const CANCELLED = 'CANCELLED';
     const PROCESSING = 'PROCESSING';
+
+    public static function getPayable () : array
+    {
+        return [
+            self::UNPAID,
+            self::PARTIALLY_PAID
+        ];
+    }
 }

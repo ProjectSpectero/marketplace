@@ -49,25 +49,11 @@ class InvoicePaymentReminder extends BaseJob
 
         foreach ($query as $invoice)
         {
-            $user = $invoice->user;
-            $dueAmount = BillingUtils::getInvoiceDueAmount($invoice);
-
-            // Let's verify if user has ample credit to cover the invoice, or if we have a stored payment method.
-            // If either are true, there is no point to nagging them for money.
-
-            // User's account has enough credit balance to cover this invoice, let's not bother them.
-            if ($user->credit >= $dueAmount && $user->credit_currency == $invoice->currency)
-                continue;
-
-            try
+            // It returns null when it can't find a auto-deduction method.
+            if (BillingUtils::resolveAutoDeductionMethod($invoice) == null)
             {
-                // User has a stored card, we'll auto-charge it when the time comes. Let's not nag them.
-                // TODO: Implement tracking for non-operational stored payment methods.
+                $user = $invoice->user;
 
-                UserMeta::loadMeta($user, UserMetaKeys::StripeCustomerIdentifier, true);
-            }
-            catch (ModelNotFoundException $exception)
-            {
                 \Log::info("Sending invoice payment reminder to user #$user->id about invoice #$invoice->id");
                 Mail::to($user->email)->queue(new PaymentReminder($invoice));
 

@@ -41,5 +41,9 @@ class Invoice extends BaseModel
         return static::where('order_id', $order->id);
     }
 
+    public function isPayable () : bool
+    {
+        return in_array($this->status, InvoiceStatus::getPayable());
+    }
 
 }

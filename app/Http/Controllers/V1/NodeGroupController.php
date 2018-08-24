@@ -45,7 +45,7 @@ class NodeGroupController extends CRUDController
         $this->authorizeResource();
 
         $rules = [
-            'friendly_name' => 'required|alpha_dash_spaces|max:64',
+            'friendly_name' => 'required|max:32',
             'market_model' => [ 'required', Rule::in(NodeMarketModel::getConstraints()) ],
         ];
 
@@ -79,7 +79,7 @@ class NodeGroupController extends CRUDController
         $this->authorizeResource($nodeGroup);
 
         $rules = [
-            'friendly_name' => 'sometimes|alpha_dash_spaces|max:64',
+            'friendly_name' => 'sometimes|max:32',
             'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstraints()) ],
         ];
 

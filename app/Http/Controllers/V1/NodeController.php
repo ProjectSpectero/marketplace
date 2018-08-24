@@ -246,7 +246,7 @@ class NodeController extends CRUDController
             'ip' => 'required|ip',
             'port' => 'required|integer|min:1024|max:65534',
             'access_token' => 'sometimes|min:5|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
-            'friendly_name' => 'sometimes|alpha_dash_spaces|max:64',
+            'friendly_name' => 'sometimes|max:32',
             'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstraints()) ]
         ];
 

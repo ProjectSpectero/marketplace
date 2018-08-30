@@ -35,7 +35,9 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         $api->get('payment/{processor}/callback', 'PaymentController@callback');
         $api->post('payment/{processor}/callback', 'PaymentController@callback');
 
-        $api->post('password-reset', 'PasswordResetController@generate');
+        // Require captcha on PW reset token request
+        $api->post('password-reset', [ 'middleware' => 'captcha', 'uses' => 'PasswordResetController@generate' ]);
+
         $api->get('password-reset/{token}', 'PasswordResetController@show');
         $api->post('password-reset/{token}', 'PasswordResetController@reset');
 

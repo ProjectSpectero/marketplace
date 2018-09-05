@@ -32,10 +32,14 @@ class PaymentReminder extends BaseMail
     public function build()
     {
         $manualUrl = Utility::generateUrl('invoice/' . $this->invoice->id, 'frontend');
+
+        $verb = $this->invoice->due_date->isPast() ? 'was' : 'is';
+
         return $this->subject($this->formatTitle('Payment request for invoice #' . $this->invoice->id))
             ->view('emails.PaymentReminder', [
                 'invoice' => $this->invoice,
-                'manualUrl' => $manualUrl
+                'manualUrl' => $manualUrl,
+                'verb' => $verb
             ]);
     }
 }

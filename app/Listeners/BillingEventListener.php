@@ -89,7 +89,10 @@ class BillingEventListener extends BaseListener
                                     {
                                         case OrderStatus::ACTIVE:
                                             // This means we're basically renewing it.
-                                            $order->due_next = $order->due_next->addDays($order->term);
+                                            $newDueNext = $order->due_next->addDays($order->term);
+                                            Log::info("Renewing Order #$order->id: due date advanced from $order->due_next to $newDueNext ($order->term days)");
+
+                                            $order->due_next = $newDueNext;
 
                                             break;
 
@@ -107,7 +110,10 @@ class BillingEventListener extends BaseListener
                                             }
                                             else
                                             {
-                                                $order->due_next = Carbon::now()->addDays($order->term);
+                                                $newDueNext = Carbon::now()->addDays($order->term);
+                                                Log::info("First Activation of Order #$order->id: due date advanced from $order->due_next to $newDueNext ($order->term days)");
+
+                                                $order->due_next = $newDueNext;
                                                 $order->status = OrderStatus::ACTIVE;
 
                                                 foreach ($order->lineItems as $item)

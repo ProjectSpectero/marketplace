@@ -57,16 +57,7 @@ class PaymentController extends V1Controller
         /** @var Order $order */
         $order = $invoice->order;
 
-        // Billing profile completeness check is bypassed for plans at this moment.
-        // We need to fix this before we start associating plans with resources not belonging to us.
-        // TODO: Come up with a more robust way to handle billing completeness check bypass for orders with associated plan(s).
-        if (! $order->canBypassBillingProfileCheck())
-        {
-            // The invoice user needs to have a complete billing profile, this call enforces that.
-            BillingUtils::compileDetails($invoice->user);
-        }
-
-
+        // Standard may have the billing profile completeness check bypassed depending on some order attributes.
         if ($invoice->type == InvoiceType::STANDARD)
         {
             // Before proceeding further, we need to check that if the invoice has an order associated with it, and all line items are currently available for purchase.
@@ -78,11 +69,25 @@ class PaymentController extends V1Controller
                 throw new UserFriendlyException(Errors::PAYMENT_FAILED);
             }
 
+            // Billing profile completeness check is bypassed for plans at this moment.
+            // We need to fix this before we start associating plans with resources not belonging to us.
+            // TODO: Come up with a more robust way to handle billing completeness check bypass for orders with associated plan(s).
+            if (! $order->canBypassBillingProfileCheck())
+            {
+                // The invoice user needs to have a complete billing profile, this call enforces that.
+                BillingUtils::compileDetails($invoice->user);
+            }
+
             if (! in_array($order->status, OrderStatus::getPayable()))
                 throw new UserFriendlyException(Errors::ORDER_STATUS_MISMATCH);
 
             // Verify that all the order resources are proper.
             BillingUtils::verifyOrder($order, true);
+        }
+        else
+        {
+            // Billing profile completeness applies to CREDIT/MANUAL orders all the same.
+            BillingUtils::compileDetails($invoice->user);
         }
 
         $paymentProcessor = $this->resolveProcessor($processor, $request);

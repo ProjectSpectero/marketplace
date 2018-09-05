@@ -90,7 +90,14 @@ class BillingEventListener extends BaseListener
                                         case OrderStatus::ACTIVE:
                                             // This means we're basically renewing it.
                                             $newDueNext = $order->due_next->addDays($order->term);
-                                            Log::info("Renewing Order #$order->id: due date advanced from $order->due_next to $newDueNext ($order->term days)");
+                                            $differenceInDaysWithNow = Carbon::now()->diffInDays($newDueNext);
+
+                                            Log::info("Renewing Order #$order->id: due date advanced from $order->due_next to $newDueNext (term: $order->term, actual: $differenceInDaysWithNow days)");
+
+
+                                            if ($differenceInDaysWithNow > $order->term)
+                                                Log::warning("Possible double-enhancement of due-date detected: Order #$order->id -> Invoice #$invoice->id, term is $order->term but it went forward
+                                                    $differenceInDaysWithNow (to $newDueNext). Manual intervention needed!");
 
                                             $order->due_next = $newDueNext;
 

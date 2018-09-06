@@ -394,10 +394,11 @@ class OrderController extends CRUDController
                 }
             }
 
-            $plan = empty($resource->plan) ? 'no plans associated' : $resource->plan;
+            $identifier = empty($resource->friendly_name) ? 'No identifier' : $resource->friendly_name;
+            $plan = empty($resource->plan) ? 'no associated plans' : $resource->plan;
 
             $lineItem = new OrderLineItem();
-            $lineItem->description = sprintf("%s (%s)", $resource->friendly_name, $plan);
+            $lineItem->description = sprintf("%s (%s)", $identifier, $plan);
             $lineItem->order_id = $orderId;
             $lineItem->type = $type;
             $lineItem->resource = $resource->id;

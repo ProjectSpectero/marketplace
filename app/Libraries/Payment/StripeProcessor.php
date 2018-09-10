@@ -119,7 +119,7 @@ class StripeProcessor extends BasePaymentProcessor
         }
         catch (StripeException $silenced)
         {
-            $this->logIfAppropriate($silenced);
+            $this->logIfAppropriate($silenced, $invoice);
             throw new UserFriendlyException(Errors::PAYMENT_FAILED);
         }
 
@@ -328,31 +328,41 @@ class StripeProcessor extends BasePaymentProcessor
             throw new UserFriendlyException(Errors::PAYMENT_FAILED, ResponseType::FORBIDDEN);
     }
 
-    private function isInvalidToken (\Exception $exception)
+    private function isInvalidToken (string $message)
     {
-        $message = $exception->getMessage();
-        $code = $exception->getCode();
-
         $invalid = false;
 
         if (strpos($message, 'No such token') !== false)
-            $invalid = true;
-        elseif (strpos($message, 'The zip code you supplied failed validation') !== false)
             $invalid = true;
 
         return $invalid;
     }
 
-    private function isInvalidCustomer (\Exception $exception)
+    private function isInvalidCustomer (string $message)
     {
-        $message = $exception->getMessage();
-
         return strpos($message, 'No such customer') !== false;
     }
 
-    private function logIfAppropriate (\Exception $exception)
+    private function logIfAppropriate (\Exception $exception, Invoice $invoice = null)
     {
-        if (! $this->isInvalidToken($exception) && ! $this->isInvalidCustomer($exception))
+        $message = $exception->getMessage();
+
+        if ($this->isInvalidToken($message) || $this->isInvalidCustomer($message))
+            return;
+
+        if ($exception instanceof CardErrorException)
+        {
+            // OK, something went wrong with the card. Let's log what that might be.
+            $errorCode = $exception->getErrorCode();
+            $errorType = $exception->getErrorType();
+
+            $user = $this->request->user();
+            $ip = $this->request->ip();
+            $invoiceId = $invoice != null ? $invoice->id : 'unknown';
+
+            \Log::warning("Encountered $errorType ($errorCode) while processing Stripe charge on invoice #$invoiceId on behalf of $user->email (from ip: $ip)");
+        }
+        else
             \Log::error("Stripe processing failed: ", [ 'ctx' => $exception ]);
     }
 }

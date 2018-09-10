@@ -486,4 +486,36 @@ class BillingUtils
 
         return $valid;
     }
+
+    // Checks whether the user the invoice belongs to has ample credit (or a stored (and VALID) medium in file) to auto-pay it on due date.
+    public static function resolveAutoDeductionMethod(Invoice $invoice)
+    {
+        $user = $invoice->user;
+        $dueAmount = self::getInvoiceDueAmount($invoice);
+
+        $method = null;
+
+        // User's account has enough credit balance to cover this invoice, let's not bother them.
+        if ($user->credit >= $dueAmount && $user->credit_currency == $invoice->currency)
+            $method = PaymentProcessor::ACCOUNT_CREDIT;
+
+        if ($method == null)
+        {
+            try
+            {
+                // User has a stored card, we'll auto-charge it when the time comes.
+                // TODO: Implement tracking for non-operational stored payment methods.
+
+                UserMeta::loadMeta($user, UserMetaKeys::StripeCustomerIdentifier, true);
+
+                $method = PaymentProcessor::STRIPE;
+            }
+            catch (ModelNotFoundException $silenced)
+            {
+                // We do nothing, for there is nothing to do.
+            }
+        }
+
+        return $method;
+    }
 }

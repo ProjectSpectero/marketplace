@@ -2,7 +2,14 @@
 
 @section ('content')
     <p>Hi {{ $invoice->user->name }},</p>
-    <p>This email is to remind you that payment is pending for your Spectero invoice <b>#{{ $invoice->id }}</b> which is due on <b>{{ $invoice->due_date->format(\App\Constants\DateFormat::EMAIL) }}</b>.</p>
+    <p>
+        This email is to remind you that payment is pending for your Spectero invoice <b>#{{ $invoice->id }}</b>
+        which {{ $verb }} due on <b>{{ $invoice->due_date->format(\App\Constants\DateFormat::EMAIL) }}</b>.
+
+        @if($invoice->due_date->isPast())
+            This invoice is already <b>OVERDUE.</b>
+        @endif
+    </p>
 
     <p>To ensure smooth operation your services, please make sure to submit payment in time.</p>
 

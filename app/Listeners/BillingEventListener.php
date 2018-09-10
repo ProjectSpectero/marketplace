@@ -41,7 +41,7 @@ class BillingEventListener extends BaseListener
     /**
      * Handle the event.
      *
-     * @param  FraudCheckEvent $event
+     * @param  BillingEvent $event
      * @return void
      * @throws \Throwable
      */
@@ -89,7 +89,16 @@ class BillingEventListener extends BaseListener
                                     {
                                         case OrderStatus::ACTIVE:
                                             // This means we're basically renewing it.
-                                            $order->due_next = $order->due_next->addDays($order->term);
+                                            $newDueNext = $order->due_next->addDays($order->term);
+                                            $differenceInDaysWithNow = Carbon::now()->diffInDays($newDueNext);
+
+                                            Log::info("Renewing Order #$order->id: due date advanced from $order->due_next to $newDueNext (term: $order->term, actual: $differenceInDaysWithNow days)");
+
+                                            if ($differenceInDaysWithNow > $order->term)
+                                                Log::warning("Possible double-enhancement of due-date detected: Order #$order->id -> Invoice #$invoice->id, term is $order->term but it went forward
+                                                    $differenceInDaysWithNow (to $newDueNext). Manual intervention needed!");
+
+                                            $order->due_next = $newDueNext;
 
                                             break;
 
@@ -107,7 +116,10 @@ class BillingEventListener extends BaseListener
                                             }
                                             else
                                             {
-                                                $order->due_next = Carbon::now()->addDays($order->term);
+                                                $newDueNext = Carbon::now()->addDays($order->term);
+                                                Log::info("First Activation of Order #$order->id: due date advanced from $order->due_next to $newDueNext ($order->term days)");
+
+                                                $order->due_next = $newDueNext;
                                                 $order->status = OrderStatus::ACTIVE;
 
                                                 foreach ($order->lineItems as $item)
@@ -117,7 +129,6 @@ class BillingEventListener extends BaseListener
                                                 }
 
                                                 Mail::to($user->email)->queue(new OrderProvisionedMail($order));
-
                                             }
 
                                             break;

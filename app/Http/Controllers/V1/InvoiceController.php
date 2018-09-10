@@ -135,6 +135,18 @@ class InvoiceController extends CRUDController
 
         switch ($action)
         {
+            case 'auto':
+                if (! $invoice->isPayable())
+                    throw new UserFriendlyException(Errors::INVOICE_STATUS_MISMATCH);
+
+                $method = BillingUtils::resolveAutoDeductionMethod($invoice);
+                $dataHolder = [
+                    'possible' => $method != null,
+                    'method' => $method
+                ];
+
+                break;
+
             case 'due':
                 $amount = BillingUtils::getInvoiceDueAmount($invoice);
                 if ($amount < 0)

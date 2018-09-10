@@ -91,7 +91,7 @@ class BillingSeeder extends Seeder
                 }
 
                 $lineItem = new \App\OrderLineItem();
-                $lineItem->description = "Example line item";
+                $lineItem->description = "Bananas (this the plan yo)";
                 $lineItem->order_id = $order->id;
                 $lineItem->type = $determinedType;
                 $lineItem->resource = $resourceId;

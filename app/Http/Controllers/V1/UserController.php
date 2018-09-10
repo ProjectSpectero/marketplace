@@ -322,7 +322,7 @@ class UserController extends CRUDController
             {
                 // This check prevents against you verifying an email you actually do not own.
                 if ($verifyToken !== $token || $parsedData['email'] !== $user->email)
-                    throw new UserFriendlyException(Errors::USER_VERIFICATION_FAILED, ResponseType::NOT_AUTHORIZED);
+                    throw new UserFriendlyException(Errors::USER_VERIFICATION_FAILED, ResponseType::FORBIDDEN);
 
                 $user->status = UserStatus::ACTIVE;
                 $user->saveOrFail();
@@ -335,7 +335,7 @@ class UserController extends CRUDController
                 throw new UserFriendlyException(Errors::USER_ALREADY_VERIFIED);
         }
 
-        throw new UserFriendlyException(Errors::USER_VERIFICATION_FAILED, ResponseType::NOT_AUTHORIZED);
+        throw new UserFriendlyException(Errors::USER_VERIFICATION_FAILED, ResponseType::FORBIDDEN);
     }
 
     public function regenNodeKey(Request $request)

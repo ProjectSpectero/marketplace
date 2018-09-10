@@ -282,6 +282,7 @@ class NodeEventListener extends BaseListener
                 Mail::to($userEmail)->queue(new NodeVerificationSuccessful($node));
                 
                 break;
+            // NOTE: there is a high chance of parallel execution with NODE_REVERIFY for this one. Keep this in mind if you need to alter any states.
             case Events::NODE_UPDATED:
                 break;
             case Events::NODE_DELETED:

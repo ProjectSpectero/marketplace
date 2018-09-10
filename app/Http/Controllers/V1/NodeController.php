@@ -237,6 +237,8 @@ class NodeController extends CRUDController
     {
         /** @var Node $node */
         $node = Node::findOrFail($id);
+        $previousNode = clone $node;
+
         $this->authorizeResource($node);
 
         $rules = [
@@ -244,7 +246,7 @@ class NodeController extends CRUDController
             'ip' => 'required|ip',
             'port' => 'required|integer|min:1024|max:65534',
             'access_token' => 'sometimes|min:5|regex:/[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$/',
-            'friendly_name' => 'sometimes|alpha_dash_spaces|max:64',
+            'friendly_name' => 'sometimes|max:32',
             'market_model' => [ 'sometimes', Rule::in(NodeMarketModel::getConstraints()) ]
         ];
 
@@ -276,21 +278,31 @@ class NodeController extends CRUDController
             }
         }
 
+        $reverificationNeeded = false;
 
         foreach ($input as $key => $value)
         {
-            // Why this check? Because we have fields that are /sometimes/ required.
-            if ($request->has($key))
+            if($node->$key !== $value)
             {
                 $node->$key = $value;
-                if (in_array($key, $reverifyRules))
+
+                if (in_array($key, $reverifyRules) && ! $reverificationNeeded)
+                {
+                    $reverificationNeeded = true;
                     $node->status = NodeStatus::PENDING_VERIFICATION;
+                }
             }
         }
 
         $node->saveOrFail();
 
-        event(new NodeEvent(Events::NODE_REVERIFY, $node));
+        // Fired only if a re-verification is needed
+        if ($reverificationNeeded)
+            event(new NodeEvent(Events::NODE_REVERIFY, $node, [ 'previous' => $previousNode]));
+
+        // Fired either way
+        event(new NodeEvent(Events::NODE_UPDATED, $node, [ 'previous' => $previousNode]));
+
         return $this->respond($node->toArray(), [], Messages::NODE_UPDATED);
     }
 

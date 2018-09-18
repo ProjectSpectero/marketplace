@@ -371,7 +371,7 @@ class BillingUtils
                 if ($user->credit > 0
                     && $user->credit_currency == $invoice->currency)
                 {
-                    \Log::info("$invoice->id has positive balance ($user->credit $user->credit_currency), and currency matches invoice. Attempting to charge $invoice->amount $invoice->currency ...");
+                    \Log::info("Invoice #$invoice->id -> user has positive balance ($user->credit $user->credit_currency), and currency matches invoice. Attempting to charge $invoice->amount $invoice->currency ...");
                     // OK, he has dollarydoos. Let's go take some.
                     $paymentProcessor = new AccountCreditProcessor($request);
                     $paymentProcessor->enableAutoProcessing();
@@ -393,7 +393,7 @@ class BillingUtils
                 // This attempts to charge him every day if it fails. We should probably cap it out at x attempts if the card is a dud.
                 // TODO: Implement tracking for non-operational stored payment methods a la ^.
 
-                \Log::info("$invoice->id has an attached user with a saved CC. Attempting to charge $invoice->amount $invoice->currency via Stripe...");
+                \Log::info("Invoice #$invoice->id -> user has an attached user with a saved CC. Attempting to charge $invoice->amount $invoice->currency via Stripe...");
 
                 $paymentProcessor = new StripeProcessor($request);
                 $paymentProcessor->enableAutoProcessing();

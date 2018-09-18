@@ -95,8 +95,7 @@ class BillingEventListener extends BaseListener
                                             Log::info("Renewing Order #$order->id: due date advanced from $order->due_next to $newDueNext (term: $order->term, actual: $differenceInDaysWithNow days)");
 
                                             if ($differenceInDaysWithNow > $order->term)
-                                                Log::warning("Possible double-enhancement of due-date detected: Order #$order->id -> Invoice #$invoice->id, term is $order->term but it went forward
-                                                    $differenceInDaysWithNow (to $newDueNext). Manual intervention needed!");
+                                                Log::warning("Possible double-enhancement of due-date detected: Order #$order->id -> Invoice #$invoice->id, term is $order->term but it went forward $differenceInDaysWithNow days (to $newDueNext). Manual intervention needed!");
 
                                             $order->due_next = $newDueNext;
 

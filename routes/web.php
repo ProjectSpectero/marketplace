@@ -47,6 +47,10 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
         // Plan specific routes, public by default
         $api->get('plan', 'PlanController@index');
         $api->get('plan/{name}', 'PlanController@show');
+
+        // The Market endpoints no longer require auth.
+        $api->post('market/search', 'MarketplaceController@search');
+        $api->get('market/{type}/{id}', 'MarketplaceController@resource');
     });
 
     $api->group(['as' => 'AuthRequired', 'middleware' => ['auth:api']], function ($api)
@@ -104,10 +108,6 @@ $router->group(['prefix' => 'v1', 'namespace' => 'V1'], function($api)
 
         $api->post('order/cart', 'OrderController@cart');
         \App\Libraries\Utility::defineResourceRoute('transaction', 'TransactionController', $api, []);
-
-        // The Market endpoints now require auth.
-        $api->post('market/search', 'MarketplaceController@search');
-        $api->get('market/{type}/{id}', 'MarketplaceController@resource');
 
         \App\Libraries\Utility::defineResourceRoute('engagement', 'EngagementController', $api, []);
 

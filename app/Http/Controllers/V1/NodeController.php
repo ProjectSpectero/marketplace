@@ -258,7 +258,7 @@ class NodeController extends CRUDController
                 $marketModel = $node->market_model;
 
             if (in_array($marketModel, NodeMarketModel::getMarketable()))
-                $rules['price'] = 'numeric|between:' . env('MIN_RESOURCE_PRICE', 5) . ',' . env('MAX_RESOURCE_PRICE', 9999);
+                $rules['price'] = 'numeric|between:' . env('MIN_RESOURCE_PRICE', 0) . ',' . env('MAX_RESOURCE_PRICE', 9999);
         }
 
         $reverifyRules = [
